@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restrictions - PlatePilot</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+</head>
+<body>
+
+    <div class="onboardingContainer">
+        <div class="progressContainer">
+            <div class="progressBar" style="width: 100%;"></div>
+        </div>
+
+        <div class="formCard">
+            <h2>Any restrictions?</h2>
+            <p class="form-subtitle">Step 3: Tell the AI what to exclude.</p>
+
+            <div class="tagsGrid">
+                <div class="tag" onclick="toggleTag(this, 'vegan')">Vegan</div>
+                <div class="tag" onclick="toggleTag(this, 'vegetarian')">Vegetarian</div>
+                <div class="tag" onclick="toggleTag(this, 'gluten-free')">Gluten-Free</div>
+                <div class="tag" onclick="toggleTag(this, 'dairy-free')">Dairy-Free</div>
+                <div class="tag" onclick="toggleTag(this, 'keto')">Keto</div>
+                <div class="tag" onclick="toggleTag(this, 'nut-allergy')">No Nuts</div>
+                <div class="tag" onclick="toggleTag(this, 'pescatarian')">Pescatarian</div>
+                <div class="tag" onclick="toggleTag(this, 'Lactose Intolerant')">Lactose Intolerant</div>
+            </div>
+
+            <button class="btn btn-primary full-width mt-20" onclick="finishOnboarding()">Finish & Generate Plan</button>
+            <button class="btn btn-secondary full-width mt-10" onclick="history.back()">Back</button>
+        </div>
+    </div>
+
+    <script src="js files/restrictions.js"></script>
+</body>
+</html>

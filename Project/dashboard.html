@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Dashboard - PlatePilot</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+</head>
+<body class="bgLight">
+    <nav class="navbar">
+        <div class="userBadge" id="userDisplay">User</div>
+        <div class="logo">PlatePilot</div>
+        <div class="navLinks">
+            <a href="home.html" class="loginLink">Logout</a>
+        </div>
+    </nav>
+
+    <main class="dashContainer">
+        <aside class="statsPanel">
+            <div class="statCard">
+                <h4>Daily Target</h4>
+                <h2 id="calorieTarget">2,400 kcal</h2>
+                <p>Based on your <strong>Goal</strong></p>
+            </div>
+            
+            <div class="profile-summary">
+                <h3>Your Profile</h3>
+                <ul id="profileList"></ul>
+            </div>
+        </aside>
+
+        <section class="mealPlan">
+            <h2>Today's AI Recommendations</h2>
+            <div class="mealGrid" id="mealGrid">
+                <div class="loading">Generating your custom plan...</div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js files/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Your Goal - PlatePilot</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+</head>
+<body>
+
+    <div class="onboardingContainer">
+        <div class="progressContainer">
+            <div class="progressBar" style="width: 66%;"></div>
+        </div>
+
+        <div class="formCard">
+            <h2>What is your goal?</h2>
+            <p class="form-subtitle">This helps the AI calculate your daily targets.</p>
+
+            <div class="goalGrid">
+                <div class="goalCard" onclick="selectGoal(this, 'lose')">
+                    <div class="goalIcon">🔥</div>
+                    <div class="goalContent">
+                        <h3>Weight Loss</h3>
+                        <p>Burn fat and get leaner</p>
+                    </div>
+                </div>
+
+                <div class="goalCard" onclick="selectGoal(this, 'maintain')">
+                    <div class="goalIcon">⚖️</div>
+                    <div class="goalContent">
+                        <h3>Maintain</h3>
+                        <p>Keep your current weight</p>
+                    </div>
+                </div>
+
+                <div class="goalCard" onclick="selectGoal(this, 'gain')">
+                    <div class="goalIcon">💪</div>
+                    <div class="goalContent">
+                        <h3>Muscle Build</h3>
+                        <p>Build strength and mass</p>
+                    </div>
+                </div>
+
+                <div class="goalCard" onclick="selectGoal(this, 'gain')">
+                    <div class="goalIcon">💪</div>
+                    <div class="goalContent">
+                        <h3>Nutrient Track</h3>
+                        <p>Track your nutrient intake</p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary full-width" onclick="nextStep()">Continue</button>
+            <button class="btn btn-secondary full-width" onclick="history.back()">Back</button>
+        </div>
+    </div>
+
+    <script src="js files/goals.js"></script>
+</body>
+</html>

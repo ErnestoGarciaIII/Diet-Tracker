@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - NutriAI</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+</head>
+<body class="loginPage">
+    <div class="onboardingContainer">
+        <h1 class="logo-text">PlatePilot</h1> 
+
+        <div class="formCard loginCard">
+            <div class="mainFlex">
+                <div class="contentSide">
+                    <h2>Welcome Back!</h2>
+                    <p class="form-subtitle">Log in to track your progress.</p>
+
+                    <form id="loginForm">
+                        <div class="inputGroup">
+                            <label>Email</label>
+                            <input type="text" id="loginEmail" placeholder="Username/Email" required autofocus>
+                        </div>
+                        <div class="inputGroup">
+                            <label>Password</label>
+                            <input type="password" id="loginPassword" placeholder="Password" required>
+                        </div>
+                        <button class="btn btn-primary full-width" type="submit">
+                            Login
+                        </button>
+                    </form>
+
+                    <p class="account">Don't have an account? <a href="register.html">Register here</a></p>
+                    <p class="account">Forgot password? <a href="#">Reset here</a></p>
+                </div>
+
+                <div class="imageSide">
+                    <img src="images/MascotPilot.png" alt="Healthy Lifestyle">
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js files/auth.js"></script>
+</body>
+</html>
