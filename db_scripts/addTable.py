@@ -29,12 +29,12 @@ def add_that_table():
             
     db_dir = Path(__file__)
 
-    conn = sqlite3.connect('master_food.db') #connects or creates local db
+    conn = sqlite3.connect('..\db\master_food.db') #connects or creates local db
 
     for file in files:
         try:
             print(f"Looking for '{file}.csv'...\n")
-            df = pd.read_csv(f'FoodData_Central_csv_2025-12-18/{file}.csv', low_memory=False)
+            df = pd.read_csv(f'..\db\FoodData_Central_csv_2025-12-18/{file}.csv', low_memory=False)
             print(f"Found '{file}.csv', attempting to build table...")
             try:
                 df.to_sql(file, conn, if_exists='fail', index=False)
