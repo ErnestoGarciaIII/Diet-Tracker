@@ -9,7 +9,7 @@ def printUsage():
     -----------------------------------------------------------------------------------------------
     -----                                          USAGE                                      -----
     -----------------------------------------------------------------------------------------------
-    -----  <python> .\dri_calc.py <weight kg> <height cm> <age> <sex> <activity level> <goal> -----
+    -----  <python> .\\dri_calc.py <weight kg> <height cm> <age> <sex> <activity level> <goal> -----
     -----                                                                                     -----
     -----   Activity Levels are passed as an integer:                                         -----
     -----   1 - Sedentary                                                                     -----
@@ -31,6 +31,7 @@ def printUsage():
     Press Enter to continue...
     """)
     input()
+
 
 def checkArgs():
     errorNum = 0
@@ -167,13 +168,13 @@ class PlatePilotUser():
     
     def setDRI(self):
         if self.sex == "MALE":
-            self.BMR = ((10*self.weight) + (6.25 * self.height * 2.54) - (5 * self.age) + 5)
+            self.BMR = ((10*self.weight) + (6.25 * self.height) - (5 * self.age) + 5)
         else:
             self.BMR = ((10*self.weight) + (6.25 * self.height * 2.54) - (5 * self.age) - 161)
 
         self.TDEE = self.BMR*self.activity_factor[self.activity_level - 1]
-        calcMacros()
-        if self.sex is "MALE":
+        self.calcMacros()
+        if self.sex == "MALE":
             if 19 <= self.age <= 30:
                 self.ERR = 662 - (9.53 * self.age) + self.activity_level * ((9.36 * self.weight) + (539.6 * self.height * 2.5 / 100))
                 self.micros["Calcium"] = 1000
@@ -244,7 +245,7 @@ class PlatePilotUser():
                 self.micros["Choline"] = 550
                 self.micros["Vitamin K"] = 120
     	
-        elif self.sex is "FEMALE":
+        elif self.sex == "FEMALE":
             if 19 <= self.age <= 30:
                 self.ERR = 354 - (6.91 * self.age) + self.activity_level * ((9.36 * self.weight) + (726 * self.height * 2.5 / 100))	
                 self.micros["Calcium"] = 1000
@@ -319,14 +320,20 @@ class PlatePilotUser():
     	
     def getAll(self):
         print(f"""
-        ----- MICROS -----
-        {self.micros}
+        ----- MICROS -----""")
+        for key, value in self.micros.items():
+            print(f"""
+        {key}: {value}""")
+        print(f"""
         ----- ------ -----
-        |                |
-        ----- MACROS -----
-        {self.macros}
+
+        ----- MACROS -----""")
+        for key, value in self.macros.items():
+            print(f"""
+        {key}: {value}""")
+        print(f"""
         ----- ------ -----
-        |                |
+                          
         ----- -INFO- -----
         Height:     {self.height} inches
 
@@ -346,6 +353,10 @@ class PlatePilotUser():
             1 - Maintain
             2 - Weight Loss
             3 - Muscle building
+
+        BMR:        {self.BMR}
+
+        TDEE:       {self.TDEE}
         """)
         
 
