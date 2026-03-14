@@ -317,7 +317,7 @@ class PlatePilotUser():
                 self.micros["Choline"] = 425
                 self.micros["Vitamin K"] = 90
     	
-    def getAll():
+    def getAll(self):
         print(f"""
         ----- MICROS -----
         {self.micros}
