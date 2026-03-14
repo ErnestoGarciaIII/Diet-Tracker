@@ -79,10 +79,6 @@ def checkArgs():
     if sex != "MALE" and sex != "FEMALE":
         print(f"Error: Sex argument '{sex}' not recognized, ensure 'male' or 'female' is passed, case insensitive...\n")
         errorNum += 1
-    elif sex == "MALE":
-        sex = 5
-    else:
-        sex = -161
 
     try: 
         
@@ -94,7 +90,7 @@ def checkArgs():
 
     except ValueError:
         print("Error: Activity level argument must be an integer [1 - 4]...\n")
-        errorNum += 1u
+        errorNum += 1
     
     try:
 
@@ -113,7 +109,7 @@ def checkArgs():
     else: 
         return weight, height, age, sex, activity_level, goal
 
-class plate_pilot_user():
+class PlatePilotUser():
     
     activity_factor = [1.2, 1.375, 1.55, 1.725]
     
@@ -150,7 +146,7 @@ class plate_pilot_user():
                 }
         self.BMR = 0
         self.TDEE = 0
-	    self.ERR = 0
+        self.ERR = 0
     
     def calcMacros(self):
         match self.goal:
@@ -170,155 +166,191 @@ class plate_pilot_user():
         
     
     def setDRI(self):
-        self.BMR = ((10*self.weight) + (6.25 * self.height * 2.54) - (5 * self.age) + self.sex)
+        if self.sex == "MALE":
+            self.BMR = ((10*self.weight) + (6.25 * self.height * 2.54) - (5 * self.age) + 5)
+        else:
+            self.BMR = ((10*self.weight) + (6.25 * self.height * 2.54) - (5 * self.age) - 161)
+
         self.TDEE = self.BMR*self.activity_factor[self.activity_level - 1]
         calcMacros()
-	    if self.sex is 5:
-	        	if 19 <= self.age <= 30:
-		    	self.ERR = 662 - (9.53 * self.age) + self.activity_level * ((9.36 * self.weight) + (539.6 * self.height * 2.5 / 100))
-		    	self.micros["Calcium"] = 1000
-		    	self.micros["Magnesium"] = 400
-		    	self.micros["Phosphoru"] = 700
-		    	self.micros["Potassium"] = 3400
-		    	self.micros["Sodium"] = 1500
-		    	self.micros["Zinc"] = 11
-		    	self.micros["Copper"] = 0.9
-		    	self.micros["Manganese"] = 2.3
-		    	self.micros["Selenium"] = 55
-		    	self.micros["Vitamin E"] = 15
-		    	self.micros["Vitamin D"] = 0.015
-    			self.micros["Vitamin C"] = 90
-    			self.micros["Thiamin"] = 1.2
-    			self.micros["Riboflavin"] = 1.3
-    			self.micros["Niacin"] = 16
-    			self.micros["Pantothenic acid"] = 5
-    			self.micros["Vitamin B-6"] = 1.3
-    			self.micros["Folate"] = 400
-    			self.micros["Vitamin B-12"] = 2.4
-    			self.micros["Choline"] = 550
-    			self.micros["Vitamin K"] = 120
-    		elif 31 <= self.age <= 50
-    			self.ERR = 662 - (9.53 * self.age) + self.activity_level * ((9.36 * self.weight) + (539.6 * self.height * 2.5 / 100))
-    			self.micros["Calcium"] = 1000
-    			self.micros["Magnesium"] = 420
-    			self.micros["Phosphoru"] = 700
-    			self.micros["Potassium"] = 3400
-    			self.micros["Sodium"] = 1500
-    			self.micros["Zinc"] = 11
-    			self.micros["Copper"] = 0.9
-    			self.micros["Manganese"] = 2.3
-    			self.micros["Selenium"] = 55
-    			self.micros["Vitamin E"] = 15
-    			self.micros["Vitamin D"] = 0.015
-    			self.micros["Vitamin C"] = 90
-    			self.micros["Thiamin"] = 1.2
-    			self.micros["Riboflavin"] = 1.3
-    			self.micros["Niacin"] = 16
-    			self.micros["Pantothenic acid"] = 5
-    			self.micros["Vitamin B-6"] = 1.3
-    			self.micros["Folate"] = 400
-    			self.micros["Vitamin B-12"] = 2.4
-    			self.micros["Choline"] = 550
-    			self.micros["Vitamin K"] = 120
-    		elif self.age > 50:
-    			self.ERR = 662 - (9.53 * self.age) + self.activity_level * ((9.36 * self.weight) + (539.6 * self.height * 2.5 / 100))	
-    			self.micros["Calcium"] = 1000
-    			self.micros["Magnesium"] = 420
-    			self.micros["Phosphoru"] = 700
-    			self.micros["Potassium"] = 3400
-    			self.micros["Sodium"] = 1300
-    			self.micros["Zinc"] = 11
-    			self.micros["Copper"] = 0.9
-    			self.micros["Manganese"] = 2.3
-    			self.micros["Selenium"] = 55
-    			self.micros["Vitamin E"] = 15
-    			self.micros["Vitamin D"] = 0.015
-    			self.micros["Vitamin C"] = 90
-    			self.micros["Thiamin"] = 1.2
-    			self.micros["Riboflavin"] = 1.3
-    			self.micros["Niacin"] = 16
-    			self.micros["Pantothenic acid"] = 5
-    			self.micros["Vitamin B-6"] = 1.7
-    			self.micros["Folate"] = 400
-    			self.micros["Vitamin B-12"] = 2.4
-    			self.micros["Choline"] = 550
-    			self.micros["Vitamin K"] = 120
-    		else: 
-    			
-    	elif self.sex is -161:
-    		if 19 <= self.age <= 30:
-    			self.ERR = 354 - (6.91 * self.age) + self.activity_level * ((9.36 * self.weight) + (726 * self.height * 2.5 / 100))	
-    			self.micros["Calcium"] = 1000
-    			self.micros["Magnesium"] = 310
-    			self.micros["Phosphoru"] = 700
-    			self.micros["Potassium"] = 2600
-	    		self.micros["Sodium"] = 1500
-	    		self.micros["Zinc"] = 8
-		    	self.micros["Copper"] = 0.9
-	    		self.micros["Manganese"] = 1.8
-	    		self.micros["Selenium"] = 55
-    			self.micros["Vitamin E"] = 15
-    			self.micros["Vitamin D"] = 0.015
-    			self.micros["Vitamin C"] = 75
-    			self.micros["Thiamin"] = 1.1
-    			self.micros["Riboflavin"] = 1.1
-    			self.micros["Niacin"] = 14
-    			self.micros["Pantothenic acid"] = 5
-    			self.micros["Vitamin B-6"] = 1.3
-    			self.micros["Folate"] = 400
-    			self.micros["Vitamin B-12"] = 2.4
-    			self.micros["Choline"] = 425
-    			self.micros["Vitamin K"] = 90
-    		
-    		elif 31 <= self.age <= 50:
-    			self.ERR = 354 - (6.91 * self.age) + self.activity_level * ((9.36 * self.weight) + (726 * self.height * 2.5 / 100))	
-    			self.micros["Calcium"] = 1000
-    			self.micros["Magnesium"] = 320
-    			self.micros["Phosphoru"] = 700
-    			self.micros["Potassium"] = 2600
-    			self.micros["Sodium"] = 1500
-    			self.micros["Zinc"] = 8
-    			self.micros["Copper"] = 0.9
-    			self.micros["Manganese"] = 1.8
-    			self.micros["Selenium"] = 55
-    			self.micros["Vitamin E"] = 15
-    			self.micros["Vitamin D"] = 0.015
-    			self.micros["Vitamin C"] = 75
-    			self.micros["Thiamin"] = 1.1
-    			self.micros["Riboflavin"] = 1.1
-	    		self.micros["Niacin"] = 14
-	    		self.micros["Pantothenic acid"] = 5
-	    		self.micros["Vitamin B-6"] = 1.3
-	    		self.micros["Folate"] = 400
-	    		self.micros["Vitamin B-12"] = 2.4
-	    		self.micros["Choline"] = 425
-	    		self.micros["Vitamin K"] = 90
+        if self.sex is "MALE":
+            if 19 <= self.age <= 30:
+                self.ERR = 662 - (9.53 * self.age) + self.activity_level * ((9.36 * self.weight) + (539.6 * self.height * 2.5 / 100))
+                self.micros["Calcium"] = 1000
+                self.micros["Magnesium"] = 400
+                self.micros["Phosphoru"] = 700
+                self.micros["Potassium"] = 3400
+                self.micros["Sodium"] = 1500
+                self.micros["Zinc"] = 11
+                self.micros["Copper"] = 0.9
+                self.micros["Manganese"] = 2.3
+                self.micros["Selenium"] = 55
+                self.micros["Vitamin E"] = 15
+                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin C"] = 90
+                self.micros["Thiamin"] = 1.2
+                self.micros["Riboflavin"] = 1.3
+                self.micros["Niacin"] = 16
+                self.micros["Pantothenic acid"] = 5
+                self.micros["Vitamin B-6"] = 1.3
+                self.micros["Folate"] = 400
+                self.micros["Vitamin B-12"] = 2.4
+                self.micros["Choline"] = 550
+                self.micros["Vitamin K"] = 120
+            elif 31 <= self.age <= 50:
+                self.ERR = 662 - (9.53 * self.age) + self.activity_level * ((9.36 * self.weight) + (539.6 * self.height * 2.5 / 100))
+                self.micros["Calcium"] = 1000
+                self.micros["Magnesium"] = 420
+                self.micros["Phosphoru"] = 700
+                self.micros["Potassium"] = 3400
+                self.micros["Sodium"] = 1500
+                self.micros["Zinc"] = 11
+                self.micros["Copper"] = 0.9
+                self.micros["Manganese"] = 2.3
+                self.micros["Selenium"] = 55
+                self.micros["Vitamin E"] = 15
+                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin C"] = 90
+                self.micros["Thiamin"] = 1.2
+                self.micros["Riboflavin"] = 1.3
+                self.micros["Niacin"] = 16
+                self.micros["Pantothenic acid"] = 5
+                self.micros["Vitamin B-6"] = 1.3
+                self.micros["Folate"] = 400
+                self.micros["Vitamin B-12"] = 2.4
+                self.micros["Choline"] = 550
+                self.micros["Vitamin K"] = 120
+            elif self.age > 50:
+                self.ERR = 662 - (9.53 * self.age) + self.activity_level * ((9.36 * self.weight) + (539.6 * self.height * 2.5 / 100))	
+                self.micros["Calcium"] = 1000
+                self.micros["Magnesium"] = 420
+                self.micros["Phosphoru"] = 700
+                self.micros["Potassium"] = 3400
+                self.micros["Sodium"] = 1300
+                self.micros["Zinc"] = 11
+                self.micros["Copper"] = 0.9
+                self.micros["Manganese"] = 2.3
+                self.micros["Selenium"] = 55
+                self.micros["Vitamin E"] = 15
+                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin C"] = 90
+                self.micros["Thiamin"] = 1.2
+                self.micros["Riboflavin"] = 1.3
+                self.micros["Niacin"] = 16
+                self.micros["Pantothenic acid"] = 5
+                self.micros["Vitamin B-6"] = 1.7
+                self.micros["Folate"] = 400
+                self.micros["Vitamin B-12"] = 2.4
+                self.micros["Choline"] = 550
+                self.micros["Vitamin K"] = 120
     	
-    		elif self.age > 50:
-    			self.ERR = 354 - (6.91 * self.age) + self.activity_level * ((9.36 * self.weight) + (726 * self.height * 2.5 / 100))		
-    			self.micros["Calcium"] = 1200
-    			self.micros["Magnesium"] = 320
-    			self.micros["Phosphoru"] = 700
-    			self.micros["Potassium"] = 2600
-    			self.micros["Sodium"] = 1300
-    			self.micros["Zinc"] = 8
-    			self.micros["Copper"] = 0.9
-    			self.micros["Manganese"] = 1.8
-    			self.micros["Selenium"] = 55
-    			self.micros["Vitamin E"] = 15
-    			self.micros["Vitamin D"] = 0.015
-	    		self.micros["Vitamin C"] = 75
-    			self.micros["Thiamin"] = 1.1
-    			self.micros["Riboflavin"] = 1.1
-    			self.micros["Niacin"] = 14
-    			self.micros["Pantothenic acid"] = 5
-    			self.micros["Vitamin B-6"] = 1.5
-    			self.micros["Folate"] = 400
-    			self.micros["Vitamin B-12"] = 2.4
-    			self.micros["Choline"] = 425
-    			self.micros["Vitamin K"] = 90
-    		else: 
+        elif self.sex is "FEMALE":
+            if 19 <= self.age <= 30:
+                self.ERR = 354 - (6.91 * self.age) + self.activity_level * ((9.36 * self.weight) + (726 * self.height * 2.5 / 100))	
+                self.micros["Calcium"] = 1000
+                self.micros["Magnesium"] = 310
+                self.micros["Phosphoru"] = 700
+                self.micros["Potassium"] = 2600
+                self.micros["Sodium"] = 1500
+                self.micros["Zinc"] = 8
+                self.micros["Copper"] = 0.9
+                self.micros["Manganese"] = 1.8
+                self.micros["Selenium"] = 55
+                self.micros["Vitamin E"] = 15
+                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin C"] = 75
+                self.micros["Thiamin"] = 1.1
+                self.micros["Riboflavin"] = 1.1
+                self.micros["Niacin"] = 14
+                self.micros["Pantothenic acid"] = 5
+                self.micros["Vitamin B-6"] = 1.3
+                self.micros["Folate"] = 400
+                self.micros["Vitamin B-12"] = 2.4
+                self.micros["Choline"] = 425
+                self.micros["Vitamin K"] = 90
+
+            elif 31 <= self.age <= 50:
+                self.ERR = 354 - (6.91 * self.age) + self.activity_level * ((9.36 * self.weight) + (726 * self.height * 2.5 / 100))	
+                self.micros["Calcium"] = 1000
+                self.micros["Magnesium"] = 320
+                self.micros["Phosphoru"] = 700
+                self.micros["Potassium"] = 2600
+                self.micros["Sodium"] = 1500
+                self.micros["Zinc"] = 8
+                self.micros["Copper"] = 0.9
+                self.micros["Manganese"] = 1.8
+                self.micros["Selenium"] = 55
+                self.micros["Vitamin E"] = 15
+                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin C"] = 75
+                self.micros["Thiamin"] = 1.1
+                self.micros["Riboflavin"] = 1.1
+                self.micros["Niacin"] = 14
+                self.micros["Pantothenic acid"] = 5
+                self.micros["Vitamin B-6"] = 1.3
+                self.micros["Folate"] = 400
+                self.micros["Vitamin B-12"] = 2.4
+                self.micros["Choline"] = 425
+                self.micros["Vitamin K"] = 90
+            elif self.age > 50:
+
+                self.ERR = 354 - (6.91 * self.age) + self.activity_level * ((9.36 * self.weight) + (726 * self.height * 2.5 / 100))		
+                self.micros["Calcium"] = 1200
+                self.micros["Magnesium"] = 320
+                self.micros["Phosphoru"] = 700
+                self.micros["Potassium"] = 2600
+                self.micros["Sodium"] = 1300
+                self.micros["Zinc"] = 8
+                self.micros["Copper"] = 0.9
+                self.micros["Manganese"] = 1.8
+                self.micros["Selenium"] = 55
+                self.micros["Vitamin E"] = 15
+                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin C"] = 75
+                self.micros["Thiamin"] = 1.1
+                self.micros["Riboflavin"] = 1.1
+                self.micros["Niacin"] = 14
+                self.micros["Pantothenic acid"] = 5
+                self.micros["Vitamin B-6"] = 1.5
+                self.micros["Folate"] = 400
+                self.micros["Vitamin B-12"] = 2.4
+                self.micros["Choline"] = 425
+                self.micros["Vitamin K"] = 90
     	
+    def getAll():
+        print(f"""
+        ----- MICROS -----
+        {self.micros}
+        ----- ------ -----
+        |                |
+        ----- MACROS -----
+        {self.macros}
+        ----- ------ -----
+        |                |
+        ----- -INFO- -----
+        Height:     {self.height} inches
+
+        Weight:     {self.weight} kilograms
+        
+        Age:        {self.age} years old
+        
+        Sex:        {self.sex}
+        
+        Activity:   {self.activity_level}
+            1 - No activity
+            2 - Little activity
+            3 - Moderate Activity
+            4 - Very active
+        
+        Goal:       {self.goal} 
+            1 - Maintain
+            2 - Weight Loss
+            3 - Muscle building
+        """)
+        
+
+
+
 def main(): 
     printUsage()
 
