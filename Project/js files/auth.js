@@ -1,3 +1,4 @@
+// ---------------------- Authentication logic for Register/Login pages------------------
 document.addEventListener('DOMContentLoaded', () => {
     // --- LOGIN LOGIC ---
     const loginForm = document.getElementById('loginForm');
@@ -22,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (signupForm) {
         signupForm.addEventListener('submit', (e) => {
             e.preventDefault();
+            const fullName = document.getElementById('fullName').value;
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
             const confirm = document.getElementById('confirmPassword').value;
@@ -31,7 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            localStorage.setItem('userEmail', email);
+            localStorage.setItem('userNameDisplay', fullName);
+            localStorage.setItem('userEmailDisplay', email);
+            localStorage.setItem('userPassword', password);
             localStorage.setItem('isLoggedIn', 'true');
             window.location.href = 'userInfo.html';
         });
