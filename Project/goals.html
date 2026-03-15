@@ -4,19 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Set Your Goal - PlatePilot</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
+    <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="stylesheets/mainStyleS.css">
 </head>
 <body>
 
     <div class="onboardingContainer">
-        <div class="progressContainer">
-            <div class="progressBar" style="width: 66%;"></div>
+        <div class="progressBarContainer">
+            <div class="profileProgressBar" style="width: 66%;"></div>
         </div>
-
+        <!-- title section -->
         <div class="formCard">
             <h2>What is your goal?</h2>
-            <p class="form-subtitle">This helps the AI calculate your daily targets.</p>
-
+            <p class="formSubtitle">This helps the AI calculate your daily targets.</p>
+            <!-- section 1-->
             <div class="goalGrid">
                 <div class="goalCard" onclick="selectGoal(this, 'lose')">
                     <div class="goalIcon">🔥</div>
@@ -25,7 +26,7 @@
                         <p>Burn fat and get leaner</p>
                     </div>
                 </div>
-
+                <!-- section 2-->
                 <div class="goalCard" onclick="selectGoal(this, 'maintain')">
                     <div class="goalIcon">⚖️</div>
                     <div class="goalContent">
@@ -33,7 +34,7 @@
                         <p>Keep your current weight</p>
                     </div>
                 </div>
-
+                <!-- section 3-->
                 <div class="goalCard" onclick="selectGoal(this, 'gain')">
                     <div class="goalIcon">💪</div>
                     <div class="goalContent">
@@ -41,18 +42,10 @@
                         <p>Build strength and mass</p>
                     </div>
                 </div>
-
-                <div class="goalCard" onclick="selectGoal(this, 'gain')">
-                    <div class="goalIcon">💪</div>
-                    <div class="goalContent">
-                        <h3>Nutrient Track</h3>
-                        <p>Track your nutrient intake</p>
-                    </div>
-                </div>
             </div>
 
-            <button class="btn btn-primary full-width" onclick="nextStep()">Continue</button>
-            <button class="btn btn-secondary full-width" onclick="history.back()">Back</button>
+            <button class="RUGRbtn pagesBtn-primary full-width" onclick="nextStep2()">Continue</button>
+            <button class="RUGRbtn pagesBtn-secondary full-width" onclick="history.back()">Back</button>
         </div>
     </div>
 
