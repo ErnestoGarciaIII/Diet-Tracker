@@ -1,3 +1,5 @@
+//--------------- Goals page JavaScript -----------------
+
 // Initialize the selected goal variable
 let selectedGoal = '';
 
@@ -6,6 +8,7 @@ let selectedGoal = '';
  * @param {HTMLElement} element - The card element that was clicked
  * @param {string} goal - The value of the goal (e.g., 'lose', 'gain')
  */
+
 function selectGoal(element, goal) {
     // 1. Remove 'selected' class from all cards to reset the UI
     const allCards = document.querySelectorAll('.goalCard');
