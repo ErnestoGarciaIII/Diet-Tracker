@@ -3,38 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - NutriAI</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
+    <title>Login - PlatePilot</title>
+    <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="stylesheets/mainStyleS.css">
 </head>
-<body class="loginPage">
+<body>
     <div class="onboardingContainer">
-        <h1 class="logo-text">PlatePilot</h1> 
-
+        <h1 id="mainTitle">PlatePilot</h1> 
         <div class="formCard loginCard">
             <div class="mainFlex">
                 <div class="contentSide">
-                    <h2>Welcome Back!</h2>
-                    <p class="form-subtitle">Log in to track your progress.</p>
+                    <h2 class="heading2">Welcome Back!</h2>
+                    <p class="formSubtitle">Log in to track your progress.</p>
 
                     <form id="loginForm">
+                        <!-- form elements i.e email   -->
                         <div class="inputGroup">
-                            <label>Email</label>
+                            <label>Email Address</label>
                             <input type="text" id="loginEmail" placeholder="Username/Email" required autofocus>
                         </div>
+                        <!-- form elements i.e password -->
                         <div class="inputGroup">
                             <label>Password</label>
                             <input type="password" id="loginPassword" placeholder="Password" required>
                         </div>
-                        <button class="btn btn-primary full-width" type="submit">
+                        <!-- form elements i.e submit button -->
+                        <button class="RUGRbtn pagesBtn-primary full-width" type="submit" id="loginButton">
                             Login
                         </button>
                     </form>
-
-                    <p class="account">Don't have an account? <a href="register.html">Register here</a></p>
-                    <p class="account">Forgot password? <a href="#">Reset here</a></p>
+                    <!-- form elements i.e different links -->
+                    <p class="account" id="account">Don't have an account? <a href="register.html">Register here</a></p>
+                    <p class="account" id="forgotPassword">Forgot password? <a href="#">Reset here</a></p>
                 </div>
-
-                <div class="imageSide">
+                <!-- form elements i.e mascot/motto-->
+                <div class="imageSide" id="imageSide">
                     <img src="images/MascotPilot.png" alt="Healthy Lifestyle">
                 </div>
             </div>
