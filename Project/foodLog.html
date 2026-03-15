@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Dashboard - PlatePilot</title>
+    <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="stylesheets/mainStyleS.css">
+</head>
+<body class="bod1">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo">PlatePilot</div>
+        <div>
+            <a href="dashboard.html">
+                <div class="navIcon">
+                    <i class="fa-regular fa-house fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+            <div>
+            <a href="foodLog.html">
+                <div class="navIcon active">
+                    <i class="fa-solid fa-clipboard fa-beat fa-xl" style="color: rgb(94, 234, 100);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="history.html">
+                <div class="navIcon">
+                    <i class="fa-solid fa-calendar fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="settings.html">
+                <div class="navIcon">
+                    <i class="fa-solid fa-gear fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="logout.html">
+                <div class="navIcon">
+                    <i class="fa-solid fa-arrow-right-from-bracket fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+    </nav>
+
+    <main class="dashContent">    
+        <div class="card trackerCard">
+            <h2> Fuel the plane ✈️</h2>
+            <p class="formSubtitle"> Log your calories to move the plane.</p>
+            <!-- Food Input -->
+            <div class="inputGroup">
+                <label for="foodInput"> Food Name</label>
+                <input type="text" id="foodInput" placeholder="What did you eat?">
+            </div>
+            <div class="inputGroup">
+                <label for="calInput"> Calories (kcal)</label>
+                <input type="number" id="calInput" placeholder="e.g. 350">
+            </div>
+            <!-- Log Food Button -->
+            <button class="RUGRbtn pagesBtn-primary full-width" onclick="logFood()">Log Food</button>
+            <!-- shows vague current logged items-->
+            <div class="logContainer">
+                <label>Today's Log:</label>
+                <ul id="foodLog"></ul>
+            </div>
+            <!-- History Link and return to dashboard link -->
+            <div>
+                <a href="history.html" class="navLink"> View History 
+                    <i class="fa-solid fa-arrow-right fa-xlg" style="color: #3498db;"></i>
+                </a>
+            </div>
+
+            <div>
+                <a href="dashboard.html" class="navLink">Back to Dashboard
+                    <i class="fa-solid fa-arrow-right fa-xlg" style="color: #3498db;"></i>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script src="js files/dashboard.js"></script>
+</body>
+</html>
