@@ -4,12 +4,11 @@ import sys
 #BMR is calculated using Mifflin-St Jeor Equation, P = (10 x weight in kg) + (6.25 x height in cm) - (5 x age in years) + s [constant s: males +5 females -161
 #Activity factor multiplier: Sedentary - 1.2 | Lightly Active - 1.375 | Moderately Active: 1.55 | Very Active: 1.725 
 
-def printUsage(): 
+def README(): 
     print(f"""
     -----------------------------------------------------------------------------------------------
     -----                                          USAGE                                      -----
     -----------------------------------------------------------------------------------------------
-    -----           <weight kg> <height cm> <age> <sex> <activity level> <goal>               -----
     -----                                                                                     -----
     -----   Activity Levels are passed as an integer:                                         -----
     -----   1 - Sedentary                                                                     -----
@@ -19,93 +18,16 @@ def printUsage():
     -----                                                                                     -----
     -----   Goal is passed as an integer:                                                     -----
     -----   1 - Maintain                                                                      -----
-    -----   2 - Fat Loss                                                                      -----
+    -----   2 - Weight Loss                                                                   -----
     -----   3 - Muscle Gain                                                                   -----
+    -----   4 - Maintain (Weight Lifter)                                                      -----
+    -----   5 - Weight Loss (Weight Lifter)                                                   -----
     -----                                                                                     -----
     -----------------------------------------------------------------------------------------------
-
-    Press Enter to continue...
     """)
-    input()
 
 
-def checkArgs():
-    errorNum = 0
-    if len(sys.argv) != 7: #checks for 7 because the script itself being called counts as 1 [Looking for 5, the calculation criteria]
-        print(f"Expected 5 arguments, received {len(sys.argv)-1}...\n\nWeight, Height, Age, Sex, Activity level, goal\n\nSee usage section\n")
-        sys.exit(1)
-    try:
-        weight = int(sys.argv[1])
-
-        if weight < 32 or weight > 180:
-            print("Error: Weight argument falls outside of expected range, did you give LB instead of KG?...\n")
-            errorNum += 1
-            if weight > 180: 
-                weight * 0.453592
-                print(f"    If you put in {weight}lb, that is equivalent to {int(weight * 0.453592)}kg...\n")
-
-    except ValueError: 
-            print("Error: Weight argument must be an integer [Representing weight in kg]...\n")
-            errorNum += 1
-    try: 
-    
-        height = int(sys.argv[2])
-        
-        if height < 48 or height > 270:
-            print("Error: Height argument falls outside of expected range, did you give CM or M instead of Inches?...\n")
-            errorNum += 1
-
-    except ValueError:
-    
-        print("Error: Height argument must be an integer [Representing height in inches]...\n")
-        errorNum += 1
-    
-    try:
-        
-        age = int(sys.argv[3])
-        
-        if age < 1 or age > 116:
-            print("Error: Age argument falls outside of expected range...\n")
-            errorNum += 1
-
-    except ValueError:
-        
-        print("Error: Age argument must be an integer [Representing height in inches]...\n")
-       
-    sex = sys.argv[4].upper()
-    if sex != "MALE" and sex != "FEMALE":
-        print(f"Error: Sex argument '{sex}' not recognized, ensure 'male' or 'female' is passed, case insensitive...\n")
-        errorNum += 1
-
-    try: 
-        
-        activity_level = int(sys.argv[5])
-        
-        if activity_level < 1 or activity_level > 4:
-            print("Error: Activity level argument falls outside of expected range 1 - 4...\n")
-            errorNum += 1
-
-    except ValueError:
-        print("Error: Activity level argument must be an integer [1 - 4]...\n")
-        errorNum += 1
-    
-    try:
-        goal = int(sys.argv[6])
-
-        if goal < 1 or goal > 3:
-            print("Error: Goal argument falls outside of expected range 1 - 3...\n")
-            errorNum += 1
-
-    except ValueError: 
-        print("Error: Goal argument must be an integer [1 - 3]...\n")
-        errorNum += 1
-
-    if errorNum > 0:
-        sys.exit(errorNum)
-    else: 
-        return weight, height, age, sex, activity_level, goal
-
-class PlatePilotUser():
+class ppuser():
     
     activity_factor = [1.2, 1.375, 1.55, 1.725]
     
@@ -402,11 +324,7 @@ class PlatePilotUser():
 
 
 def main(): 
-    printUsage()
-
-    userCriteria = checkArgs()
-    
-    user_DRI = UserDRI(*userCriteria)
+    README()
     
     
 
