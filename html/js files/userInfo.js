@@ -1,34 +1,42 @@
+sync function setUserInfo() {
+	event.preventDefault();
 
-// ----------------- UserInfo page JavaScript -----------------
-document.getElementById('dietary-form').addEventListener('submit', function(e) {
-    e.preventDefault(); // Prevents the page from refreshing
+	const age = document.getElementById('userAgeDisplay').value;
+	const weightLbs = document.getElementById('userWeightDisplay').value;
+	const heightIn = document.getElementById('userHeightDisplay').value
+	const sex = document.querySelector('input[name="gender"]:checked')?.value
 
-    // 1. Grab the values from the inputs
-    const age = parseFloat(document.getElementById('userAgeDisplay').value);
-    const weight = parseFloat(document.getElementById('userWeightDisplay').value);
-    const gender = document.getElementById('userGenderDisplay').value;
-    const height = parseFloat(document.getElementById('userHeightDisplay').value);
-    
+	const weightKg = (weightLbs * 0.45392).toFixed(2);
+	const heightCm = (heightIn * 2.54).toFixed(2);
 
-    // 2. Calculate Basal Metabolic Rate (BMR) 
-    // This formula is for a general average; you can add gender toggle later for 100% accuracy
-    // Formula: (10 * weight) + (6.25 * height) - (5 * age) + 5
-    const bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+	const userData = {
+		age: age,
+		weight: weightKg,
+		height: heightCM,
+		sex: sex,
+		activity_level: 0, 
+		goal: 0
+	};
 
-    // 3. Store the data locally so the AI can use it on the next page
-    localStorage.setItem('userBMR', bmr);
-    localStorage.setItem('userAgeDisplay', age);
-    localStorage.setItem('userGenderDisplay', gender);
-    localStorage.setItem('userHeightDisplay', height);
-    localStorage.setItem('userWeightDisplay', weight);
-    
-    console.log("Calculated BMR:", bmr);
+	try {
+		const reponse = await fetch('/api/dri', {
+		method: 'POST'
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(userData)
+		});
 
-    // 4. Move to the next step (e.g., Goals or Restrictions)
+		const result = awai response.json();
 
-    
-});
+		if (response.ok) {
+			console.log("Data saved successfully:", result);
 
-function nextStep1() {
-    window.location.href = 'goals.html';
+			localStorage.setItem('userProfile', JSON.stringify(result));
+
+			window.location.href = '/dashboard';
+		} else {
+			alert("Error: " + result.error);
+		}
+	} catch (error) {
+		console.error("Failed to send data: ", error);
+	}
 }
