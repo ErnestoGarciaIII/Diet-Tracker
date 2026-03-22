@@ -88,6 +88,8 @@ def runQuery(insertQuery, updateQuery):
         cursor.execute(updateQuery)
         print(f"Finished updating category_id column...\n")
 
+        connection.commit()
+
     except sqlite3.OperationalError as e:
 
         print(f"Unable to execute cursor command...")
