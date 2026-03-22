@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build your profile - PlatePilot</title>
+    <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
+</head>
+<body>
+    <!-- progress bar section -->
+    <div class="onboardingContainer">
+        <div class="progressBarContainer">
+            <div class="profileProgressBar" style="width: 33%;"></div>
+        </div>
+        <!-- title section -->
+        <div class="formCard">
+            <h2>Let's build your profile</h2>
+            <p class="formSubtitle">Step 1: Your Biometrics</p>
+            
+            <form id="dietary-form">
+                <!-- form elements i.e age-->
+                <div class="inputGroup">
+                    <label for="age">How old are you?</label>
+                    <input type="number" id="userAgeDisplay" placeholder="e.g. 25" required>
+                </div>
+                <!-- form elements i.e weight -->
+                <div class="inputGroup">
+                    <label for="weight">Weight (lbs)</label>
+                    <input type="number" id="userWeightDisplay" placeholder="e.g. 130" required>
+                </div>
+                <!-- form elements i.e gender -->
+                <div>
+                    <div class="radioButton">
+                        <div for="Sex" style="font-weight: bold;">Sex</div>
+                        <div>
+                            <input type="radio" id="male" name="gender" value="male" required>
+                            <label for="male">Male</label>
+                            <input type="radio" id="female" name="gender" value="female" required>
+                            <label for="female">Female</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- form elements i.e height -->
+                <div class="inputGroup">
+                    <label for="height">Height (in)</label>
+                    <input type="number" id="userHeightDisplay" placeholder="e.g. 67" required>
+                </div>
+                <!-- form elements i.e activity level -->
+                <button type="submit" class="RUGRbtn pagesBtn-primary full-width">Continue</button>
+                <button class="RUGRbtn pagesBtn-secondary full-width" onclick="history.back()">Back</button>
+            </form>
+        </div>
+        
+    </div>
+	<script src="{{ url_for('static', filename='js/userInfo.js') }}"></script>
+	</body>
+</html>

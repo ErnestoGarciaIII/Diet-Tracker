@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restrictions - PlatePilot</title>
+    <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
+</head>
+<body>
+
+    <div class="onboardingContainer">
+        <div class="progressBarContainer">
+            <div class="profileProgressBar" style="width: 100%;"></div>
+        </div>
+
+        <div class="formCard">
+            <h2>Any restrictions?</h2>
+            <p class="formSubtitle">Step 3: Tell the AI what to exclude.</p>
+
+            <div class="tagsGrid">
+                <div class="tag" onclick="toggleTag(this, 'vegan')">Vegan</div>
+                <div class="tag" onclick="toggleTag(this, 'vegetarian')">Vegetarian</div>
+                <div class="tag" onclick="toggleTag(this, 'gluten-free')">Gluten-Free</div>
+                <div class="tag" onclick="toggleTag(this, 'dairy-free')">Dairy-Free</div>
+                <div class="tag" onclick="toggleTag(this, 'keto')">Keto</div>
+                <div class="tag" onclick="toggleTag(this, 'nut-allergy')">No Nuts</div>
+                <div class="tag" onclick="toggleTag(this, 'pescatarian')">Pescatarian</div>
+                <div class="tag" onclick="toggleTag(this, 'Lactose Intolerant')">Lactose Intolerant</div>
+                <div class="tag" onclick="toggleTag(this, 'None')">None</div>
+            </div>
+
+            <button class="RUGRbtn pagesBtn-primary full-width mt-20" onclick="finishOnboarding()">Finish & Generate Plan</button>
+            <button class="RUGRbtn pagesBtn-secondary full-width mt-10" onclick="history.back()">Back</button>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/restrictions.js') }}"></script>
+</body>
+</html>
