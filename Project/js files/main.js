@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sync Text Fields
     const updateText = (id, val) => {
         const el = document.getElementById(id);
-        if (el) el.innerText = val;
+        if (el) el.innerText = (val && val !== "null") ? val : '--';
     };
 
     updateText('userNameDisplay', fullName);
@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateText('userAgeDisplay', age);
     updateText('userWeightDisplay', weight);
     updateText('userHeightDisplay', height);
+    updateText('userEmailDisplay', email);
     updateText('userPassword', '••••••••');
 
     // Show full email (no splitting)
@@ -249,9 +250,35 @@ if (dietaryForm) {
         localStorage.setItem('userHeightDisplay', height);
         localStorage.setItem('userWeightDisplay', weight);
         
-        window.location.href = 'goals.html';
+        
+        
     });
 }
+
+function nextStep() {
+    // 1. Manually grab the values since the submit listener might be skipped
+    const age = document.getElementById('userAgeDisplay').value;
+    const weight = document.getElementById('userWeightDisplay').value;
+    const height = document.getElementById('userHeightDisplay').value;
+    const genderEl = document.querySelector('input[name="gender"]:checked');
+    const gender = genderEl ? genderEl.value : 'Not Specified';
+
+    // 2. Mandatory Avatar Check
+    if (!localStorage.getItem('userAvatar')) {
+        alert("Please upload a profile picture to complete your registration.");
+        return;
+    }
+
+    // 3. Save to localStorage
+    localStorage.setItem('userAgeDisplay', age);
+    localStorage.setItem('userWeightDisplay', weight);
+    localStorage.setItem('userHeightDisplay', height);
+    localStorage.setItem('userGenderDisplay', gender);
+
+    // 4. Move to next page
+    window.location.href = 'goals.html'; 
+}
+
 
 // --------------------------- Goals page JavaScript ---------------------------
 let userGoalSelection = localStorage.getItem('userGoal') || '';
@@ -510,10 +537,67 @@ document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById('dashProgressBar')) {
         checkDailyReset();
         loadAndRefresh();
+		renderActivityChart();
     }
 });
 
+// ----------------------activity chart -------------
+function renderActivityChart() {
+    const ctx = document.getElementById('activityChart');
+    if (!ctx) return;
 
+    const history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
+    const daysToDisplay = 7;
+    const labels = [];
+    const dataPoints = [];
+
+    // Generate labels for the last 7 days
+    for (let i = daysToDisplay - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toDateString();
+        
+        // Format label as "Day Month" (e.g., "Mar 21")
+        labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+
+        // Calculate total calories for that specific date string
+        const dailyTotal = history
+            .filter(item => item.date === dateStr)
+            .reduce((sum, item) => sum + item.kcal, 0);
+        
+        dataPoints.push(dailyTotal);
+    }
+// updates calendar
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total Calories',
+                data: dataPoints,
+                backgroundColor: 'rgba(22, 163, 74, 0.6)', // Matches your theme green
+                borderColor: '#16a34a',
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+			maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                },
+                x: {
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
 
 // --------------------------- Logout Logic ---------------------------
 function redirectToHome() {
