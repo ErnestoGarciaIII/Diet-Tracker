@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Dashboard - PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="stylesheets/mainStyleS.css">
 </head>
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar">
-        <div class="logo">PlatePilot</div>
+        <img src="images\defaultAvatar.jpg" id="profilePreview" class="navAvatar">
         <div>
             <a href="dashboard.html">
                 <div class="navIcon active">
@@ -50,9 +51,10 @@
 
     <main class="dashContent">
         <header class="dashHeader">
-            <h1>Welcome <span class="userBadge" id="userDisplay">User</span>! 🌿</h1>
+            <h1>Welcome <span class="userBadge" id="userNameDisplay"></span>! 🌿</h1>
             <p>Your body's co-pilot for better fuel.</p>
         </header>
+
 
         <div class="statsPanel">
             <div class="leftCol">
@@ -67,7 +69,7 @@
                         <div id="planeIcon">🛩️</div>
                     </div>
                     <!-- motivational quotes -->
-                    <div class="motivationalQuote">
+                    <div id="motivational"class="motivationalQuote">
                         "Every meal is a chance to fly higher!"
                     </div>
                     <!-- link to food log -->
@@ -77,14 +79,16 @@
                     </a>
                 </div>
             </div> 
-            
-            <!--
-            <div class="profile-summary">
-                <h3>Your Profile</h3>
-                <ul id="profileList"></ul>
-            </div>
-            -->
         </div>
+        <div class="chartContainer">
+            <div class="card chartCard">
+                <h3>7-Day Activity Level</h3>
+                <div class="canvasWrapper">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
 
         <section class="mealPlan">
             <h2>Today's AI Recommendations</h2>
@@ -96,6 +100,6 @@
     </main>
 
 
-    <script src="js files/dashboard.js"></script>
+    <script src="js files\main.js"></script>
 </body>
 </html>
