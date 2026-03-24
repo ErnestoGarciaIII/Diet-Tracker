@@ -33,7 +33,7 @@ db_dir = Path(__file__)
 
 conn = sqlite3.connect('master_food.db') #connects or creates local db
 
-files = ['food', 'nutrient', 'food_nutrient', 'food_portion', 'branded_food']
+files = ['food', 'nutrient', 'food_nutrient', 'food_portion', 'branded_food', 'food_category']
 
 for file in files:
     try:
