@@ -4,17 +4,19 @@ import sys
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from buildQuery import connectDB
+
 # Add the directory containing PlatePilotUser.py to path
 sys.path.insert(0, os.path.dirname(__file__))
 from PlatePilotUser import ppuser
 
 app = Flask(__name__)
 
-# ── DATABASE PATH ─────────────────────────────────────────────────────────────
-DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'db_scripts', 'master_food.db')
+def connect_to_database():
+    conn = connectDB()
+    return conn
 
-
-# ── Serve HTML pages ──────────────────────────────────────────────────────────
+#Deliver HTML
 @app.route('/')
 def index():
     return render_template('home.html')
@@ -26,7 +28,9 @@ def static_files(filename):
     return render_template(filename)
 
 
-# ── API: REGISTER ─────────────────────────────────────────────────────────────
+######### API METHODS #########
+
+# Register
 @app.route('/api/register', methods=['POST'])
 def register_user():
     data = request.get_json()
@@ -41,7 +45,7 @@ def register_user():
 
         hashed_password = generate_password_hash(password)
 
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_to_database()
         cur = conn.cursor()
 
         cur.execute("""
@@ -64,7 +68,7 @@ def register_user():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ── API: Update user details by user_id ───────────────────────────────────────
+#update user info
 @app.route('/api/update_user', methods=['POST'])
 def update_user():
     data = request.get_json()
@@ -79,8 +83,7 @@ def update_user():
         if not user_id:
             return jsonify({'error': 'user_id is required'}), 400
 
-        # Connect to DB
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_to_database()
         cur = conn.cursor()
 
         cur.execute("""
@@ -97,32 +100,120 @@ def update_user():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+#Updates user goals
 @app.route('/api/update_goal', methods=['POST'])
 def update_goal():
     data = request.get_json()
-    user_id = data.get('user_id')
-    goal = data.get('goal')  # must be an integer 1, 2, or 3
-
-    if not user_id or goal is None:
-        return jsonify({'error': 'Missing user_id or goal'}), 400
 
     try:
-        conn = sqlite3.connect(DB_PATH)
+        user_id = data.get('user_id')
+        goal = data.get('goal')  # must be an integer 1, 2, or 3
+
+        if not user_id or goal is None:
+            return jsonify({'error': 'Missing user_id or goal'}), 400
+
+        conn = connect_to_database()
         cur = conn.cursor()
+
+        #Map goal to goalId
+        cur.execute(
+            f"""
+            SELECT goalsId, name
+            FROM Goals
+            WHERE name = (?)
+            """,
+            (goal,)
+        )
+        result = cur.fetchall()
+        print(f"Result from goalId query: {result}")
+        goalId = result[0][0]
+        print(f"Goal is: {goalId}")
+
+        #ensure valid goal recieved
+        if not goalId:
+            return jsonify({'error': f"Invalid goal recieved: {goal}"})
+        #update database
         cur.execute("""
             UPDATE users
             SET goal = ?
             WHERE id = ?
-        """, (goal, user_id))
+        """, (goalId, user_id))
         conn.commit()
         conn.close()
 
         return jsonify({'message': 'Goal updated successfully'})
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+#update user restrictions
+@app.route("/set-restrictions", methods=["POST"])
+def set_restrictions():
+    data = request.get_json()
+    print("Received JSON:", data)
+    user_id = data["user_id"]
+    restriction_names = data["restrictions"]
 
-# ── API: LOGIN ────────────────────────────────────────────────────────────────
+    conn = connect_to_database()
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    try:
+        if not restriction_names:
+            # If empty, just clear user's restrictions
+            cur.execute(
+                "DELETE FROM UserRestrictions WHERE userId = ?",
+                (user_id,)
+            )
+            conn.commit()
+            return jsonify({"message": "Restrictions cleared"}), 200
+
+        # 1. Get all matching restriction IDs in ONE query
+        placeholders = ",".join(["?"] * len(restriction_names))
+
+        cur.execute(
+            f"""
+            SELECT restrictionId, name
+            FROM Restrictions
+            WHERE name IN ({placeholders})
+            """,
+            restriction_names
+        )
+
+        rows = cur.fetchall()
+
+        # 2. Validate (make sure all names exist)
+        found_names = {row["name"] for row in rows}
+        if set(restriction_names) != found_names:
+            return jsonify({"error": "Invalid restriction detected"}), 400
+
+        restriction_ids = [row["restrictionId"] for row in rows]
+
+        # 3. Replace existing restrictions (cleanest)
+        cur.execute(
+            "DELETE FROM UserRestrictions WHERE userId = ?",
+            (user_id,)
+        )
+
+        # 4. Insert new ones
+        cur.executemany(
+            """
+            INSERT INTO UserRestrictions (userId, restrictionId)
+            VALUES (?, ?)
+            """,
+            [(user_id, rid) for rid in restriction_ids]
+        )
+
+        conn.commit()
+        return jsonify({"message": "Restrictions updated"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        conn.close()
+
+# user login
 @app.route('/api/login', methods=['POST'])
 def login_user():
     data = request.get_json()
@@ -131,7 +222,7 @@ def login_user():
         email = data.get('email')
         password = data.get('password')
 
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_to_database()
         cur = conn.cursor()
 
         cur.execute("SELECT id, password FROM users WHERE email = ?", (email,))
@@ -151,7 +242,7 @@ def login_user():
         return jsonify({'error': str(e)}), 500
 
 
-# ── API: Calculate user DRI ───────────────────────────────────────────────────
+# Calculate DRI
 @app.route('/api/dri', methods=['POST'])
 def calculate_dri():
     data = request.get_json()
@@ -175,7 +266,7 @@ def calculate_dri():
         return jsonify({'error': str(e)}), 400
 
 
-# ── API: Food search ──────────────────────────────────────────────────────────
+# Food Search
 NUTRIENT_IDS = [
     1106, 1162, 1114, 1175, 1158, 1079, 1109, 1185, 1165, 1178,
     1166, 1177, 1167, 1180, 1089, 1170, 1176, 1087, 1096, 1098,
@@ -216,7 +307,7 @@ def search_food():
     params = [search_term] + NUTRIENT_IDS
 
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_to_database()
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         cur.execute(sql, params)
@@ -227,7 +318,7 @@ def search_food():
         return jsonify({'error': str(e)}), 500
 
 
-# ── RUN SERVER ────────────────────────────────────────────────────────────────
+#Run server
 if __name__ == '__main__':
     print("PlatePilot server running at http://localhost:5000")
     app.run(debug=True, port=5000)

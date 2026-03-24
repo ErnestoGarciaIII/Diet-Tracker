@@ -74,11 +74,55 @@ CREATE TABLE IF NOT EXISTS users (
     age INTEGER,
     sex TEXT,
     height_inches INTEGER,
-    weight_lbs INTEGER
+    weight_lbs INTEGER,
+    goal INTEGER
 )
 """)
 
 print("Ensured users table exists.")
+
+#Create Restrictions table
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS Restrictions (
+    restrictionId INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE
+);
+""")
+restrictions = [("Vegan",), ("Vegetarian",), ("Gluten-Free",), ("Dairy-Free",), ("Keto",), ("Nut-Free",), ("Pescatarian",), ("Lactose-Free",)]
+cursor.executemany(
+    "INSERT OR IGNORE INTO Restrictions (name) VALUES (?)",
+    restrictions
+)
+
+print("Ensured restrictions table exists.")
+
+#Create UserRestrictions table
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS UserRestrictions (
+    userId INTEGER,
+    restrictionId INTEGER,
+    PRIMARY KEY (userId, restrictionId),
+    FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE,
+    FOREIGN KEY (restrictionId) REFERENCES Restrictions(restrictionId) ON DELETE CASCADE
+);
+""")
+
+print("Ensured user restrictions table exists.")
+
+#Create Goals Table
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS Goals (
+    goalsId INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE
+);
+""")
+goals = [("Lose",), ("Maintain",), ("Gain",)]
+cursor.executemany(
+    "INSERT OR IGNORE INTO Goals (name) VALUES (?)",
+    goals
+)
+
+print("Ensured goals table exists.")
 
 conn.commit()
 conn.close()
