@@ -31,13 +31,13 @@ if(len(sys.argv) > 1):
 
 db_dir = Path(__file__)
 
-conn = sqlite3.connect('master_food.db') #connects or creates local db
+conn = sqlite3.connect('../db/master_food.db') #connects or creates local db
 
-files = ['food', 'nutrient', 'food_nutrient', 'food_portion', 'branded_food']
+files = ['food', 'nutrient', 'food_nutrient', 'food_portion', 'branded_food', 'food_category']
 
 for file in files:
     try:
-        df = pd.read_csv(f'FoodData_Central_csv_2025-12-18/{file}.csv', low_memory=False)
+        df = pd.read_csv(f'../db/FoodData_Central_csv_2025-12-18/{file}.csv', low_memory=False)
         print(f"Building table for {file}") 
         df.to_sql(file, conn, if_exists='replace', index=False)
         print(f"Imported {file} table.")
