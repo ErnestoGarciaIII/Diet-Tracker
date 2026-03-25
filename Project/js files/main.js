@@ -1,19 +1,37 @@
 // ---------------------- Authentication & Display Logic ------------------
 document.addEventListener('DOMContentLoaded', () => {
     // --- LOGIN LOGIC ---
+// --- UPDATED LOGIN LOGIC IN main.js ---
+    // Locate the --- LOGIN LOGIC --- section in main.js
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const pass = document.getElementById('loginPassword').value;
 
-            if (email && pass.length >= 8) {
-                localStorage.setItem('userEmailDisplay', email);
-                localStorage.setItem('isLoggedIn', 'true');
-                window.location.href = 'dashboard.html';
-            } else {
-                alert("Please enter a valid email and 8+ character password.");
+            try {
+                const response = await fetch('http://127.0.0.1:5000/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: pass })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Save the data returned from the database to localStorage
+                    localStorage.setItem('userEmailDisplay', email);
+                    localStorage.setItem('userNameDisplay', data.fullName);
+                    localStorage.setItem('isLoggedIn', 'true');
+                    window.location.href = 'dashboard.html';
+                } else {
+                    // Show the specific error (e.g., "Incorrect password")
+                    alert(data.error);
+                }
+            } catch (err) {
+                console.error("Connection error:", err);
+                alert("Could not connect to the server. Is app.py running?");
             }
         });
     }
@@ -21,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- SIGNUP LOGIC ---
     const signupForm = document.getElementById('credentialsForm');
     if (signupForm) {
-        signupForm.addEventListener('submit', (e) => {
+        signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const fullName = document.getElementById('fullName').value;
             const email = document.getElementById('email').value;
@@ -32,12 +50,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("Passwords do not match!");
                 return;
             }
+            // delete if not working
+// --- NEW FETCH CODE ---
+            try {
+                const response = await fetch('http://127.0.0.1:5000/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        fullName: fullName, 
+                        email: email, 
+                        password: pass // JavaScript sends 'pass' as 'password' to match Python
+                    })
+                });
 
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('userNameDisplay', fullName);
+                    localStorage.setItem('userEmailDisplay', email);
+                    localStorage.setItem('isLoggedIn', 'true');
+                    window.location.href = 'userInfo.html';
+                } else {
+                    alert(data.error || "Registration failed");
+                }
+            } catch (err) {
+                console.error("Server error:", err);
+                alert("Could not connect to the Python server. Is it running?");
+            }
+        
+            
+            /* original code
             localStorage.setItem('userNameDisplay', fullName);
             localStorage.setItem('userEmailDisplay', email);
             localStorage.setItem('userPassword', pass);
             localStorage.setItem('isLoggedIn', 'true');
-            window.location.href = 'userInfo.html';
+            window.location.href = 'userInfo.html'; */
         });
     }
 
@@ -94,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// -------------- editing functions iofr settings page
 let isEditing = false;
 
 //edit mode for settings page
@@ -228,6 +276,7 @@ if (removeBtn) {
 }
 
 // Handle UserInfo Form Submission
+/*
 if (dietaryForm) {
     dietaryForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -250,33 +299,61 @@ if (dietaryForm) {
         localStorage.setItem('userHeightDisplay', height);
         localStorage.setItem('userWeightDisplay', weight);
         
-        
-        
     });
 }
+*/ 
 
-function nextStep() {
-    // 1. Manually grab the values since the submit listener might be skipped
+async function nextStep() {
+    const email = localStorage.getItem('userEmailDisplay');
     const age = document.getElementById('userAgeDisplay').value;
     const weight = document.getElementById('userWeightDisplay').value;
     const height = document.getElementById('userHeightDisplay').value;
     const genderEl = document.querySelector('input[name="gender"]:checked');
     const gender = genderEl ? genderEl.value : 'Not Specified';
 
-    // 2. Mandatory Avatar Check
-    if (!localStorage.getItem('userAvatar')) {
-        alert("Please upload a profile picture to complete your registration.");
-        return;
+    // Save to Database
+    const response = await fetch('http://127.0.0.1:5000/update_bio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, age, weight, height, gender })
+    });
+
+    if (response.ok) {
+        window.location.href = 'goals.html'; 
     }
+}
 
-    // 3. Save to localStorage
-    localStorage.setItem('userAgeDisplay', age);
-    localStorage.setItem('userWeightDisplay', weight);
-    localStorage.setItem('userHeightDisplay', height);
-    localStorage.setItem('userGenderDisplay', gender);
+// loads the users information
+async function loadUserSettings() {
+    const email = localStorage.getItem('userEmailDisplay');
+    if (!email || email === 'Guest') return;
 
-    // 4. Move to next page
-    window.location.href = 'goals.html'; 
+    try {
+        // This calls the GET route in your app.py
+        const response = await fetch(`http://127.0.0.1:5000/get_user/${email}`);
+        if (response.ok) {
+            const userData = await response.json();
+
+            // Update the display with actual database values
+            // Note: Use the column names from your database (e.g., full_name, gender)
+            const nameEl = document.getElementById('userNameDisplay');
+            if (nameEl) nameEl.innerText = userData.full_name || 'Guest User';
+
+            const genderEl = document.getElementById('userGenderDisplay');
+            if (genderEl) genderEl.innerText = userData.gender || '--';
+
+            const ageEl = document.getElementById('userAgeDisplay');
+            if (ageEl) ageEl.innerText = userData.age || '--';
+
+            const weightEl = document.getElementById('userWeightDisplay');
+            if (weightEl) weightEl.innerText = userData.weight || '--';
+
+            const heightEl = document.getElementById('userHeightDisplay');
+            if (heightEl) heightEl.innerText = userData.height || '--';
+        }
+    } catch (error) {
+        console.error("Failed to fetch user data from Python:", error);
+    }
 }
 
 
@@ -534,12 +611,47 @@ window.addEventListener('storage', (event) => {
 
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
+    
+    if (document.getElementById('biometricsList')){
+        loadUserSettings();
+    }
+    
     if (document.getElementById('dashProgressBar')) {
         checkDailyReset();
         loadAndRefresh();
 		renderActivityChart();
+        updateDailyQuote();
     }
+
+
+
+
 });
+// ---------------------------- motivational quotes -----------------------------
+async function updateDailyQuote() {
+    const quoteEl = document.getElementById('motivational');
+    if (!quoteEl) return;
+
+    // Show a loading state while fetching
+    quoteEl.innerText = "Finding inspiration...";
+
+    try {
+        // Fetching from ZenQuotes
+        const response = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://zenquotes.io/api/random'));
+        const contents = await response.json();
+        const data = JSON.parse(contents.contents);
+
+        if (data && data[0]) {
+            const quoteText = data[0].q;
+            const author = data[0].a;
+            quoteEl.innerText = `"${quoteText}" — ${author}`;
+        }
+    } catch (error) {
+        console.error("Could not fetch quote:", error);
+        // Fallback if the API fails or is blocked
+        quoteEl.innerText = `"Small steps lead to big changes."`;
+    }
+}
 
 // ----------------------activity chart -------------
 function renderActivityChart() {
@@ -567,7 +679,7 @@ function renderActivityChart() {
         
         dataPoints.push(dailyTotal);
     }
-// updates calendar
+
     new Chart(ctx, {
         type: 'bar',
         data: {

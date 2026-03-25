@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - PlatePilot</title>
+    <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="..\stylesheets\mainStyleS.css">
+</head>
+<body>
+    <div class="onboardingContainer">
+        <h1 id="mainTitle">PlatePilot</h1> 
+        <div class="formCard loginCard">
+            <div class="mainFlex">
+                <div class="contentSide">
+                    <h2 class="heading2">Welcome Back!</h2>
+                    <p class="formSubtitle">Log in to track your progress.</p>
+
+                    <form id="loginForm">
+                        <!-- form elements i.e email   -->
+                        <div class="inputGroup">
+                            <label>Email Address</label>
+                            <input type="text" id="loginEmail" placeholder="Username/Email" required autofocus>
+                        </div>
+                        <!-- form elements i.e password -->
+                        <div class="inputGroup">
+                            <label>Password</label>
+                            <input type="password" id="loginPassword" placeholder="Password" required>
+                        </div>
+                        <!-- form elements i.e submit button -->
+                        <button class="RUGRbtn pagesBtn-primary full-width" type="submit" id="loginButton">
+                            Login
+                        </button>
+                    </form>
+                    <!-- form elements i.e different links -->
+                    <p class="account" id="account">Don't have an account? <a href="..\pages\register.html">Register here</a></p>
+                    <p class="account" id="forgotPassword">Forgot password? <a href="#">Reset here</a></p>
+                </div>
+                <!-- form elements i.e mascot/motto-->
+                <div class="imageSide" id="imageSide">
+                    <img src="images/MascotPilot.png" alt="Healthy Lifestyle">
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="..\js files/main.js"></script>
+</body>
+</html>

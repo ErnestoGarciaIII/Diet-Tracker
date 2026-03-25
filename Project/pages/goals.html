@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Your Goal - PlatePilot</title>
+    <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="..\stylesheets\mainStyleS.css">
+</head>
+<body>
+
+    <div class="onboardingContainer">
+        <div class="progressBarContainer">
+            <div class="profileProgressBar" style="width: 66%;"></div>
+        </div>
+        <!-- title section -->
+        <div class="formCard">
+            <h2>What is your goal?</h2>
+            <p class="formSubtitle">This helps the AI calculate your daily targets.</p>
+            <!-- section 1-->
+            <div class="goalGrid">
+                <div class="goalCard" onclick="selectGoal(this, 'lose')">
+                    <div class="goalIcon">🔥</div>
+                    <div class="goalContent">
+                        <h3>Weight Loss</h3>
+                        <p>Burn fat and get leaner</p>
+                    </div>
+                </div>
+                <!-- section 2-->
+                <div class="goalCard" onclick="selectGoal(this, 'maintain')">
+                    <div class="goalIcon">⚖️</div>
+                    <div class="goalContent">
+                        <h3>Maintain</h3>
+                        <p>Keep your current weight</p>
+                    </div>
+                </div>
+                <!-- section 3-->
+                <div class="goalCard" onclick="selectGoal(this, 'gain')">
+                    <div class="goalIcon">💪</div>
+                    <div class="goalContent">
+                        <h3>Muscle Build</h3>
+                        <p>Build strength and mass</p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="RUGRbtn pagesBtn-primary full-width" onclick="nextStep2()">Continue</button>
+            <button class="RUGRbtn pagesBtn-secondary full-width" onclick="history.back()">Back</button>
+        </div>
+    </div>
+
+    <script src="..\js files/main.js"></script>
+</body>
+</html>
