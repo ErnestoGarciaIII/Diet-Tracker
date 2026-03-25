@@ -2,10 +2,7 @@ import pandas
 import numpy
 import sqlite3
 import sys
-<<<<<<< HEAD:scripts/buildQuery.py
 import time
-=======
->>>>>>> 1592f3db43bea888bce07010ee950d3bd7238dc3:db_scripts/buildQuery.py
 
 def printUsage():
     print("""
@@ -59,11 +56,7 @@ def printHelp():
         -----      search parameter.                                       -----
 	    -----                                                              -----
 	    -----      Example: python3 buildQuery.py 1 %orange%               -----
-<<<<<<< HEAD:scripts/buildQuery.py
 	    -----                             				                   -----
-=======
-	    -----                             				   -----
->>>>>>> 1592f3db43bea888bce07010ee950d3bd7238dc3:db_scripts/buildQuery.py
 	    -----      For developer use, use wildcards unless the exact       -----
 	    -----      f.description name is known                             -----
         -----      Back-end Algorithm will interact with the script with   -----
@@ -101,18 +94,13 @@ def checkArgs():
 
 def build_sql_query(a, searchArg):
 
-<<<<<<< HEAD:scripts/buildQuery.py
 	nutrient_table = [1106, 1162, 1114, 1175, 1158, 1079, 1109, 1185, 1165, 1178, 1166, 1177, 1167, 1180, 1089, 1170, 1176, 1087,  1096, 1098, 1099, 1100, 1238, 1090, 1101, 1102, 1091, 1092, 1103, 1093, 1095]
-=======
-	nutrient_table = [2067, 1162, 1114, 1175, 1158, 1109, 1185, 1165, 1178, 1166, 1177, 1167, 1180, 1170, 1176, 1087,  1096, 1098, 1099, 1100, 1238, 1090, 1101, 1102, 1091, 1092, 1103, 1093, 1095]
->>>>>>> 1592f3db43bea888bce07010ee950d3bd7238dc3:db_scripts/buildQuery.py
                      
 	appendedList = ', '.join(['?'] * len(nutrient_table))
 	if a == '1':
 		global file_name
 		file_name = f"Micronutrient_Query_{sys.argv[2]}.txt"
 		sql_query = f"""
-<<<<<<< HEAD:scripts/buildQuery.py
         WITH filtered_foods AS (
             SELECT f.fdc_id, f.description, fc.description as category
             FROM food f
@@ -131,16 +119,6 @@ def build_sql_query(a, searchArg):
 		INNER JOIN nutrient n ON fn.nutrient_id = n.id
 		WHERE n.id IN ({appendedList})
         GROUP BY ff.description, n.id, n.unit_name;
-=======
-		SELECT f.fdc_id, fc.description, f.description, n.name, fn.amount, n.unit_name
-		FROM food f
-		LEFT JOIN food_nutrient fn ON f.fdc_id = fn.fdc_id
-		LEFT JOIN nutrient n ON fn.nutrient_id = n.id
-		JOIN food_category fc ON fc.id = f.food_category_id
-		WHERE f.description LIKE ?
-			AND n.id IN ({appendedList})
-			AND fc.description NOT IN ('Restaurant Foods', 'Fast Foods', 'Meals, Entrees, and Side Dishes', 'Baby Foods');
->>>>>>> 1592f3db43bea888bce07010ee950d3bd7238dc3:db_scripts/buildQuery.py
         """
 	parameters = [searchArg] + nutrient_table
     
@@ -148,11 +126,7 @@ def build_sql_query(a, searchArg):
 
 def connectDB():
 	try: 
-<<<<<<< HEAD:scripts/buildQuery.py
 		connection = sqlite3.connect("../db/PlatePilot.db")
-=======
-		connection = sqlite3.connect("../master_food.db")
->>>>>>> 1592f3db43bea888bce07010ee950d3bd7238dc3:db_scripts/buildQuery.py
 	except sqlite3.OperationalError as e:
 		print(f"Unable to connect to the database...")
 		print(e)
@@ -164,7 +138,6 @@ def writeResults(rows):
 		f.writelines(f"{str(row)}\n" for row in rows)
 
 def runQuery(cursor, sql_command, sql_params):
-<<<<<<< HEAD:scripts/buildQuery.py
     try:
         print(f"Attempting to run query...\n")
         cursor.execute(sql_command, sql_params)
@@ -196,33 +169,6 @@ def main():
     
     elapsed_time = round(time.perf_counter() - start_time, 1)
     print(f"Query took {elapsed_time} seconds to run...")
-=======
-	try:
-		cursor.execute(sql_command, sql_params)
-	
-	except sqlite3.OperationalError as e: 
-	
-		print(f"Unable to execute cursor command...")
-		print(e)
-		sys.exit(2)
-	
-	rows = cursor.fetchall()
-	writeResults(rows)	
-
-def main():
-
-	printUsage()
-
-	checkArgs()
-    	
-	connection = connectDB()
-	cursor = connection.cursor()
-
-	sql_command, sql_params = build_sql_query(sys.argv[1], sys.argv[2])
-	
-	runQuery(cursor, sql_command, sql_params)
-
->>>>>>> 1592f3db43bea888bce07010ee950d3bd7238dc3:db_scripts/buildQuery.py
 
 if __name__ == "__main__":
     	main()
