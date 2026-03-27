@@ -66,7 +66,7 @@ for file in files:
 
 # Create blank users table if it does not exist
 cursor.execute("""
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS Users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS users (
     height_inches INTEGER,
     weight_lbs INTEGER,
     goal INTEGER
+    activity_level INTEGER
 )
 """)
 

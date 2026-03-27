@@ -5,40 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
-	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
     <style>
         /* ── Settings-specific additions ── */
-        .settings-form { display: flex; flex-direction: column; gap: 18px; margin-top: 16px; }
+        .settings-form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-top: 16px;
+        }
 
         .form-row {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
-        .form-row label {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: rgba(255,255,255,0.55);
-        }
-        .form-row input,
-        .form-row select {
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(94,234,100,0.25);
-            border-radius: 8px;
-            color: #fff;
-            padding: 10px 14px;
-            font-size: 0.95rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .form-row input:focus,
-        .form-row select:focus {
-            border-color: rgba(94,234,100,0.75);
-        }
-        .form-row select option { background: #1a1a2e; }
 
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+            .form-row label {
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: #111;
+            }
+
+            .form-row input,
+            .form-row select {
+                background: rgba(255,255,255,0.07);
+                border: 1px solid rgba(94,234,100,0.25);
+                border-radius: 8px;
+                color: #111;
+                padding: 10px 14px;
+                font-size: 0.95rem;
+                outline: none;
+                transition: border-color 0.2s;
+            }
+
+                .form-row input:focus,
+                .form-row select:focus {
+                    border-color: rgba(94,234,100,0.75);
+                }
+
+                .form-row select option {
+                    background: #1a1a2e;
+                }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
 
         .save-btn {
             margin-top: 8px;
@@ -52,21 +67,45 @@
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
         }
-        .save-btn:hover { background: rgba(94,234,100,0.28); transform: translateY(-1px); }
-        .save-btn:active { transform: translateY(0); }
+
+            .save-btn:hover {
+                background: rgba(94,234,100,0.28);
+                transform: translateY(-1px);
+            }
+
+            .save-btn:active {
+                transform: translateY(0);
+            }
 
         .toast {
-            position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(60px);
-            background: rgb(94,234,100); color: #111; border-radius: 10px;
-            padding: 10px 24px; font-weight: 700; font-size: 0.95rem;
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(60px);
+            background: rgb(94,234,100);
+            color: #111;
+            border-radius: 10px;
+            padding: 10px 24px;
+            font-weight: 700;
+            font-size: 0.95rem;
             transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), opacity 0.35s;
-            opacity: 0; pointer-events: none; z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 999;
         }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+            .toast.show {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
 
         .section-heading {
-            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em;
-            color: rgba(94,234,100,0.7); margin: 8px 0 2px; border-bottom: 1px solid rgba(94,234,100,0.15);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: rgba(94,234,100,0.7);
+            margin: 8px 0 2px;
+            border-bottom: 1px solid rgba(94,234,100,0.15);
             padding-bottom: 6px;
         }
     </style>
@@ -74,21 +113,41 @@
 <body>
     <nav class="navbar">
         <div class="logo">PlatePilot</div>
-        <div><a href="dashboard.html"><div class="navIcon">
-            <i class="fa-regular fa-house fa-xl" style="color:rgba(94,234,100,1)"></i>
-        </div></a></div>
-        <div><a href="foodLog.html"><div class="navIcon">
-            <i class="fa-solid fa-clipboard fa-xl" style="color:rgb(94,234,100)"></i>
-        </div></a></div>
-        <div><a href="history.html"><div class="navIcon">
-            <i class="fa-solid fa-calendar fa-xl" style="color:rgba(94,234,100,1)"></i>
-        </div></a></div>
-        <div><a href="settings.html"><div class="navIcon active">
-            <i class="fa-solid fa-gear fa-beat fa-xl" style="color:rgba(94,234,100,1)"></i>
-        </div></a></div>
-        <div><a href="logout.html"><div class="navIcon">
-            <i class="fa-solid fa-arrow-right-from-bracket fa-xl" style="color:rgba(94,234,100,1)"></i>
-        </div></a></div>
+        <div>
+            <a href="dashboard.html">
+                <div class="navIcon">
+                    <i class="fa-regular fa-house fa-xl" style="color:rgba(94,234,100,1)"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="foodLog.html">
+                <div class="navIcon">
+                    <i class="fa-solid fa-clipboard fa-xl" style="color:rgb(94,234,100)"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="history.html">
+                <div class="navIcon">
+                    <i class="fa-solid fa-calendar fa-xl" style="color:rgba(94,234,100,1)"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="settings.html">
+                <div class="navIcon active">
+                    <i class="fa-solid fa-gear fa-beat fa-xl" style="color:rgba(94,234,100,1)"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="logout.html">
+                <div class="navIcon">
+                    <i class="fa-solid fa-arrow-right-from-bracket fa-xl" style="color:rgba(94,234,100,1)"></i>
+                </div>
+            </a>
+        </div>
     </nav>
 
     <div class="dashContent">
@@ -96,7 +155,7 @@
             <h1>Account Settings</h1>
             <p class="formSubtitle">Your info is used to calculate personalised nutrition targets.</p>
 
-            <div class="settings-form">
+            <form id="settings-form" class="settings-form">
 
                 <!-- ── Personal info ── -->
                 <p class="section-heading">Personal Info</p>
@@ -167,82 +226,16 @@
                     <label for="userEmail">Email</label>
                     <input type="email" id="userEmail" placeholder="you@email.com">
                 </div>
-
-                <button class="save-btn" onclick="saveSettings()">
-                    <i class="fa-solid fa-floppy-disk"></i>&nbsp; Save &amp; Recalculate
+                <button type="submit" id="saveBtn" class="save-btn">
+                    Save Settings
                 </button>
 
-                <button class="RUGRbtn deleteBtn" style="margin-top:4px">Delete Account</button>
-            </div>
+                <button type="button" class="RUGRbtn deleteBtn" style="margin-top:4px">Delete Account</button>
+            </form>
         </div>
     </div>
 
     <div class="toast" id="toast">✅ Settings saved!</div>
-
-    <script>
-    // ── Load saved settings on page open ─────────────────────────────────────
-    window.addEventListener('DOMContentLoaded', () => {
-        const saved = JSON.parse(localStorage.getItem('ppUserSettings') || '{}');
-        if (saved.name)           document.getElementById('userName').value        = saved.name;
-        if (saved.sex)            document.getElementById('userSex').value         = saved.sex;
-        if (saved.age)            document.getElementById('userAge').value         = saved.age;
-        if (saved.weight_lbs)     document.getElementById('userWeight').value      = saved.weight_lbs;
-        if (saved.height_in)      document.getElementById('userHeight').value      = saved.height_in;
-        if (saved.activity_level) document.getElementById('activityLevel').value   = saved.activity_level;
-        if (saved.goal)           document.getElementById('userGoal').value        = saved.goal;
-        if (saved.email)          document.getElementById('userEmail').value       = saved.email;
-    });
-
-    // ── Save settings + call backend to recalculate DRI ──────────────────────
-    async function saveSettings() {
-        const name           = document.getElementById('userName').value;
-        const sex            = document.getElementById('userSex').value;
-        const age            = parseInt(document.getElementById('userAge').value);
-        const weight_lbs     = parseFloat(document.getElementById('userWeight').value);
-        const height_in      = parseFloat(document.getElementById('userHeight').value);
-        const activity_level = parseInt(document.getElementById('activityLevel').value);
-        const goal           = parseInt(document.getElementById('userGoal').value);
-        const email          = document.getElementById('userEmail').value;
-
-        if (!sex || !age || !weight_lbs || !height_in || !activity_level || !goal) {
-            alert('Please fill in all fitness fields before saving.');
-            return;
-        }
-
-        // Convert to metric for the Python backend
-        const weight_kg = weight_lbs * 0.453592;
-        const height_cm = height_in  * 2.54;
-
-        // Persist display values locally
-        const settings = { name, sex, age, weight_lbs, height_in, activity_level, goal, email };
-        localStorage.setItem('ppUserSettings', JSON.stringify(settings));
-
-        // Call Flask API to recalculate DRI
-        try {
-            const res = await fetch('/api/dri', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ weight: weight_kg, height: height_cm, age, sex, activity_level, goal })
-            });
-            const data = await res.json();
-            if (data.error) throw new Error(data.error);
-
-            // Store calculated targets so foodLog.html can read them
-            localStorage.setItem('ppDRI', JSON.stringify(data));
-            showToast('✅ Settings saved & targets updated!');
-        } catch (e) {
-            // If Flask isn't running yet, still save locally and warn
-            console.warn('Could not reach backend:', e.message);
-            showToast('⚠️ Saved locally (server offline)');
-        }
-    }
-
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        t.textContent = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2800);
-    }
-    </script>
+    <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
 </body>
 </html>

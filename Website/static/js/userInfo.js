@@ -31,14 +31,16 @@ async function setUserInfo(event) {
                 user_id: user_id,
                 age: age,
                 weight_lbs: weightLbs,
-                height_inches: heightIn,
-                sex: sex
+                height_in: heightIn,
+                sex: sex,
+                goal: 1,
+                activity_level: 1
             })
         });
-        const updateResult = await updateResponse.json();
+        const data = await updateResponse.json();
 
         if (!updateResponse.ok) {
-            throw new Error(updateResult.error || "Failed to update database");
+            throw new Error(data.error || "Failed to update database");
         }
 
         // 2️⃣ Calculate DRI
@@ -50,8 +52,8 @@ async function setUserInfo(event) {
                 weight: weightKg,
                 height: heightCm,
                 sex: sex,
-                activity_level: 0,
-                goal: 0
+                activity_level: 1,
+                goal: 1
             })
         });
         const driResult = await driResponse.json();

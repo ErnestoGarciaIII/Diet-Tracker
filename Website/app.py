@@ -66,7 +66,11 @@ def register_user():
         return jsonify({'error': 'Email already exists'}), 400
 
     except Exception as e:
+        print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
+    
+    finally:
+        conn.close()
 
 #update user info
 @app.route('/api/update_user', methods=['POST'])
@@ -74,12 +78,13 @@ def update_user():
     data = request.get_json()
 
     try:
-        user_id = data.get('user_id')          # primary key
+        user_id = data.get('user_id')
         age = data.get('age')
         weight_lbs = data.get('weight_lbs')
         sex = data.get('sex')
-        height_inches = data.get('height_inches')
-
+        height_inches = data.get('height_in')
+        goal = data.get('goal')
+        activity_level = data.get('activity_level')
         if not user_id:
             return jsonify({'error': 'user_id is required'}), 400
 
@@ -88,9 +93,9 @@ def update_user():
 
         cur.execute("""
             UPDATE users
-            SET age = ?, weight_lbs = ?, sex = ?, height_inches = ?
+            SET age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?
             WHERE id = ?
-        """, (age, weight_lbs, sex, height_inches, user_id))
+        """, (age, weight_lbs, sex, height_inches, goal, activity_level, user_id))
 
         conn.commit()
         conn.close()
@@ -98,7 +103,11 @@ def update_user():
         return jsonify({'message': 'User details updated successfully'}), 200
 
     except Exception as e:
+        print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
+    
+    finally:
+        conn.close()
 
 #Updates user goals
 @app.route('/api/update_goal', methods=['POST'])
@@ -144,7 +153,11 @@ def update_goal():
         return jsonify({'message': 'Goal updated successfully'})
 
     except Exception as e:
+        print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
+    
+    finally:
+        conn.close()
 
 #update user restrictions
 @app.route("/set-restrictions", methods=["POST"])
@@ -208,7 +221,61 @@ def set_restrictions():
         return jsonify({"message": "Restrictions updated"}), 200
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        conn.close()
+
+#get user info 
+@app.route('/api/get-user-info', methods=['GET'])
+def get_user_info():
+    try:
+        user_id = int(request.args.get('user_id'))
+        if not user_id:
+            return jsonify({'error': 'Missing user_id'}), 400
+
+        conn = connect_to_database()
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT name, email, age, sex, height_inches, weight_lbs, goal, activity_level
+            FROM Users
+            WHERE id = ?
+        """, (user_id,))
+
+        row = cur.fetchone()
+
+        if not row:
+            return jsonify({'error': 'User not found'}), 404
+
+        name, email, age, sex, height_in, weight_lbs, goal, activity_level = row
+
+        cur.execute("""
+            SELECT r.name
+            FROM UserRestrictions ur
+            JOIN Restrictions r 
+            ON ur.restrictionId = r.restrictionId
+            WHERE ur.userId = ?
+        """, (user_id,))
+
+        restrictions = [r[0] for r in cur.fetchall()]
+
+        return jsonify({
+            'name': name,
+            'email': email,
+            'age': age,
+            'sex': sex,
+            'height_in': height_in,
+            'weight_lbs': weight_lbs,
+            'goal': goal,
+            'activity_level': activity_level,
+            'restrictions': restrictions
+        })
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
 
     finally:
         conn.close()
@@ -228,8 +295,6 @@ def login_user():
         cur.execute("SELECT id, password FROM users WHERE email = ?", (email,))
         user = cur.fetchone()
 
-        conn.close()
-
         if user and check_password_hash(user[1], password):
             return jsonify({
                 'message': 'Login successful',
@@ -239,8 +304,11 @@ def login_user():
             return jsonify({'error': 'Invalid email or password'}), 401
 
     except Exception as e:
+        print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
-
+    
+    finally:
+        conn.close()
 
 # Calculate DRI
 @app.route('/api/dri', methods=['POST'])
@@ -262,9 +330,9 @@ def calculate_dri():
             'BMR': round(user.BMR, 1),
             'TDEE': round(user.TDEE, 1)
         })
-    except (KeyError, ValueError) as e:
+    except Exception as e:
+        print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 400
-
 
 # Food Search
 NUTRIENT_IDS = [
@@ -317,6 +385,61 @@ def search_food():
     except sqlite3.OperationalError as e:
         return jsonify({'error': str(e)}), 500
 
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+    
+    finally:
+        conn.close()
+
+@app.route('/api/nutrients', methods=['GET'])
+def get_nutrients():
+    fdc_id = request.args.get('fdc_id', '').strip()
+    if not fdc_id:
+        return jsonify({'error': 'fdc_id is required'}), 400
+ 
+    placeholders = ', '.join(['?'] * len(NUTRIENT_IDS))
+ 
+    sql = f"""
+        SELECT
+            f.description          AS food_name,
+            n.name                 AS nutrient_name,
+            ROUND(AVG(fn.amount), 2) AS avg_amount,
+            n.unit_name            AS unit
+        FROM   food f
+        INNER JOIN food_nutrient fn ON f.fdc_id      = fn.fdc_id
+        INNER JOIN nutrient      n  ON fn.nutrient_id = n.id
+        WHERE  f.fdc_id = ?
+          AND  n.id IN ({placeholders})
+        GROUP BY n.id, n.unit_name;
+    """
+ 
+    params = [fdc_id] + NUTRIENT_IDS
+ 
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cur  = conn.cursor()
+        cur.execute(sql, params)
+        rows = cur.fetchall()
+ 
+        if not rows:
+            return jsonify({'error': 'Food not found'}), 404
+ 
+        food_name = rows[0]['food_name']
+        nutrients = { r['nutrient_name']: r['avg_amount'] for r in rows }
+ 
+        return jsonify({ 'food_name': food_name, 'nutrients': nutrients })
+ 
+    except sqlite3.OperationalError as e:
+        return jsonify({'error': str(e)}), 500
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+    
+    finally:
+        conn.close()
 
 #Run server
 if __name__ == '__main__':
