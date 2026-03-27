@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - PlatePilot</title>
+    <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="stylesheets/mainStyleS.css">
+</head>
+<body>
+    <div class="onboardingContainer">
+        <h1 id="mainTitle">PlatePilot</h1> 
+        <div class="formCard loginCard"> 
+            <div class="mainFlex">
+                <div class="contentSide">
+                    <h2 class="heading2">Create Account</h2>
+                    <p class="formSubtitle">Join the 5+ decent eaters today.</p>
+                    
+                    <form id="credentialsForm">
+                        <!-- form elements i.e full name -->
+                        <div class="inputGroup">
+                            <label>Full Name</label>
+                            <input type="text" id="fullName" placeholder="John Doe" required>
+                        </div>
+                        <!-- form elements i.e email -->
+                        <div class="inputGroup">
+                            <label>Email Address</label>
+                            <input type="email" id="email" placeholder="name@example.com" required>
+                        </div>
+                        <!-- form elements i.e password -->
+                        <div class="inputGroup">
+                            <label>Password</label>
+                            <input type="password" id="password" placeholder="Min. 8 characters" required>
+                        </div>
+                        <div class="inputGroup">
+                            <label>Confirm Password</label>
+                            <input type="password" id="confirmPassword" placeholder="Repeat password" required>
+                        </div>
+                        <!-- form elements i.e submit button -->
+                        <button class="RUGRbtn pagesBtn-primary full-width" type="submit">
+                            Sign Up
+                        </button>
+                    </form>
+                    <!-- form elements i.e login link -->
+                    <p class="account">Already have an account? <a href="login.html">Login here</a></p>
+                </div>
+                <!-- form elements i.e mascot/motto-->
+                <div class="imageSide">
+                    <img src="images/MascotPilot.png" alt="Healthy Food">
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js files/auth.js"></script>
+</body>
+</html>
