@@ -10,6 +10,9 @@ def README():
     -----                                          USAGE                                      -----
     -----------------------------------------------------------------------------------------------
     -----                                                                                     -----
+    -----   Build Structure                                                                   -----
+    -----   ppuser(weight kg, height cm, age, sex, activity level [1-4], goal [1 - 5])_       -----
+    -----                                                                                     -----
     -----   Activity Levels are passed as an integer:                                         -----
     -----   1 - Sedentary                                                                     -----
     -----   2 - Lightly Active                                                                -----
