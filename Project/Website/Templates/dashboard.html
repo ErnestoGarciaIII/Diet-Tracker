@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Dashboard - PlatePilot</title>
+    <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="..\static\stylesheets\mainStyleS.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <img src="static\images\defaultAvatar.jpg" id="profilePreview" class="navAvatar">
+        <div>
+            <a href="Templates\dashboard.html">
+                <div class="navIcon active">
+                    <i class="fa-regular fa-house fa-beat fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="Templates\foodLog.html">
+                <div class="navIcon">
+                    <i class="fa-solid fa-clipboard fa-xl" style="color: rgb(94, 234, 100);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="Templates\history.html">
+                <div class="navIcon">
+                    <i class="fa-solid fa-calendar fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="Templates\settings.html">
+                <div class="navIcon">
+                    <i class="fa-solid fa-gear fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="Templates\logout.html">
+                <div class="navIcon">
+                    <i class="fa-solid fa-arrow-right-from-bracket fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+    </nav>
+
+    <main class="dashContent">
+        <header class="dashHeader">
+            <h1>Welcome <span class="userBadge" id="userNameDisplay"></span>! 🌿</h1>
+            <p>Your body's co-pilot for better fuel.</p>
+        </header>
+
+
+        <div class="statsPanel">
+            <div class="leftCol">
+                <div class="card trackerCard">
+                    <!-- plane progress bar-->
+                    <div class="statCard">
+                        <span>Rank: <span id="planeRank">Cessna</span></span>
+                        <span>Goal: <span id="currentTotal">0</span> / <span id="goalNum">500</span> kcal</span>
+                    </div>
+                    <div class="progressWrapper">
+                        <div id="dashProgressBar"></div>
+                        <div id="planeIcon">🛩️</div>
+                    </div>
+                    <!-- motivational quotes -->
+                    <div id="motivational"class="motivationalQuote">
+                        "Loading today's inspiration..."
+                    </div>
+                    <!-- link to food log -->
+                    <a href="Templates\foodLog.html" class="navLink">
+                        <i class="fa-solid fa-arrow-left fa-xlg" style="color: #3498db;"></i>
+                        Go to Food Logging
+                    </a>
+                </div>
+            </div> 
+        </div>
+        <div class="chartContainer">
+            <div class="card chartCard">
+                <h3>7-Day Activity Level</h3>
+                <div class="canvasWrapper">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+
+        <section class="mealPlan">
+            <h2>Today's Recommendations</h2>
+            <div class="mealGrid" id="mealGrid">
+                <div class="loading">Generating Al's recommended food items...</div>
+            </div>
+        </section>
+
+    </main>
+
+
+    <script src="..\static\js files\main.js"></script>
+</body>
+</html>

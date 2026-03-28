@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Dashboard - PlatePilot</title>
+    <link rel="stylesheet" href="..\static\stylesheets\mainStyleS.css">
+</head>
+<body>
+    <nav class="navbar">
+        <img src="images\defaultAvatar.jpg" id="profilePreview" class="navAvatar">
+        <div>
+            <a href="..\Templates\dashboard.html">
+                <div class="navIcon">
+                    <i class="fa-regular fa-house fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="..\Templates\foodLog.html">
+                <div class="navIcon">
+                    <i class="fa-solid fa-clipboard fa-xl" style="color: rgb(94, 234, 100);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="..\Templates\history.html">
+                <div class="navIcon">
+                    <i class="fa-solid fa-calendar fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+
+        <div>
+            <a href="..\Templates\settings.html">
+                <div class="navIcon active">
+                    <i class="fa-solid fa-gear fa-beat fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="..\Templates\logout.html">
+                <div class="navIcon">
+                    <i class="fa-solid fa-arrow-right-from-bracket fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+    </nav>
+
+    <div class="dashContent">
+        <div class="card settingsCard">
+            <h1 class="trackerCard">Account Settings</h1>
+            <p class="formSubtitle">Manage your account information.</p>
+            <div> 
+                <h2> Basic info</h2>
+                <div class="profilePicRow">
+                    <span class="profileLabel"> Profile Picture</span>
+                    <div class="avatarEdit">
+                        <img src="images\defaultAvatar.jpg" id="profilePreview" class="mainAvatar">
+                        <div class="avatarControls">
+                            <span class="upload" id="uploadTrigger">Upload new picture</span>
+                            <span class="remove" id="removePic">Remove</span>
+
+                            <input type="file" id="hiddenFileInput" accept="image/*" style="display:none;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="infoList" id="biometricsList">
+                <div class="infoItem" onclick="enterEditMode('userNameDisplay', 'fullName')">
+                    <span class="label">Name:</span>
+                    <span class="value" id="userNameDisplay"></span>
+                    <span class="arrow">></span>
+                </div>
+                <div class="infoItem">
+                    <span class="label">Gender:</span>
+                    <span class="value" id="userGenderDisplay"></span>
+                    <span class="arrow">></span>
+                </div>
+                <div class="infoItem">
+                    <span class="label">Age:</span>
+                    <span class="value" id="userAgeDisplay"></span>
+                    <span class="arrow">></span>
+                </div>
+                    <div class="infoItem" onclick="enterEditMode('userWeightDisplay', 'Weight')">
+                    <span class="label">Weight (Lbs):</span>
+                    <span class="value" id="userWeightDisplay"></span>
+                    <span class="arrow">></span>
+                </div>
+                    <div class="infoItem" onclick="enterEditMode('userHeightDisplay', 'Height')">
+                    <span class="label">Height (In):</span>
+                    <span class="value" id="userHeightDisplay"></span>
+                    <span class="arrow">></span>
+                </div>
+            </div>
+
+            <h3 class="accountTxt">Account Info</h3>
+            <div class="infoList">
+                <div class="infoItem">
+                    <span class="label">Email:</span>
+                    <span class="value" id="userEmailDisplay"></span>
+                    <span ><a href="#" class="arrow">></a></span>
+                </div>
+                
+                <div class="infoItem" onclick="enterEditMode('userPassword', 'Password')">
+                    <span class="label">Password:</span>
+                    <span class="value" id="userPassword">••••••••</span>
+                    <span class="arrow">></a></span>
+                </div>
+            </div>
+            
+            
+            <footer class="settingsFooter">
+                <div id="editControls" class="edControls">
+                    <button class="RUGRbtn cancelBtn" onclick="exitEditMode(false)">Cancel</button>
+                    <button class="RUGRbtn pagesBtn-primary" onclick="exitEditMode(true)">Save Changes</button>
+                </div>
+
+                <button class="RUGRbtn deleteBtn" onclick="deleteAccount()">Delete Account</button>
+            </footer>
+        </div>
+    </div>
+    
+    <div class="dashContent">
+        <div class="card settingsCard">
+            <h2 class="resHeader">Changes to restrictions (if any)?</h2>
+            <p class="formSubtitle">Tell Us what to exclude.</p>
+
+            <div class="tagsGrid">
+                <div class="tag" onclick="toggleTag(this, 'vegan')">Vegan</div>
+                <div class="tag" onclick="toggleTag(this, 'vegetarian')">Vegetarian</div>
+                <div class="tag" onclick="toggleTag(this, 'gluten-free')">Gluten-Free</div>
+                <div class="tag" onclick="toggleTag(this, 'dairy-free')">Dairy-Free</div>
+                <div class="tag" onclick="toggleTag(this, 'keto')">Keto</div>
+                <div class="tag" onclick="toggleTag(this, 'nut-allergy')">No Nuts</div>
+                <div class="tag" onclick="toggleTag(this, 'pescatarian')">Pescatarian</div>
+                <div class="tag" onclick="toggleTag(this, 'Lactose Intolerant')">Lactose Intolerant</div>
+                <div class="tag" onclick="toggleTag(this, 'None')">None</div>
+            </div>
+
+            <button class="RUGRbtn pagesBtn-primary full-width mt-20" onclick="finishOnboarding()">Save & Recalculate Plan</button>
+            <button class="RUGRbtn pagesBtn-secondary full-width mt-10" onclick="history.back()">Back</button>
+        </div>
+    </div>
+
+
+    <script src="..\static\js files\main.js"></script>
+</body>
+</html>
