@@ -157,6 +157,10 @@ function enterEditMode(fieldId, label) {
     document.getElementById('editInput').focus();
     const controls = document.getElementById('editControls');
     controls.style.setProperty('display', 'flex', 'important');
+    
+    // Hide delete button during edit
+    const deleteBtn = document.getElementById('deleteAccountBtn');
+    if (deleteBtn) deleteBtn.style.setProperty('display', 'none', 'important');
    
 }
 
@@ -195,6 +199,11 @@ function exitEditMode(save) {
 
     const controls = document.getElementById('editControls');
     controls.style.setProperty('display', 'none', 'important');
+    
+    // Show delete button when edit mode is disabled
+    const deleteBtn = document.getElementById('deleteAccountBtn');
+    if (deleteBtn) deleteBtn.style.setProperty('display', 'block', 'important');
+    
     isEditing = false;
 }
 
