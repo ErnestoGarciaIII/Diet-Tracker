@@ -8,7 +8,7 @@
 </head>
 <body>
     <nav class="navbar">
-        <img src="images\defaultAvatar.jpg" id="profilePreview" class="navAvatar">
+        <img src="..\static\images\Avatar.jpg" id="profilePreview" class="navAvatar">
         <div>
             <a href="..\Templates\dashboard.html">
                 <div class="navIcon">
@@ -56,7 +56,7 @@
                 <div class="profilePicRow">
                     <span class="profileLabel"> Profile Picture</span>
                     <div class="avatarEdit">
-                        <img src="images\defaultAvatar.jpg" id="profilePreview" class="mainAvatar">
+                        <img src="..\static\images\avatar.jpg" id="profilePreview" class="mainAvatar">
                         <div class="avatarControls">
                             <span class="upload" id="uploadTrigger">Upload new picture</span>
                             <span class="remove" id="removePic">Remove</span>
@@ -97,7 +97,7 @@
 
             <h3 class="accountTxt">Account Info</h3>
             <div class="infoList">
-                <div class="infoItem">
+                <div class="infoItem" onclick="enterEditMode('userEmailDisplay', 'email')">
                     <span class="label">Email:</span>
                     <span class="value" id="userEmailDisplay"></span>
                     <span ><a href="#" class="arrow">></a></span>
@@ -145,6 +145,6 @@
     </div>
 
 
-    <script src="..\static\js files\main.js"></script>
+    <script src="..\static\js\main.js"></script>
 </body>
 </html>
