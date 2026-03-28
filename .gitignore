@@ -1,4 +1,5 @@
-# Ignores the folder with the csv files for the master_food.db
 db/
 .vs/
 Website/__pycache__
+/Website/__pycache__/PlatePilotUser.cpython-312.pyc
+/Website/__pycache__/PlatePilotUser.cpython-312.pyc

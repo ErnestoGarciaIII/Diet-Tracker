@@ -1,10 +1,9 @@
 from flask import Flask, request, jsonify, send_from_directory, render_template
+from werkzeug.security import generate_password_hash, check_password_hash
+from buildQuery import connectDB
 import sqlite3
 import sys
 import os
-from werkzeug.security import generate_password_hash, check_password_hash
-
-from buildQuery import connectDB
 
 # Add the directory containing PlatePilotUser.py to path
 sys.path.insert(0, os.path.dirname(__file__))
