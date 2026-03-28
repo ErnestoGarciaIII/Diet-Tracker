@@ -14,7 +14,7 @@ if(len(sys.argv) > 1):
               ----- USAGE: Builds initial database using food.csv, nutrient.csv -----
               ----- food_nutrient.csv, food_portion.csv, and branded_food.csv   -----
               ----- THIS SCRIPT WILL REPLACE THE TABLES THAT ALREADY EXIST IF   -----
-              -----      THE 'master_food.db' EXISTS IN THE SAME DIRECTORY      -----
+              -----      THE 'PlatePilot.db' EXISTS IN THE SAME DIRECTORY      -----
               -----                      AS THIS SCRIPT                         -----
               -----       FoodData_Central_csv_2025-12-18 folder must be        -----
               -----                 adjacent to this script                     -----
@@ -32,7 +32,7 @@ if(len(sys.argv) > 1):
 
 db_dir = Path(__file__)
 
-conn = sqlite3.connect('master_food.db')
+conn = sqlite3.connect('../db/PlatePilot.db')
 cursor = conn.cursor()
 
 files = ['food', 'nutrient', 'food_nutrient', 'food_portion', 'branded_food']
