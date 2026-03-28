@@ -406,9 +406,13 @@ function finishOnboarding() {
 function logFood() {
     const foodEl = document.getElementById('foodInput');
     const calEl = document.getElementById('calInput');
+    const macrosEl = document.getElementById('macrosInput');
+    const microsEl = document.getElementById('microsInput');
     
     const foodName = foodEl.value;
     const calories = parseInt(calEl.value);
+    const macros = parseInt(macrosEl.value) || 0;
+    const micros = parseInt(microsEl.value) || 0;
 
     if (foodName && !isNaN(calories)) {
         const today = new Date().toDateString();
@@ -424,20 +428,25 @@ function logFood() {
             date: today,
             name: foodName,
             kcal: calories,
+            macros: macros,
+            micros: micros,
             timestamp: new Date().getTime()
         });
         localStorage.setItem('foodHistory', JSON.stringify(history));
 
         // 3. Update UI Log
         const logEntry = document.createElement('li');
-        logEntry.innerHTML = `<span>${foodName}</span> <strong>+${calories}</strong>`;
+        // added macros and micros values to food log
+        logEntry.innerHTML = `<span>${foodName}</span> <strong>+${calories} kcal</strong> <strong>+${macros} g</strong> <strong>+${micros} mg</strong>`;
         document.getElementById('foodLog').prepend(logEntry);
 
         foodEl.value = "";
         calEl.value = "";
+        macrosEl.value = "";
+        microsEl.value = "";
         showSuccessFeedback();
     } else {
-        alert("Please enter both food name and calories.");
+        alert("Please make sure all inputs are filled.");
     }
 }
 
@@ -455,7 +464,7 @@ function jumpToToday(){
     renderCalendar();
 }
 
-function clearFoodHistory() {
+function clearHistory() {
     if (confirm("⚠️ Are you sure? This will delete all your food logs permanently.")) {
         localStorage.removeItem('foodHistory');
         localStorage.setItem('savedProgress', 0); // Reset the dashboard plane progress too
@@ -538,9 +547,10 @@ function showDayDetails(dateStr, logs) {
     logs.reverse().forEach(log => {
         const item = document.createElement('div');
         item.className = "historyItem";
+        // adds labels to history log
         item.innerHTML = `
             <span class="label"><strong>${log.name}</strong></span>
-            <span class="value">${log.kcal} kcal</span>
+            <span class="value">${log.kcal} kcal | ${log.macros || 0}g | ${log.micros || 0}mg</span>
         `;
         list.appendChild(item);
     });
@@ -560,7 +570,7 @@ let tierIndex = 0;
 function updateUI(isUpgrade = false) {
 
     // Update Elements
-    const bar = document.getElementById('dashProgressBar');
+    const bar = document.getElementById('kcalProgressBar');
     const plane = document.getElementById('planeIcon');
     if (!bar|| !plane) return;
 
@@ -622,7 +632,7 @@ document.addEventListener("DOMContentLoaded", () => {
         loadUserSettings();
     }
     
-    if (document.getElementById('dashProgressBar')) {
+    if (document.getElementById('kcalProgressBar')) {
         checkDailyReset();
         loadAndRefresh();
 		renderActivityChart();
@@ -667,7 +677,9 @@ function renderActivityChart() {
     const history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
     const daysToDisplay = 7;
     const labels = [];
-    const dataPoints = [];
+    const calorieData = [];
+    const macroData = [];
+    const microData = [];
 
     // Generate labels for the last 7 days
     for (let i = daysToDisplay - 1; i >= 0; i--) {
@@ -678,12 +690,15 @@ function renderActivityChart() {
         // Format label as "Day Month" (e.g., "Mar 21")
         labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
 
-        // Calculate total calories for that specific date string
-        const dailyTotal = history
-            .filter(item => item.date === dateStr)
-            .reduce((sum, item) => sum + item.kcal, 0);
+        // Calculate totals for that specific date string
+        const dayLogs = history.filter(item => item.date === dateStr);
+        const dailyCalories = dayLogs.reduce((sum, item) => sum + item.kcal, 0);
+        const dailyMacros = dayLogs.reduce((sum, item) => sum + (item.macros || 0), 0);
+        const dailyMicros = dayLogs.reduce((sum, item) => sum + (item.micros || 0), 0);
         
-        dataPoints.push(dailyTotal);
+        calorieData.push(dailyCalories);
+        macroData.push(dailyMacros);
+        microData.push(dailyMicros);
     }
 
     new Chart(ctx, {
@@ -691,17 +706,31 @@ function renderActivityChart() {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Total Calories',
-                data: dataPoints,
-                backgroundColor: 'rgba(22, 163, 74, 0.6)', // Matches your theme green
+                label: 'Calories (kcal)',
+                data: calorieData,
+                backgroundColor: 'rgba(22, 163, 74, 0.6)', // Green for calories
                 borderColor: '#16a34a',
+                borderWidth: 2,
+                borderRadius: 8
+            }, {
+                label: 'Macros (g)',
+                data: macroData,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)', // Blue for macros
+                borderColor: '#36a2eb',
+                borderWidth: 2,
+                borderRadius: 8
+            }, {
+                label: 'Micros (mg)',
+                data: microData,
+                backgroundColor: 'rgba(255, 206, 86, 0.6)', // Yellow for micros
+                borderColor: '#ffce56',
                 borderWidth: 2,
                 borderRadius: 8
             }]
         },
         options: {
             responsive: true,
-			maintainAspectRatio: false,
+            maintainAspectRatio: false,
             scales: {
                 y: {
                     beginAtZero: true,
@@ -711,7 +740,7 @@ function renderActivityChart() {
                 }
             },
             plugins: {
-                legend: { display: false }
+                legend: { display: true }
             }
         }
     });
