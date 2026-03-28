@@ -126,7 +126,7 @@ def build_sql_query(a, searchArg):
 
 def connectDB():
 	try: 
-		connection = sqlite3.connect("../db/master_food.db")
+		connection = sqlite3.connect("../db/PlatePilot.db")
 	except sqlite3.OperationalError as e:
 		print(f"Unable to connect to the database...")
 		print(e)
