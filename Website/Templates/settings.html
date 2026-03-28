@@ -31,7 +31,6 @@
                 </div>
             </a>
         </div>
-
         <div>
             <a href="..\Templates\settings.html">
                 <div class="navIcon active">
@@ -47,7 +46,6 @@
             </a>
         </div>
     </nav>
-
     <div class="dashContent">
         <div class="card settingsCard">
             <h1 class="trackerCard">Account Settings</h1>
@@ -61,13 +59,11 @@
                         <div class="avatarControls">
                             <span class="upload" id="uploadTrigger">Upload new picture</span>
                             <span class="remove" id="removePic">Remove</span>
-
                             <input type="file" id="hiddenFileInput" accept="image/*" style="display:none;">
                         </div>
                     </div>
                 </div>
             </div>
-
             <div class="infoList" id="biometricsList">
                 <div class="infoItem" onclick="enterEditMode('userNameDisplay', 'fullName')">
                     <span class="label">Name:</span>
@@ -95,7 +91,6 @@
                     <span class="arrow">></span>
                 </div>
             </div>
-
             <h3 class="accountTxt">Account Info</h3>
             <div class="infoList">
                 <div class="infoItem" onclick="enterEditMode('userEmailDisplay', 'email')">
@@ -117,17 +112,14 @@
                     <button class="RUGRbtn cancelBtn" onclick="exitEditMode(false)">Cancel</button>
                     <button class="RUGRbtn pagesBtn-primary" onclick="exitEditMode(true)">Save Changes</button>
                 </div>
-
                 <button class="RUGRbtn deleteBtn" onclick="deleteAccount()">Delete Account</button>
             </footer>
         </div>
     </div>
-    
     <div class="dashContent">
         <div class="card settingsCard">
             <h2 class="resHeader">Changes to restrictions (if any)?</h2>
             <p class="formSubtitle">Tell Us what to exclude.</p>
-
             <div class="tagsGrid">
                 <div class="tag" onclick="toggleTag(this, 'vegan')">Vegan</div>
                 <div class="tag" onclick="toggleTag(this, 'vegetarian')">Vegetarian</div>
@@ -139,7 +131,6 @@
                 <div class="tag" onclick="toggleTag(this, 'Lactose Intolerant')">Lactose Intolerant</div>
                 <div class="tag" onclick="toggleTag(this, 'None')">None</div>
             </div>
-
             <button class="RUGRbtn pagesBtn-primary full-width mt-20" onclick="finishOnboarding()">Save & Recalculate Plan</button>
             <button class="RUGRbtn pagesBtn-secondary full-width mt-10" onclick="history.back()">Back</button>
         </div>
