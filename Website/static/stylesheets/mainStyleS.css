@@ -747,11 +747,29 @@ canvas #activityChart{
     border-top: 2px dashed rgba(255,255,255,0.6);
     z-index: 1;
 }
-
+/* all progress bars */
 #kcalProgressBar {
     width: 0%;
     height: 100%;
-    background: rgba(52, 152, 219, 0.3);
+    background: rgba(22, 163, 74, 0.6);
+    border-radius: 25px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+}
+#gProgressBar {
+    width: 0%;
+    height: 100%;
+    background: rgba(54, 162, 235, 0.6);
+    border-radius: 25px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+}
+#mgProgressBar {
+    width: 0%;
+    height: 100%;
+    background: rgba(255, 206, 86, 0.6);
     border-radius: 25px;
     transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -759,6 +777,30 @@ canvas #activityChart{
 }
 
 #planeIcon {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    font-size: 35px;
+    z-index: 3;
+    transform: translate(-50%, -50%);
+    transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+    filter: drop-shadow(2px 5px 5px rgba(0,0,0,0.2));
+    cursor: default;
+}
+
+#planeIcon1 {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    font-size: 35px;
+    z-index: 3;
+    transform: translate(-50%, -50%);
+    transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+    filter: drop-shadow(2px 5px 5px rgba(0,0,0,0.2));
+    cursor: default;
+}
+
+#planeIcon2 {
     position: absolute;
     top: 50%;
     left: 0%;
