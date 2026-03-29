@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// -------------- editing functions info settings page
+// -------------- editing functions iofr settings page
 let isEditing = false;
 
 //edit mode for settings page
