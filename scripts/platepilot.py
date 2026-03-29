@@ -81,7 +81,7 @@ def calculate_dri():
         return jsonify({'error': str(e)}), 400
 
 
-DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'db', 'master_food.db')
+DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'db', 'PlatePilot.db')
 
 NUTRIENT_IDS = [
     1106, 1162, 1114, 1175, 1158, 1079, 1109, 1185, 1165, 1178,

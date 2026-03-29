@@ -1,3 +1,5 @@
 db/
 Website\static\js\test.js
 Website\static\js\secondMain(R).js
+.vs/
+__pycache__/
