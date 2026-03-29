@@ -161,7 +161,6 @@ function enterEditMode(fieldId, label) {
     // Hide delete button during edit
     const deleteBtn = document.getElementById('deleteAccountBtn');
     if (deleteBtn) deleteBtn.style.setProperty('display', 'none', 'important');
-   
 }
 
 // --- UPDATED EXIT EDIT MODE ---
@@ -427,9 +426,18 @@ function logFood() {
         const today = new Date().toDateString();
         
         // 1. Update Global Progress (for the plane)
-        let currentProgress = parseInt(localStorage.getItem('savedProgress')) || 0;
-        currentProgress += calories;
-        localStorage.setItem('savedProgress', currentProgress);
+        let currentCalories = parseInt(localStorage.getItem('savedCalories')) || 0;
+        currentCalories += calories;
+        localStorage.setItem('savedCalories', currentCalories);
+
+        // 2. Update Macros and Micros
+        let currentMacros = parseInt(localStorage.getItem('savedMacros')) || 0;
+        currentMacros += macros;
+        localStorage.setItem('savedMacros', currentMacros);
+
+        let currentMicros = parseInt(localStorage.getItem('savedMicros')) || 0;
+        currentMicros += micros;
+        localStorage.setItem('savedMicros', currentMicros);
 
         // 2. Save to Permanent History
         let history = JSON.parse(localStorage.getItem('foodHistory')) || [];
@@ -476,7 +484,7 @@ function jumpToToday(){
 function clearHistory() {
     if (confirm("⚠️ Are you sure? This will delete all your food logs permanently.")) {
         localStorage.removeItem('foodHistory');
-        localStorage.setItem('savedProgress', 0); // Reset the dashboard plane progress too
+        localStorage.setItem('savedCalories', 0); // Reset the dashboard plane progress too
         renderCalendar();
         if (typeof showSuccessFeedback === "function") showSuccessFeedback();
     }
@@ -573,46 +581,91 @@ const tiers = [
     { name: "UFO", icon: "🛸", goal: 5000 }
 ];
 
-let currentProgress = 0;
+let currentCalories = 0;
 let tierIndex = 0;
+let currentMacros = 0;
+let currentMicros = 0;
 
 function updateUI(isUpgrade = false) {
-
-    // Update Elements
-    const bar = document.getElementById('kcalProgressBar');
+    // Update  progress bar Elements
+    const calBar = document.getElementById('kcalProgressBar'); // calories progress bar
+    //remove 
+    const macroBar = document.getElementById('gProgressBar'); // macro progress bar
+    const microBar = document.getElementById('mgProgressBar'); // micro progress bar       
     const plane = document.getElementById('planeIcon');
-    if (!bar|| !plane) return;
+    //remove
+    const plane1 = document.getElementById('planeIcon1');
+    const plane2 = document.getElementById('planeIcon2');
+
+    if (!calBar|| !plane) return;
+    //remove
+    if (!macroBar || !plane1) return;
+    if (!microBar || !plane2) return;
 
     // Find correct tier based on total progress
     let activeTier = tiers[0];
     for (let i = 0; i < tiers.length; i++) {
-        if (currentProgress >= tiers[i].goal) {
+        if (currentCalories >= tiers[i].goal) {
             activeTier = tiers[i];
             tierIndex = i;
         }
     }
 
-    const goal = activeTier.goal;
-    const percent = Math.min((currentProgress / goal) * 100, 100);
+    const kcalGoal = activeTier.goal;
+    //remove
+    const macroGoal = 3000;
+    const microGoal = 5000;
 
-    bar.style.width = percent + "%";
-    plane.style.left = percent + "%";
+    const kcalPercent = Math.min((currentCalories / kcalGoal) * 100, 100);
+    //remove
+    const macroPercent = Math.min((currentMacros / macroGoal) * 100, 100);
+    const microPercent = Math.min((currentMicros / microGoal) * 100, 100);        
+
+    calBar.style.width = kcalPercent + "%";
+    // remove
+    macroBar.style.width = macroPercent + "%";
+    microBar.style.width = microPercent + "%";
+
+    plane.style.left = kcalPercent + "%";
+    //remove
+    plane1.style.left = macroPercent + "%";
+    plane2.style.left = microPercent + "%";
+
+
     plane.innerText = activeTier.icon;
     
     document.getElementById('planeRank').innerText = activeTier.name;
-    document.getElementById('currentTotal').innerText = currentProgress;
-    document.getElementById('goalNum').innerText = goal;
+    document.getElementById('currentTotal').innerText = currentCalories;
+    document.getElementById('goalNum').innerText = kcalGoal;
+    // remove
+
 
     // Visual tilt during movement
     plane.style.transform = "translate(-50%, -50%) rotate(-10deg)";
     setTimeout(() => {
         plane.style.transform = "translate(-50%, -50%) rotate(0deg)";
     }, 800);
+
+
+    // Update macros progress bar( remove)
+    const currentMacrosEl = document.getElementById('currentMacros');
+    const macroGoalEl = document.getElementById('macroGoal');
+    if (currentMacrosEl) currentMacrosEl.innerText = currentMacros;
+    if (macroGoalEl) macroGoalEl.innerText = macroGoal;
+
+    // Update micros progress bar
+    const currentMicrosEl = document.getElementById('currentMicros');
+    const microGoalEl = document.getElementById('microGoal');
+    if (currentMicrosEl) currentMicrosEl.innerText = currentMicros;
+    if (microGoalEl) microGoalEl.innerText = microGoal;
 }
 
 // 1. Initial Load
 function loadAndRefresh() {
-    currentProgress = parseInt(localStorage.getItem('savedProgress')) || 0;
+    currentCalories = parseInt(localStorage.getItem('savedCalories')) || 0;
+    //added macros and micros progress bar info (remove)
+    currentMacros = parseInt(localStorage.getItem('savedMacros')) || 0;
+    currentMicros = parseInt(localStorage.getItem('savedMicros')) || 0;
     updateUI();
 }
 
@@ -620,16 +673,31 @@ function loadAndRefresh() {
 function checkDailyReset() {
     const today = new Date().toDateString();
     if (localStorage.getItem('lastDate') !== today) {
-        localStorage.setItem('savedProgress', 0);
+        localStorage.setItem('savedCalories', 0);
+        //remove
+        localStorage.setItem('savedMacros', 0);
+        localStorage.setItem('savedMicros', 0);
         localStorage.setItem('lastDate', today);
-        currentProgress = 0;
+        currentCalories = 0;
+        //remove
+        currentMacros = 0;
+        currentMicros = 0;
     }
 }
 
 // 3. Real-time Listener (Triggers if the other tab saves data)
 window.addEventListener('storage', (event) => {
-    if (event.key === 'savedProgress') {
-        currentProgress = parseInt(event.newValue) || 0;
+    if (event.key === 'savedCalories') {
+        currentCalories = parseInt(event.newValue) || 0;
+        updateUI();
+    }
+    // added macros and micros for their progress bar
+    if (event.key === 'savedMacros') {
+        currentMacros = parseInt(event.newValue) || 0;
+        updateUI();
+    }
+    if (event.key === 'savedMicros') {
+        currentMicros = parseInt(event.newValue) || 0;
         updateUI();
     }
 });
