@@ -28,7 +28,7 @@ Browser (foodLog.html)
    │  types food name → search box
    │  GET /api/search?q=chicken  ──────────────→  app.py
                                                      │
-                                                     └──→ master_food.db (SQLite)
+                                                     └──→ PlatePilot.db (SQLite)
                                                            returns nutrient rows
                                                            ← shown as dropdown
 
@@ -67,7 +67,7 @@ your-project/
 ├── js files/
 │   └── dashboard.js
 └── ../db/
-    └── master_food.db      ← your database (one folder up from project)
+    └── PlatePilot.db      ← your database (one folder up from project)
 ```
 
 > If your database is in a different location, open `app.py` and change the `DB_PATH` line near the top to the correct path.
@@ -118,7 +118,7 @@ The targets come from `PlatePilotUser.py` (your `setDRI()` function). The progre
 ## How the food search works
 
 1. The search box calls `GET /api/search?q=<your text>` (in `app.py`)
-2. `app.py` runs the SQL query from `buildQuery.py` against `master_food.db`
+2. `app.py` runs the SQL query from `buildQuery.py` against `PlatePilot.db`
 3. Results appear as a dropdown — click one to select it
 4. Hit **Log Food** — the nutrient amounts get added to your daily totals
 5. Bars update instantly
