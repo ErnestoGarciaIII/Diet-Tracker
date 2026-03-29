@@ -1,147 +1,4 @@
-// ---------------------- Authentication & Display Logic ------------------
-document.addEventListener('DOMContentLoaded', () => {
-    // --- LOGIN LOGIC ---
-// --- UPDATED LOGIN LOGIC IN main.js ---
-    // Locate the --- LOGIN LOGIC --- section in main.js
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPassword').value;
-
-            try {
-                const response = await fetch('http://127.0.0.1:5000/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email, password: pass })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Save the data returned from the database to localStorage
-                    localStorage.setItem('userEmailDisplay', email);
-                    localStorage.setItem('userNameDisplay', data.fullName);
-                    localStorage.setItem('isLoggedIn', 'true');
-                    window.location.href = 'dashboard.html';
-                } else {
-                    // Show the specific error (e.g., "Incorrect password")
-                    alert(data.error);
-                }
-            } catch (err) {
-                console.error("Connection error:", err);
-                alert("Could not connect to the server. Is app.py running?");
-            }
-        });
-    }
-
-    // --- SIGNUP LOGIC ---
-    const signupForm = document.getElementById('credentialsForm');
-    if (signupForm) {
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fullName = document.getElementById('fullName').value;
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
-            const confirm = document.getElementById('confirmPassword').value;
-
-            if (pass !== confirm) {
-                alert("Passwords do not match!");
-                return;
-            }
-            // delete if not working
-// --- NEW FETCH CODE ---
-            try {
-                const response = await fetch('http://127.0.0.1:5000/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        fullName: fullName, 
-                        email: email, 
-                        password: pass // JavaScript sends 'pass' as 'password' to match Python
-                    })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    localStorage.setItem('userNameDisplay', fullName);
-                    localStorage.setItem('userEmailDisplay', email);
-                    localStorage.setItem('isLoggedIn', 'true');
-                    window.location.href = 'userInfo.html';
-                } else {
-                    alert(data.error || "Registration failed");
-                }
-            } catch (err) {
-                console.error("Server error:", err);
-                alert("Could not connect to the Python server. Is it running?");
-            }
-        
-            
-            /* original code
-            localStorage.setItem('userNameDisplay', fullName);
-            localStorage.setItem('userEmailDisplay', email);
-            localStorage.setItem('userPassword', pass);
-            localStorage.setItem('isLoggedIn', 'true');
-            window.location.href = 'userInfo.html'; */
-        });
-    }
-
-    // --- GLOBAL DATA DISPLAY ---
-    const email = localStorage.getItem('userEmailDisplay') || 'Guest';
-    const fullName = localStorage.getItem('userNameDisplay') || 'Guest User';
-    const gender = localStorage.getItem('userGenderDisplay') || '--';
-    const age = localStorage.getItem('userAgeDisplay') || '--';
-    const weight = localStorage.getItem('userWeightDisplay') || '--';
-    const height = localStorage.getItem('userHeightDisplay') || '--';
-    const savedAvatar = localStorage.getItem('userAvatar');
-
-    // Sync Text Fields
-    const updateText = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = (val && val !== "null") ? val : '--';
-    };
-
-    updateText('userNameDisplay', fullName);
-    updateText('userGenderDisplay', gender);
-    updateText('userAgeDisplay', age);
-    updateText('userWeightDisplay', weight);
-    updateText('userHeightDisplay', height);
-    updateText('userEmailDisplay', email);
-    updateText('userPassword', '••••••••');
-
-    // Show full email (no splitting)
-    const emailEl = document.getElementById('userEmailDisplay');
-    if (emailEl) emailEl.innerText = email;
-
-    // Sync Profile Pictures Across All Pages
-    if (savedAvatar) {
-        const allProfileImages = document.querySelectorAll('#profilePreview, #registrationPreview, .navAvatar');
-        allProfileImages.forEach(img => {
-            img.src = savedAvatar;
-        });
-    }
-
-    // Load Restrictions List for Dashboard
-    const list = document.getElementById('profileList');
-    if (list) {
-        const restrictions = JSON.parse(localStorage.getItem('userRestrictions') || '[]');
-        list.innerHTML = ''; 
-        restrictions.forEach(res => {
-            let li = document.createElement('li');
-            li.innerText = `🚫 ${res}`;
-            list.appendChild(li);
-        });
-    }
-
-    // Check if we are on the history page
-    if (document.getElementById('calendarGrid')) {
-        renderCalendar();
-    }
-});
-
-// -------------- editing functions iofr settings page
+// ------------------------- editing functions for settings page -------------------------
 let isEditing = false;
 
 //edit mode for settings page
@@ -272,7 +129,7 @@ if (uploadTrigger && fileInput) {
     });
 }
 
-// Remove picture (Settings page only)
+// Remove picture function (Settings page only)
 if (removeBtn) {
     removeBtn.addEventListener('click', () => {
         const defaultAvatar = '../images/defaultProfile.jpg';
@@ -311,6 +168,7 @@ if (dietaryForm) {
 }
 */ 
 
+// User info submit
 async function nextStep() {
     // Check if a profile picture was uploaded
     if (!localStorage.getItem('userAvatar')) {
@@ -325,19 +183,12 @@ async function nextStep() {
     const genderEl = document.querySelector('input[name="gender"]:checked');
     const gender = genderEl ? genderEl.value : 'Not Specified';
 
-    // Save to Database
-    const response = await fetch('http://127.0.0.1:5000/update_bio', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, age, weight, height, gender })
-    });
-
     if (response.ok) {
         window.location.href = 'goals.html'; 
     }
 }
 
-// loads the users information
+// loads the users information( settings page)
 async function loadUserSettings() {
     const email = localStorage.getItem('userEmailDisplay');
     if (!email || email === 'Guest') return;
@@ -409,8 +260,8 @@ function finishOnboarding() {
     localStorage.setItem('userRestrictions', JSON.stringify(selectedRestrictions));
     window.location.href = 'dashboard.html';
 }
-
-/* ------------The following code is for food logging page ------------ */
+// ------------------------  foodLog, activity chart, and history logic are connected ----------------
+/* ------------------------ food logging page ------------ */
 function logFood() {
     const foodEl = document.getElementById('foodInput');
     const calEl = document.getElementById('calInput');
@@ -573,7 +424,7 @@ function showDayDetails(dateStr, logs) {
     });
 }
 
-/* --------------- progress bar and plane animation logic ----------- */
+/* --------------- progress bar and plane animation logic (dashboard) ----------- */
 const tiers = [
     { name: "Cessna", icon: "🛩️", goal: 500 },
     { name: "Boeing 747", icon: "✈️", goal: 1500 },
@@ -700,6 +551,7 @@ window.addEventListener('storage', (event) => {
         currentMicros = parseInt(event.newValue) || 0;
         updateUI();
     }
+
 });
 
 // Initialize
@@ -716,11 +568,12 @@ document.addEventListener("DOMContentLoaded", () => {
         updateDailyQuote();
     }
 
-
-
-
+        // Check if we are on the history page
+    if (document.getElementById('calendarGrid')) {
+        renderCalendar();
+    }
 });
-// ---------------------------- motivational quotes -----------------------------
+// ---------------------------- motivational quotes (dashboard) -----------------------------
 async function updateDailyQuote() {
     const quoteEl = document.getElementById('motivational');
     if (!quoteEl) return;
@@ -746,7 +599,7 @@ async function updateDailyQuote() {
     }
 }
 
-// ----------------------activity chart -------------
+// ----------------------activity chart (dashboard) -------------
 function renderActivityChart() {
     const ctx = document.getElementById('activityChart');
     if (!ctx) return;
