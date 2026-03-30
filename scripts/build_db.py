@@ -35,7 +35,7 @@ db_dir = Path(__file__)
 conn = sqlite3.connect('../db/PlatePilot.db')
 cursor = conn.cursor()
 
-files = ['food', 'nutrient', 'food_nutrient', 'food_portion', 'branded_food']
+files = ['food', 'nutrient', 'food_nutrient', 'food_portion', 'food_category', 'branded_food']
 
 for file in files:
     try:
@@ -51,7 +51,7 @@ for file in files:
             continue
 
         df = pd.read_csv(
-            f'FoodData_Central_csv_2025-12-18/{file}.csv',
+            f'../db/FoodData_Central_csv_2025-12-18/{file}.csv',
             low_memory=False
         )
 
@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS Users (
     sex TEXT,
     height_inches INTEGER,
     weight_lbs INTEGER,
-    goal INTEGER
+    goal INTEGER,
     activity_level INTEGER
 )
 """)
