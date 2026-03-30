@@ -1,14 +1,14 @@
 from flask import Flask, request, jsonify, send_from_directory, render_template
 from werkzeug.security import generate_password_hash, check_password_hash
-from buildQuery import connectDB
 import sqlite3
 import sys
 import os
 
 # Add the directory containing PlatePilotUser.py to path
-sys.path.insert(0, os.path.dirname(__file__))
+dietTrackerfolderDir = os.path.dirname(os.path.dirname(__file__))
+sys.path.insert(0, dietTrackerfolderDir + "\\scripts")
 from PlatePilotUser import ppuser
-
+from buildQuery import connectDB
 app = Flask(__name__)
 
 def connect_to_database():
