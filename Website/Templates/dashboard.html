@@ -5,42 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Dashboard - PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="stylesheets/mainStyleS.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<<<<<<< Updated upstream
+    <link rel="stylesheet" href="..\static\stylesheets\mainStyleS.css">
+=======
+	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
+>>>>>>> Stashed changes
 </head>
-<body>
+<body id="dashboardPage">
     <!-- Navigation Bar -->
+<<<<<<< Updated upstream
     <nav class="navbar">
-        <div class="logo">PlatePilot</div>
+        <img src="..\static\images\defaultAvatar.jpg" id="profilePreview" class="navAvatar">
         <div>
-            <a href="dashboard.html">
+            <a href="..\Templates\dashboard.html">
+=======
+    <nav class="navbar"> "
+        <img src="{{ url_for('static', filename='images/defaultAvatar.jpg') }}" id="profilePreview" class="navAvatar">
+        <div>
+            <a href="{{ url_for('html_urls', filename='dashboard.html') }}">
+>>>>>>> Stashed changes
                 <div class="navIcon active">
                     <i class="fa-regular fa-house fa-beat fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
         <div>
-            <a href="foodLog.html">
+<<<<<<< Updated upstream
+            <a href="..\Templates\foodLog.html">
+=======
+            <a href="{{ url_for('html_urls', filename='foodLog.html') }}">
+>>>>>>> Stashed changes
                 <div class="navIcon">
                     <i class="fa-solid fa-clipboard fa-xl" style="color: rgb(94, 234, 100);"></i>
                 </div>
             </a>
         </div>
         <div>
-            <a href="history.html">
+<<<<<<< Updated upstream
+            <a href="..\Templates\history.html">
+=======
+            <a href="{{ url_for('html_urls', filename='history.html') }}">
+>>>>>>> Stashed changes
                 <div class="navIcon">
                     <i class="fa-solid fa-calendar fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
         <div>
-            <a href="settings.html">
+<<<<<<< Updated upstream
+            <a href="..\Templates\settings.html">
+=======
+            <a href="{{ url_for('html_urls', filename='settings.html') }}">
+>>>>>>> Stashed changes
                 <div class="navIcon">
                     <i class="fa-solid fa-gear fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
         <div>
-            <a href="logout.html">
+<<<<<<< Updated upstream
+            <a href="..\Templates\logout.html">
+=======
+            <a href="{{ url_for('html_urls', filename='logout.html') }}">
+>>>>>>> Stashed changes
                 <div class="navIcon">
                     <i class="fa-solid fa-arrow-right-from-bracket fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
@@ -50,9 +78,10 @@
 
     <main class="dashContent">
         <header class="dashHeader">
-            <h1>Welcome <span class="userBadge" id="userDisplay">User</span>! 🌿</h1>
+            <h1>Welcome <span class="userBadge" id="userNameDisplay"></span>! 🌿</h1>
             <p>Your body's co-pilot for better fuel.</p>
         </header>
+
 
         <div class="statsPanel">
             <div class="leftCol">
@@ -62,40 +91,61 @@
                         <span>Rank: <span id="planeRank">Cessna</span></span>
                         <span>Goal: <span id="currentTotal">0</span> / <span id="goalNum">500</span> kcal</span>
                     </div>
+                    <!-- calories progress bar-->
                     <div class="progressWrapper">
-                        <div id="dashProgressBar"></div>
+                        <div id="kcalProgressBar"></div>
                         <div id="planeIcon">🛩️</div>
                     </div>
+                    <!-- macros progress bar-->
+                    <div class ="progressWrapper">
+                        <div id="gProgressBar"> </div>
+                        <div id="planeIcon1">🛩️</div>
+                    </div>
+                    <!-- micros progress bar-->
+                    <div class ="progressWrapper">
+                        <div id="mgProgressBar"> </div>
+                        <div id="planeIcon2">🛩️</div>
+                    </div>
                     <!-- motivational quotes -->
-                    <div class="motivationalQuote">
-                        "Every meal is a chance to fly higher!"
+                    <div id="motivational"class="motivationalQuote">
+                        "Loading today's inspiration..."
                     </div>
                     <!-- link to food log -->
-                    <a href="foodLog.html" class="navLink">
+<<<<<<< Updated upstream
+                    <a href="..\Templates\foodLog.html" class="navLink">
+=======
+                    <a href="{{ url_for('html_urls', filename='foodLog.html') }}" class="navLink">
+>>>>>>> Stashed changes
                         <i class="fa-solid fa-arrow-left fa-xlg" style="color: #3498db;"></i>
                         Go to Food Logging
                     </a>
                 </div>
             </div> 
-            
-            <!--
-            <div class="profile-summary">
-                <h3>Your Profile</h3>
-                <ul id="profileList"></ul>
+        </div>
+        <div class="chartContainer">
+            <div class="card chartCard">
+                <h3>7-Day Activity Level</h3>
+                <div class="canvasWrapper">
+                    <canvas id="activityChart"></canvas>
+                </div>
             </div>
-            -->
         </div>
 
+
         <section class="mealPlan">
-            <h2>Today's AI Recommendations</h2>
+            <h2>Today's Recommendations</h2>
             <div class="mealGrid" id="mealGrid">
-                <div class="loading">Generating your custom plan...</div>
+                <div class="loading">Generating Al's recommended food items...</div>
             </div>
         </section>
 
     </main>
 
 
-    <script src="js files/dashboard.js"></script>
+<<<<<<< Updated upstream
+    <script src="..\static\js\main.js"></script>
+=======
+	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+>>>>>>> Stashed changes
 </body>
 </html>
