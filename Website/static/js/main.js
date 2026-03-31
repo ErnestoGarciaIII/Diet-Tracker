@@ -11,7 +11,7 @@ import { initLogin } from './modules/login.js';
 import { initRegister } from './modules/register.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const userId = localStorage.getItem('user_id');
+    const userId = State.getUserId();
     // Protected pages require login
     const protectedPage =
         Util.getElement('dashboardPage') ||
@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         if (userId && protectedPage) {
-            alert(userId)
             const user = await API.getUserInfo(userId);
             State.setUser(user);
 
