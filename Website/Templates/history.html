@@ -7,7 +7,7 @@
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
 	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
-<body>
+<body id="historyPage">
     <!-- Navigation Bar -->
     <nav class="navbar"> "
         <img src="{{ url_for('static', filename='images/defaultAvatar.jpg') }}" id="profilePreview" class="navAvatar">
@@ -88,6 +88,6 @@
             </div>
         </div>
     </main>
-	<!-- commented out as this file doesn't exist yet <script src="{{ url_for('static', filename='js/history.js') }}"></script> -->
+	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

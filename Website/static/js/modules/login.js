@@ -1,8 +1,8 @@
 import { login } from '../api.js';
-import { $, getInputValue, showError } from '../utils.js';
+import { getElement, getInputValue, showError } from '../utils.js';
 
 export function initLogin() {
-    const form = $('loginForm');
+    const form = getElement('loginForm');
     if (!form) return;
 
     form.addEventListener('submit', async (e) => {
@@ -22,7 +22,8 @@ export function initLogin() {
             localStorage.setItem('user_id', data.user_id);
 
             // redirect to dashboard
-            window.location.href = 'dashboard.html';
+            const loginButtonData = getElement('loginButton').dataset;
+            window.location.href = loginButtonData.url;
 
         } catch (err) {
             showError(err.message);

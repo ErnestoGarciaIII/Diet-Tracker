@@ -7,7 +7,7 @@
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
-<body>
+<body id="restrictionsPage">
 
     <div class="onboardingContainer">
         <div class="progressBarContainer">
@@ -35,6 +35,6 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/restrictions.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

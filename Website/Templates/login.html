@@ -7,7 +7,7 @@
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
 	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
-<body>
+<body id="loginPage">
     <div class="onboardingContainer">
         <h1 id="mainTitle">PlatePilot</h1> 
         <div class="formCard loginCard">
@@ -28,7 +28,7 @@
                             <input type="password" id="loginPassword" placeholder="Password" required>
                         </div>
                         <!-- form elements i.e submit button -->
-                        <button class="RUGRbtn pagesBtn-primary full-width" type="submit" id="loginButton">
+                        <button class="RUGRbtn pagesBtn-primary full-width" type="submit" id="loginButton" data-url="{{ url_for('html_urls', filename='dashboard.html') }}">
                             Login
                         </button>
                     </form>
@@ -38,11 +38,11 @@
                 </div>
                 <!-- form elements i.e mascot/motto-->
                 <div class="imageSide" id="imageSide">
-                    <img src="{{ url_for('static', filename='images/MascotPilot.png) }}" alt="Healthy Lifestyle">
+                    <img src="{{ url_for('static', filename='images/MascotPilot.png') }}" alt="Healthy Lifestyle">
                 </div>
             </div>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

@@ -7,8 +7,7 @@
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
 	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
-<body>
-
+<body id="goalsPage">
     <div class="onboardingContainer">
         <div class="progressBarContainer">
             <div class="profileProgressBar" style="width: 66%;"></div>
@@ -49,6 +48,6 @@
         </div>
     </div>
 
-	<script src="{{ url_for('static', filename='js/goals.js') }}"></script>
+	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

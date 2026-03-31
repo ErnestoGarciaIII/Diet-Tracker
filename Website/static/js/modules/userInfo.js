@@ -1,64 +1,40 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const continueBtn = document.getElementById('continueBtn');
-    if (continueBtn) {
-        continueBtn.addEventListener('click', setUserInfo);
-    }
-    // navigate to the history page when back button is clicked
-    const backButton = document.getElementById('backBtn').addEventListener('click', function () {
-        history.back();
-    });
-});
+import { updateUser } from '../api.js';
+import { getUserId, getInputValue, getCheckedValue, showError, showSuccess } from '../utils.js';
 
-async function setUserInfo(event) {
-    event.preventDefault();
+export function initUserInfo() {
+    const btn = document.getElementById('continueBtn');
+    if (!btn) return;
 
-    const age = parseInt(document.getElementById('userAgeDisplay').value);
-    const weightLbs = parseFloat(document.getElementById('userWeightDisplay').value);
-    const heightIn = parseFloat(document.getElementById('userHeightDisplay').value);
-    const sex = document.querySelector('input[name="sex"]:checked')?.value;
-    const activityLevel = document.querySelector('input[name="activityLevel"]:checked')?.value;
+    btn.addEventListener('click', handleSubmit);
+}
 
-    if (!age || !weightLbs || !heightIn || !sex || !activityLevel) {
-        alert("Please fill in all fields.");
-        return;
-    }
+async function handleSubmit(e) {
+    e.preventDefault();
 
+    const user_id = getUserId();
 
-    // Get user_id from localStorage
-    const user_id = localStorage.getItem('user_id');
-    if (!user_id) {
-        alert("User not identified. Please log in again.");
-        return;
+    const user = {
+        user_id,
+        age: parseInt(getInputValue('userAgeDisplay')),
+        weight_lbs: parseFloat(getInputValue('userWeightDisplay')),
+        height_in: parseFloat(getInputValue('userHeightDisplay')),
+        sex: getCheckedValue('sex'),
+        activity_level: getCheckedValue('activityLevel'),
+        goal: null
+    };
+
+    if (!user.age || !user.weight_lbs || !user.height_in || !user.sex || !user.activity_level) {
+        return showError("Please fill in all fields.");
     }
 
     try {
-        // Update the database
-        const updateResponse = await fetch('/api/update_user', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                user_id: user_id,
-                age: age,
-                weight_lbs: weightLbs,
-                height_in: heightIn,
-                sex: sex,
-                goal: null, // user sets their goal on the next page in the registration process
-                activity_level: activityLevel
-            })
-        });
-        const data = await updateResponse.json();
+        await updateUser(user);
+        showSuccess("Profile saved!");
 
-        if (!updateResponse.ok) {
-            throw new Error(data.error || "Failed to update database");
-        }
+        const btn = document.getElementById('continueBtn');
+        window.location.href = btn.dataset.url;
 
-        alert("User profile updated successfully!");
-        // navigate to the goals
-        window.location.href = this.dataset.url;
-
-    } catch (error) {
-        console.error("Error:", error);
-        alert(error.message);
+    } catch (err) {
+        showError(err.message);
     }
 }
-

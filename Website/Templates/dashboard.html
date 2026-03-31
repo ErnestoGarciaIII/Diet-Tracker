@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
-<body>
+<body id="dashboardPage">
     <!-- Navigation Bar -->
     <nav class="navbar"> "
         <img src="{{ url_for('static', filename='images/defaultAvatar.jpg') }}" id="profilePreview" class="navAvatar">
@@ -111,6 +111,6 @@
     </main>
 
 
-	<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

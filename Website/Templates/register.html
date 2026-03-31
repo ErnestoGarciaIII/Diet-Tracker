@@ -8,7 +8,7 @@
 	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
 <body>
-    <div class="onboardingContainer">
+    <div class="onboardingContainer" id="registerPage">
         <h1 id="mainTitle">PlatePilot</h1> 
         <div class="formCard loginCard"> 
             <div class="mainFlex">
@@ -37,7 +37,7 @@
                             <input type="password" id="confirmPassword" placeholder="Repeat password" required>
                         </div>
                         <!-- form elements i.e submit button -->
-                        <button class="RUGRbtn pagesBtn-primary full-width" type="submit">
+                        <button class="RUGRbtn pagesBtn-primary full-width" type="submit" id="submitBtn" data-url="{{ url_for('html_urls', filename='userInfo.html') }}">
                             Sign Up
                         </button>
                     </form>
@@ -51,6 +51,6 @@
             </div>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

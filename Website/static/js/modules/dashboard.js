@@ -1,7 +1,6 @@
 import * as State from '../state.js';
 import * as API from '../api.js';
-import { $, clearElement, createElement, formatDate } from '../utils.js';
-import Chart from 'chart.js/auto';
+import { getElement, clearElement, createElement, formatDate } from '../utils.js';
 
 // ==========================
 // INIT
@@ -28,14 +27,14 @@ export async function initDashboard() {
 // USER INFO
 // ==========================
 function renderUserInfo(user) {
-    if ($('userNameDisplay')) {
-        $('userNameDisplay').innerText = user.name || 'Guest User';
+    if (getElement('userNameDisplay')) {
+        getElement('userNameDisplay').innerText = user.name || 'Guest User';
     }
 
     const calorieTarget = calculateCalories(user.goal);
 
-    if ($('calorieTarget')) {
-        $('calorieTarget').innerText = `${calorieTarget} kcal`;
+    if (getElement('calorieTarget')) {
+        getElement('calorieTarget').innerText = `${calorieTarget} kcal`;
     }
 }
 
@@ -51,7 +50,7 @@ function calculateCalories(goal) {
 // RESTRICTIONS
 // ==========================
 function renderRestrictions(restrictions) {
-    const list = $('profileList');
+    const list = getElement('profileList');
     if (!list) return;
 
     clearElement(list);
@@ -97,8 +96,8 @@ function updateProgressUI(progress) {
 
     const percent = Math.min((calories / activeTier.goal) * 100, 100);
 
-    const bar = $('dashProgressBar');
-    const plane = $('planeIcon');
+    const bar = getElement('dashProgressBar');
+    const plane = getElement('planeIcon');
 
     if (bar) bar.style.width = percent + "%";
 
@@ -113,9 +112,9 @@ function updateProgressUI(progress) {
         }, 800);
     }
 
-    if ($('planeRank')) $('planeRank').innerText = activeTier.name;
-    if ($('currentTotal')) $('currentTotal').innerText = calories;
-    if ($('goalNum')) $('goalNum').innerText = activeTier.goal;
+    if (getElement('planeRank')) getElement('planeRank').innerText = activeTier.name;
+    if (getElement('currentTotal')) getElement('currentTotal').innerText = calories;
+    if (getElement('goalNum')) getElement('goalNum').innerText = activeTier.goal;
 }
 
 // ==========================
@@ -143,7 +142,7 @@ async function updateDailyQuote() {
 // ACTIVITY CHART
 // ==========================
 export async function renderActivityChart() {
-    const ctx = $('activityChart');
+    const ctx = getElement('activityChart');
     if (!ctx) return;
 
     try {

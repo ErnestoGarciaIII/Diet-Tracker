@@ -25,6 +25,7 @@ def convert_inches_to_cm(height_in):
     return height_cm
 
 def query_db_for_user_info(user_id, returnJSON=True):
+    conn = None
     try:
         conn = connect_to_database()
         cur = conn.cursor()
@@ -71,7 +72,7 @@ def query_db_for_user_info(user_id, returnJSON=True):
         return jsonify({'error': str(e)}), 500
 
     finally:
-        conn.close()
+       if conn: conn.close()
 
 
 #Deliver HTML
@@ -92,6 +93,7 @@ def html_urls(filename):
 @app.route('/api/register', methods=['POST'])
 def register_user():
     data = request.get_json()
+    conn = None 
 
     try:
         name = data.get('name')
@@ -99,6 +101,7 @@ def register_user():
         password = data.get('password')
 
         if not name or not email or not password:
+            print("[ERROR]: Missing fields in POST request!")
             return jsonify({'error': 'Missing required fields'}), 400
 
         hashed_password = generate_password_hash(password)
@@ -128,7 +131,8 @@ def register_user():
         return jsonify({'error': str(e)}), 500
     
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 #update user info
 @app.route('/api/update_user', methods=['POST'])
@@ -277,7 +281,7 @@ def get_user_info():
         user_id = int(request.args.get('user_id'))
         if not user_id:
             return jsonify({'error': 'Missing user_id'}), 400
-        query_db_for_user_info(user_id=user_id, returnJSON=True)
+        return query_db_for_user_info(user_id=user_id, returnJSON=True)
     except Exception as e:
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500

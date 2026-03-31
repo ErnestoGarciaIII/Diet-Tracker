@@ -1,60 +1,40 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const tags = document.querySelectorAll('.tag');
-    let selectedRestrictions = [];
+import { setRestrictions } from '../api.js';
+import { getElement, getUserId, showError, showSuccess } from '../utils.js';
 
-    tags.forEach(tag => {
-        tag.addEventListener('click', () => {
-            const value = tag.dataset.value;
+let selected = [];
 
-            // Toggle selection
-            const index = selectedRestrictions.indexOf(value);
-            if (index > -1) {
-                selectedRestrictions.splice(index, 1);
-                tag.classList.remove('tag-active');
-            } else {
-                selectedRestrictions.push(value);
-                tag.classList.add('tag-active');
-            }
-
-            console.log("Current Restrictions:", selectedRestrictions);
-        });
+export function initRestrictions() {
+    document.querySelectorAll('.tag').forEach(tag => {
+        tag.addEventListener('click', () => toggleTag(tag));
     });
 
-    const finishBtn = document.getElementById('finishBtn');
-    finishBtn.addEventListener('click', async () => {
-        const user_id = localStorage.getItem('user_id');
-        if (!user_id) {
-            alert("User not identified. Please log in again.");
-            return;
-        }
+    const finishBtn = getElement('finishBtn');
+    if (finishBtn) finishBtn.addEventListener('click', saveRestrictions);
+}
 
-        try {
-            const updateResponse = await fetch("/set-restrictions", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    user_id: user_id,
-                    restrictions: selectedRestrictions
-                })
-            });
+function toggleTag(tag) {
+    const value = tag.dataset.value;
 
-            const updateResult = await updateResponse.json();
+    if (selected.includes(value)) {
+        selected = selected.filter(v => v !== value);
+        tag.classList.remove('tag-active');
+    } else {
+        selected.push(value);
+        tag.classList.add('tag-active');
+    }
+}
 
-            if (!updateResponse.ok) {
-                throw new Error(updateResult.error || "Failed to update database");
-            }
+async function saveRestrictions() {
+    const user_id = getUserId();
+    if (!user_id) return showError("User not found.");
 
-            localStorage.setItem('userRestrictions', JSON.stringify(selectedRestrictions));
-            alert("User restrictions saved successfully!");
-            window.location.href = 'dashboard.html';
-        } catch (error) {
-            console.error("Error:", error);
-            alert(error.message);
-        }
-    });
+    try {
+        await setRestrictions(user_id, selected);
+        showSuccess("Restrictions saved!");
+        const finishBtnData = getElement("finishBtn").dataset;
+        window.location.href = finishBtnData.url; // goes to dashboard page
 
-    const backBtn = document.getElementById('backBtn');
-    backBtn.addEventListener('click', () => {
-        history.back();
-    });
-});
+    } catch (err) {
+        showError(err.message);
+    }
+}

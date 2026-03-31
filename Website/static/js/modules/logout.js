@@ -5,7 +5,4 @@ export function logout() {
     // clear frontend state
     clearUser();
     resetState();
-
-    // redirect to login
-    window.location.href = 'login.html';
 }

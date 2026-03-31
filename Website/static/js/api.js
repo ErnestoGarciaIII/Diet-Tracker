@@ -1,5 +1,4 @@
-// api.js
-
+import * as State from './state.js';
 // ==========================
 // GENERIC REQUEST HANDLER
 // ==========================
@@ -40,7 +39,7 @@ export async function login(email, password) {
 export async function register(name, email, password) {
     return request('/api/register', {
         method: 'POST',
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ name: name, email: email, password: password })
     });
 }
 
@@ -48,6 +47,9 @@ export async function register(name, email, password) {
 // USER
 // ==========================
 export async function getUserInfo(userId) {
+    if (!userId) {
+        return console.warn("No valid userId!")
+    }
     return request(`/api/get-user-info?user_id=${userId}`);
 }
 
