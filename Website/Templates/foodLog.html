@@ -3,544 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Food Log - PlatePilot</title>
+    <title>Your Dashboard - PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="stylesheets/mainStyleS.css">
-    <style>
-        /* ════════════════════════════════════════════
-           NUTRIENT PROGRESS BARS
-        ════════════════════════════════════════════ */
-        .nutrient-section {
-            margin-top: 28px;
-        }
-        .nutrient-section h3 {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: rgba(94,234,100,0.75);
-            margin-bottom: 10px;
-        }
-
-        /* The collapsed summary bar */
-        .summary-bar-wrap {
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(94,234,100,0.18);
-            border-radius: 10px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: border-color 0.2s;
-            user-select: none;
-        }
-        .summary-bar-wrap:hover { border-color: rgba(94,234,100,0.5); }
-
-        .summary-bar-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-        }
-        .summary-bar-header span { font-size: 0.9rem; font-weight: 600; }
-        .summary-bar-header .chevron {
-            transition: transform 0.28s;
-            font-size: 0.75rem;
-            color: rgba(94,234,100,0.7);
-        }
-        .summary-bar-wrap.open .chevron { transform: rotate(180deg); }
-
-        /* The single thick summary progress bar */
-        .summary-track {
-            height: 10px;
-            background: rgba(255,255,255,0.08);
-            margin: 0 16px 12px;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-        .summary-fill {
-            height: 100%;
-            border-radius: 6px;
-            transition: width 0.6s cubic-bezier(.23,1,.32,1);
-            background: linear-gradient(90deg, rgba(94,234,100,0.7), rgba(94,234,100,1));
-        }
-
-        /* Expanded individual nutrient rows */
-        .detail-rows {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(.23,1,.32,1);
-        }
-        .summary-bar-wrap.open .detail-rows { max-height: 800px; }
-
-        .detail-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px 16px;
-            border-top: 1px solid rgba(255,255,255,0.04);
-        }
-        .detail-row:last-child { padding-bottom: 12px; }
-        .detail-label {
-            width: 130px;
-            font-size: 0.78rem;
-            color: rgba(255,255,255,0.7);
-            flex-shrink: 0;
-        }
-        .detail-track {
-            flex: 1;
-            height: 6px;
-            background: rgba(255,255,255,0.07);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .detail-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.6s cubic-bezier(.23,1,.32,1);
-        }
-        .detail-pct {
-            width: 42px;
-            text-align: right;
-            font-size: 0.75rem;
-            color: rgba(255,255,255,0.5);
-            flex-shrink: 0;
-        }
-
-        /* Bar colours by group */
-        .bar-macro  { background: linear-gradient(90deg,#f6a623,#f7c948); }
-        .bar-mineral{ background: linear-gradient(90deg,#5eeaf4,#3b9fd8); }
-        .bar-vitamin{ background: linear-gradient(90deg,#e95fa3,#f7775e); }
-
-        /* ════════════════════════════════════════════
-           FOOD SEARCH
-        ════════════════════════════════════════════ */
-        .search-wrap { position: relative; }
-        .search-wrap input {
-            width: 100%;
-            box-sizing: border-box;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(94,234,100,0.25);
-            border-radius: 8px;
-            color: #fff;
-            padding: 10px 40px 10px 14px;
-            font-size: 0.95rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .search-wrap input:focus { border-color: rgba(94,234,100,0.65); }
-        .search-spinner {
-            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-            font-size: 0.9rem; color: rgba(94,234,100,0.7);
-            display: none;
-        }
-
-        .search-results {
-            background: rgba(20,22,40,0.97);
-            border: 1px solid rgba(94,234,100,0.2);
-            border-radius: 8px;
-            margin-top: 4px;
-            max-height: 220px;
-            overflow-y: auto;
-            display: none;
-        }
-        .search-result-item {
-            padding: 10px 14px;
-            cursor: pointer;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-size: 0.88rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .search-result-item:hover { background: rgba(94,234,100,0.08); }
-        .search-result-item .food-name  { font-weight: 600; color: #fff; }
-        .search-result-item .food-cat   { font-size: 0.74rem; color: rgba(94,234,100,0.6); }
-        .search-result-item:last-child  { border-bottom: none; }
-
-        .no-results { padding: 12px 14px; color: rgba(255,255,255,0.4); font-size: 0.85rem; }
-
-        /* ════════════════════════════════════════════
-           TODAY'S LOG LIST
-        ════════════════════════════════════════════ */
-        #foodLog { list-style: none; padding: 0; margin: 0; }
-        #foodLog li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            font-size: 0.88rem;
-        }
-        #foodLog li:last-child { border-bottom: none; }
-        .log-food-name { color: #fff; }
-        .log-food-cal  { color: rgba(94,234,100,0.9); font-weight: 600; font-size: 0.82rem; }
-        .log-remove    { color: rgba(255,80,80,0.7); cursor: pointer; font-size: 0.8rem; padding: 2px 6px; }
-        .log-remove:hover { color: rgba(255,80,80,1); }
-
-        /* no-settings warning */
-        .warn-banner {
-            background: rgba(247,199,72,0.12);
-            border: 1px solid rgba(247,199,72,0.35);
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 0.83rem;
-            color: rgba(247,199,72,0.9);
-            margin-bottom: 14px;
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="..\static\stylesheets\mainStyleS.css">
 </head>
-<body class="bod1">
-    <nav class="navbar">
-        <div class="logo">PlatePilot</div>
-        <div><a href="dashboard.html"><div class="navIcon">
-            <i class="fa-regular fa-house fa-xl" style="color:rgba(94,234,100,1)"></i>
-        </div></a></div>
-        <div><a href="foodLog.html"><div class="navIcon active">
-            <i class="fa-solid fa-clipboard fa-beat fa-xl" style="color:rgb(94,234,100)"></i>
-        </div></a></div>
-        <div><a href="history.html"><div class="navIcon">
-            <i class="fa-solid fa-calendar fa-xl" style="color:rgba(94,234,100,1)"></i>
-        </div></a></div>
-        <div><a href="settings.html"><div class="navIcon">
-            <i class="fa-solid fa-gear fa-xl" style="color:rgba(94,234,100,1)"></i>
-        </div></a></div>
-        <div><a href="logout.html"><div class="navIcon">
-            <i class="fa-solid fa-arrow-right-from-bracket fa-xl" style="color:rgba(94,234,100,1)"></i>
-        </div></a></div>
+<body class="bod1" id="foodLogPage">
+    <!-- Navigation Bar -->
+    <nav class="navbar"> "
+        <img src="{{ url_for('static', filename='images/defaultAvatar.jpg') }}" id="profilePreview" class="navAvatar">
+        <div>
+            <a href="{{ url_for('html_urls', filename='dashboard.html') }}">
+                <div class="navIcon active">
+                    <i class="fa-regular fa-house fa-beat fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="{{ url_for('html_urls', filename='foodLog.html') }}">
+                <div class="navIcon">
+                    <i class="fa-solid fa-clipboard fa-xl" style="color: rgb(94, 234, 100);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="{{ url_for('html_urls', filename='history.html') }}">
+                <div class="navIcon">
+                    <i class="fa-solid fa-calendar fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="{{ url_for('html_urls', filename='settings.html') }}">
+                <div class="navIcon">
+                    <i class="fa-solid fa-gear fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="{{ url_for('html_urls', filename='logout.html') }}">
+                <div class="navIcon">
+                    <i class="fa-solid fa-arrow-right-from-bracket fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
     </nav>
 
-    <main class="dashContent">
+    <main class="dashContent">    
         <div class="card trackerCard">
-            <h2>Fuel the plane ✈️</h2>
-            <p class="formSubtitle">Log your food to track nutrients.</p>
-
-            <!-- Warning if no settings saved -->
-            <div class="warn-banner" id="warnBanner">
-                ⚠️ No profile found — <a href="settings.html" style="color:inherit;text-decoration:underline">set up your profile in Settings</a> to see personalised targets.
-            </div>
-
-            <!-- ── Food search ── -->
+            <h2> Fuel the plane ✈️</h2>
+            <p class="formSubtitle"> Log your calories to move the plane.</p>
+            <!-- Food Input -->
             <div class="inputGroup">
-                <label for="foodSearch">Search Food Database</label>
-                <div class="search-wrap">
-                    <input type="text" id="foodSearch" placeholder="Type a food to search…" autocomplete="off">
-                    <i class="fa-solid fa-circle-notch fa-spin search-spinner" id="searchSpinner"></i>
-                </div>
-                <div class="search-results" id="searchResults"></div>
+                <label for="foodInput"> Food Name</label>
+                <input type="text" id="foodInput" list="foodOptions" placeholder="What did you eat?">
+
+                <datalist id="foodOptions"></datalist>
             </div>
-
-            <!-- ── Manual calorie override ── -->
-            <div class="inputGroup" style="margin-top:10px">
-                <label for="calInput">Calories (kcal) — optional override</label>
-                <input type="number" id="calInput" placeholder="e.g. 350" style="
-                    width:100%;box-sizing:border-box;
-                    background:rgba(255,255,255,0.07);
-                    border:1px solid rgba(94,234,100,0.25);
-                    border-radius:8px;color:#fff;
-                    padding:10px 14px;font-size:0.95rem;outline:none;">
+            <div class="inputGroup">
+                <label for="calInput"> Calories (kcal)</label>
+                <input type="number" id="calInput" placeholder="e.g. 350">
             </div>
-
-            <button class="RUGRbtn pagesBtn-primary full-width" onclick="logFood()" style="margin-top:12px">
-                Log Food
-            </button>
-
-            <!-- ── Today's log list ── -->
-            <div class="logContainer" style="margin-top:20px">
+            <div class="inputGroup">
+                <label for="macrosInput"> Macros</label>
+                <input type="number" id="macrosInput" placeholder="e.g. 350">
+            </div>
+            <div class="inputGroup">
+                <label for="microsInput"> Micros</label>
+                <input type="number" id="microsInput" placeholder="e.g. 350">
+            </div>
+            <!-- Log Food Button -->
+            <button class="RUGRbtn pagesBtn-primary full-width" onclick="logFood()">Log Food</button>
+            <!-- shows vague current logged items-->
+            <div class="logContainer">
                 <label>Today's Log:</label>
                 <ul id="foodLog"></ul>
-                <p id="totalCals" style="font-size:0.85rem;color:rgba(255,255,255,0.5);margin-top:8px"></p>
+            </div>
+            <!-- History Link and return to dashboard link -->
+            <div>
+                <a href="..\Templates\history.html" class="navLink"> View History 
+                    <i class="fa-solid fa-arrow-right fa-xlg" style="color: #3498db;"></i>
+                </a>
             </div>
 
-            <!-- ════════════════════════════════════════════
-                 NUTRIENT PROGRESS BARS
-            ════════════════════════════════════════════ -->
-            <div class="nutrient-section">
-                <h3>Today's Nutrition Progress</h3>
-
-                <!-- MACROS -->
-                <div class="summary-bar-wrap" id="macroBar" onclick="toggleBar('macroBar')">
-                    <div class="summary-bar-header">
-                        <span>🍗 Macronutrients</span>
-                        <i class="fa-solid fa-chevron-down chevron"></i>
-                    </div>
-                    <div class="summary-track">
-                        <div class="summary-fill bar-macro" id="macroSummaryFill" style="width:0%"></div>
-                    </div>
-                    <div class="detail-rows" id="macroDetails"></div>
-                </div>
-
-                <div style="height:10px"></div>
-
-                <!-- MINERALS -->
-                <div class="summary-bar-wrap" id="mineralBar" onclick="toggleBar('mineralBar')">
-                    <div class="summary-bar-header">
-                        <span>🪨 Minerals</span>
-                        <i class="fa-solid fa-chevron-down chevron"></i>
-                    </div>
-                    <div class="summary-track">
-                        <div class="summary-fill bar-mineral" id="mineralSummaryFill" style="width:0%"></div>
-                    </div>
-                    <div class="detail-rows" id="mineralDetails"></div>
-                </div>
-
-                <div style="height:10px"></div>
-
-                <!-- VITAMINS -->
-                <div class="summary-bar-wrap" id="vitaminBar" onclick="toggleBar('vitaminBar')">
-                    <div class="summary-bar-header">
-                        <span>💊 Vitamins</span>
-                        <i class="fa-solid fa-chevron-down chevron"></i>
-                    </div>
-                    <div class="summary-track">
-                        <div class="summary-fill bar-vitamin" id="vitaminSummaryFill" style="width:0%"></div>
-                    </div>
-                    <div class="detail-rows" id="vitaminDetails"></div>
-                </div>
+            <div>
+                <a href="..\Templates\dashboard.html" class="navLink">Back to Dashboard
+                    <i class="fa-solid fa-arrow-right fa-xlg" style="color: #3498db;"></i>
+                </a>
             </div>
-
-            <div style="height:18px"></div>
-            <a href="history.html" class="navLink">View History <i class="fa-solid fa-arrow-right" style="color:#3498db"></i></a>
-            <div style="height:6px"></div>
-            <a href="dashboard.html" class="navLink">Back to Dashboard <i class="fa-solid fa-arrow-right" style="color:#3498db"></i></a>
         </div>
     </main>
 
-    <script>
-    // ═══════════════════════════════════════════════════════════════════════════
-    // STATE
-    // ═══════════════════════════════════════════════════════════════════════════
-    const MINERALS = ['Calcium','Iron','Magnesium','Phosphorus','Potassium','Sodium',
-                      'Zinc','Copper','Manganese','Selenium'];
-    const VITAMINS = ['Vitamin A','Vitamin E','Vitamin D','Vitamin C','Thiamin','Riboflavin',
-                      'Niacin','Pantothenic acid','Vitamin B-6','Folate','Vitamin B-12',
-                      'Choline','Vitamin K'];
-    const MACROS   = ['Protein','Carbs','Fats'];
-
-    // DRI targets (loaded from localStorage, set by settings.html)
-    let targets = { macros:{Protein:0,Carbs:0,Fats:0}, micros:{} };
-
-    // Today's accumulated nutrient totals
-    let logged = { macros:{Protein:0,Carbs:0,Fats:0}, micros:{} };
-    let logItems = [];  // [{name, kcal, nutrients:{...}}]
-
-    // Currently selected search result
-    let selectedFoodNutrients = null;
-    let selectedFoodName      = '';
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // INIT
-    // ═══════════════════════════════════════════════════════════════════════════
-    window.addEventListener('DOMContentLoaded', () => {
-        const dri = JSON.parse(localStorage.getItem('ppDRI') || 'null');
-        if (!dri) {
-            document.getElementById('warnBanner').style.display = 'block';
-        } else {
-            targets.macros = dri.macros;
-            targets.micros = dri.micros;
-        }
-
-        // Load today's log from localStorage
-        const saved = JSON.parse(localStorage.getItem('ppTodayLog') || '[]');
-        logItems = saved;
-        logItems.forEach(item => addNutrients(item.nutrients));
-        renderLog();
-        renderBars();
-    });
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // SEARCH  — calls Flask GET /api/search?q=...
-    // ═══════════════════════════════════════════════════════════════════════════
-    let searchTimer;
-    document.getElementById('foodSearch').addEventListener('input', function () {
-        clearTimeout(searchTimer);
-        const q = this.value.trim();
-        if (q.length < 2) {
-            document.getElementById('searchResults').style.display = 'none';
-            return;
-        }
-        searchTimer = setTimeout(() => doSearch(q), 350);
-    });
-
-    // Hide results on outside click
-    document.addEventListener('click', e => {
-        if (!e.target.closest('.search-wrap') && !e.target.closest('.search-results')) {
-            document.getElementById('searchResults').style.display = 'none';
-        }
-    });
-
-    async function doSearch(q) {
-        const spinner = document.getElementById('searchSpinner');
-        const box     = document.getElementById('searchResults');
-        spinner.style.display = 'block';
-        box.style.display     = 'none';
-
-        try {
-            const res  = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-            const rows = await res.json();
-
-            // Group rows by food_name → { nutrient_name: avg_amount }
-            const foods = {};
-            rows.forEach(r => {
-                if (!foods[r.food_name]) foods[r.food_name] = { category: r.category, nutrients: {} };
-                foods[r.food_name].nutrients[r.nutrient_name] = r.avg_amount;
-            });
-
-            const names = Object.keys(foods).slice(0, 30);
-            box.innerHTML = '';
-
-            if (!names.length) {
-                box.innerHTML = '<div class="no-results">No results found.</div>';
-            } else {
-                names.forEach(name => {
-                    const div = document.createElement('div');
-                    div.className = 'search-result-item';
-                    div.innerHTML = `<span class="food-name">${name}</span>
-                                     <span class="food-cat">${foods[name].category}</span>`;
-                    div.addEventListener('click', () => selectFood(name, foods[name].nutrients));
-                    box.appendChild(div);
-                });
-            }
-            box.style.display = 'block';
-        } catch (e) {
-            box.innerHTML = '<div class="no-results">⚠️ Could not reach database (is the server running?)</div>';
-            box.style.display = 'block';
-        } finally {
-            spinner.style.display = 'none';
-        }
-    }
-
-    function selectFood(name, nutrients) {
-        selectedFoodName      = name;
-        selectedFoodNutrients = nutrients;
-        document.getElementById('foodSearch').value = name;
-        document.getElementById('searchResults').style.display = 'none';
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // LOG FOOD
-    // ═══════════════════════════════════════════════════════════════════════════
-    function logFood() {
-        const name = selectedFoodName || document.getElementById('foodSearch').value.trim();
-        const kcal = parseFloat(document.getElementById('calInput').value) || 0;
-
-        if (!name) { alert('Please search and select a food first.'); return; }
-
-        const nutrients = selectedFoodNutrients ? { ...selectedFoodNutrients } : {};
-        const item = { name, kcal, nutrients };
-        logItems.push(item);
-        addNutrients(nutrients);
-
-        localStorage.setItem('ppTodayLog', JSON.stringify(logItems));
-
-        // Reset inputs
-        document.getElementById('foodSearch').value = '';
-        document.getElementById('calInput').value   = '';
-        selectedFoodName      = '';
-        selectedFoodNutrients = null;
-
-        renderLog();
-        renderBars();
-    }
-
-    function addNutrients(n) {
-        Object.entries(n).forEach(([key, val]) => {
-            if (MACROS.includes(key)) {
-                logged.macros[key] = (logged.macros[key] || 0) + val;
-            } else {
-                logged.micros[key] = (logged.micros[key] || 0) + val;
-            }
-        });
-    }
-
-    function removeItem(idx) {
-        const item = logItems.splice(idx, 1)[0];
-        // Subtract its nutrients
-        Object.entries(item.nutrients).forEach(([key, val]) => {
-            if (MACROS.includes(key)) logged.macros[key] = Math.max(0, (logged.macros[key]||0) - val);
-            else                       logged.micros[key] = Math.max(0, (logged.micros[key]||0) - val);
-        });
-        localStorage.setItem('ppTodayLog', JSON.stringify(logItems));
-        renderLog();
-        renderBars();
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // RENDER LOG LIST
-    // ═══════════════════════════════════════════════════════════════════════════
-    function renderLog() {
-        const ul   = document.getElementById('foodLog');
-        const tot  = document.getElementById('totalCals');
-        ul.innerHTML = '';
-        let totalKcal = 0;
-        logItems.forEach((item, i) => {
-            totalKcal += item.kcal;
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <span class="log-food-name">${item.name}</span>
-                <span style="display:flex;align-items:center;gap:8px">
-                    <span class="log-food-cal">${item.kcal ? item.kcal + ' kcal' : ''}</span>
-                    <span class="log-remove" onclick="removeItem(${i})">✕</span>
-                </span>`;
-            ul.appendChild(li);
-        });
-        tot.textContent = logItems.length
-            ? `Total: ${Math.round(totalKcal)} kcal logged today`
-            : '';
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // RENDER BARS
-    // ═══════════════════════════════════════════════════════════════════════════
-    function pct(got, target) {
-        if (!target) return 0;
-        return Math.min(100, Math.round((got / target) * 100));
-    }
-
-    function renderDetailRows(containerId, keys, loggedObj, targetObj, colorClass) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = '';
-        keys.forEach(key => {
-            const got = loggedObj[key] || 0;
-            const tgt = targetObj[key] || 0;
-            const p   = pct(got, tgt);
-            const row = document.createElement('div');
-            row.className = 'detail-row';
-            row.innerHTML = `
-                <span class="detail-label">${key}</span>
-                <div class="detail-track">
-                    <div class="detail-fill ${colorClass}" style="width:${p}%"></div>
-                </div>
-                <span class="detail-pct">${p}%</span>`;
-            container.appendChild(row);
-        });
-    }
-
-    function avgPct(keys, loggedObj, targetObj) {
-        const vals = keys.map(k => pct(loggedObj[k]||0, targetObj[k]||0));
-        return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 0;
-    }
-
-    function renderBars() {
-        // Macros
-        renderDetailRows('macroDetails',  MACROS,   logged.macros, targets.macros, 'bar-macro');
-        document.getElementById('macroSummaryFill').style.width    = avgPct(MACROS, logged.macros, targets.macros) + '%';
-
-        // Minerals
-        renderDetailRows('mineralDetails', MINERALS, logged.micros, targets.micros, 'bar-mineral');
-        document.getElementById('mineralSummaryFill').style.width  = avgPct(MINERALS, logged.micros, targets.micros) + '%';
-
-        // Vitamins
-        renderDetailRows('vitaminDetails', VITAMINS, logged.micros, targets.micros, 'bar-vitamin');
-        document.getElementById('vitaminSummaryFill').style.width  = avgPct(VITAMINS, logged.micros, targets.micros) + '%';
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // TOGGLE EXPAND / COLLAPSE
-    // ═══════════════════════════════════════════════════════════════════════════
-    function toggleBar(id) {
-        document.getElementById(id).classList.toggle('open');
-    }
-    </script>
-
-    <script src="js files/dashboard.js"></script>
+    <script type="module" src="..\static\js\main.js"></script>
 </body>
 </html>
