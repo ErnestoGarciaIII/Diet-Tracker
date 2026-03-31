@@ -3,148 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - PlatePilot</title>
+    <title>Your Dashboard - PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
-    <style>
-        /* ── Settings-specific additions ── */
-        .settings-form {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            margin-top: 16px;
-        }
-
-        .form-row {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-            .form-row label {
-                font-size: 0.8rem;
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
-                color: #111;
-            }
-
-            .form-row input,
-            .form-row select {
-                background: rgba(255,255,255,0.07);
-                border: 1px solid rgba(94,234,100,0.25);
-                border-radius: 8px;
-                color: #111;
-                padding: 10px 14px;
-                font-size: 0.95rem;
-                outline: none;
-                transition: border-color 0.2s;
-            }
-
-                .form-row input:focus,
-                .form-row select:focus {
-                    border-color: rgba(94,234,100,0.75);
-                }
-
-                .form-row select option {
-                    background: #1a1a2e;
-                }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }
-
-        .save-btn {
-            margin-top: 8px;
-            background: rgba(94,234,100,0.15);
-            border: 1px solid rgba(94,234,100,0.6);
-            color: rgb(94,234,100);
-            border-radius: 10px;
-            padding: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-        }
-
-            .save-btn:hover {
-                background: rgba(94,234,100,0.28);
-                transform: translateY(-1px);
-            }
-
-            .save-btn:active {
-                transform: translateY(0);
-            }
-
-        .toast {
-            position: fixed;
-            bottom: 28px;
-            left: 50%;
-            transform: translateX(-50%) translateY(60px);
-            background: rgb(94,234,100);
-            color: #111;
-            border-radius: 10px;
-            padding: 10px 24px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), opacity 0.35s;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 999;
-        }
-
-            .toast.show {
-                transform: translateX(-50%) translateY(0);
-                opacity: 1;
-            }
-
-        .section-heading {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: rgba(94,234,100,0.7);
-            margin: 8px 0 2px;
-            border-bottom: 1px solid rgba(94,234,100,0.15);
-            padding-bottom: 6px;
-        }
-    </style>
+	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="logo">PlatePilot</div>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar"> "
+        <img src="{{ url_for('static', filename='images/defaultAvatar.jpg') }}" id="profilePreview" class="navAvatar">
         <div>
-            <a href="dashboard.html">
-                <div class="navIcon">
-                    <i class="fa-regular fa-house fa-xl" style="color:rgba(94,234,100,1)"></i>
-                </div>
-            </a>
-        </div>
-        <div>
-            <a href="foodLog.html">
-                <div class="navIcon">
-                    <i class="fa-solid fa-clipboard fa-xl" style="color:rgb(94,234,100)"></i>
-                </div>
-            </a>
-        </div>
-        <div>
-            <a href="history.html">
-                <div class="navIcon">
-                    <i class="fa-solid fa-calendar fa-xl" style="color:rgba(94,234,100,1)"></i>
-                </div>
-            </a>
-        </div>
-        <div>
-            <a href="settings.html">
+            <a href="{{ url_for('html_urls', filename='dashboard.html') }}">
                 <div class="navIcon active">
-                    <i class="fa-solid fa-gear fa-beat fa-xl" style="color:rgba(94,234,100,1)"></i>
+                    <i class="fa-regular fa-house fa-beat fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
         <div>
-            <a href="logout.html">
+            <a href="{{ url_for('html_urls', filename='foodLog.html') }}">
                 <div class="navIcon">
-                    <i class="fa-solid fa-arrow-right-from-bracket fa-xl" style="color:rgba(94,234,100,1)"></i>
+                    <i class="fa-solid fa-clipboard fa-xl" style="color: rgb(94, 234, 100);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="{{ url_for('html_urls', filename='history.html') }}">
+                <div class="navIcon">
+                    <i class="fa-solid fa-calendar fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="{{ url_for('html_urls', filename='settings.html') }}">
+                <div class="navIcon">
+                    <i class="fa-solid fa-gear fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                </div>
+            </a>
+        </div>
+        <div>
+            <a href="{{ url_for('html_urls', filename='logout.html') }}">
+                <div class="navIcon">
+                    <i class="fa-solid fa-arrow-right-from-bracket fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
@@ -152,90 +51,95 @@
 
     <div class="dashContent">
         <div class="card settingsCard">
-            <h1>Account Settings</h1>
-            <p class="formSubtitle">Your info is used to calculate personalised nutrition targets.</p>
-
-            <form id="settings-form" class="settings-form">
-
-                <!-- ── Personal info ── -->
-                <p class="section-heading">Personal Info</p>
-
-                <div class="form-row">
-                    <label for="userName">Display Name</label>
-                    <input type="text" id="userName" placeholder="Your name">
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-row">
-                        <label for="userSex">Sex</label>
-                        <select id="userSex">
-                            <option value="">-- select --</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                        </select>
-                    </div>
-                    <div class="form-row">
-                        <label for="userAge">Age (years)</label>
-                        <input type="number" id="userAge" placeholder="e.g. 28" min="15" max="100">
+            <h1 class="trackerCard">Account Settings</h1>
+            <p class="formSubtitle">Manage your account information.</p>
+            <div> 
+                <h2> Basic info</h2>
+                <div class="profilePicRow">
+                    <span class="profileLabel"> Profile Picture</span>
+                    <div class="avatarEdit">
+                        <img src="{{ url_for('static', filename='images/avatar.jpg') }}" id="profilePreview" class="mainAvatar">
+                        <div class="avatarControls">
+                            <span class="upload" id="uploadTrigger">Upload new picture</span>
+                            <span class="remove" id="removePic">Remove</span>
+                            <input type="file" id="hiddenFileInput" accept="image/*" style="display:none;">
+                        </div>
                     </div>
                 </div>
-
-                <div class="form-grid">
-                    <div class="form-row">
-                        <!-- Displayed in lbs, converted to kg before sending to backend -->
-                        <label for="userWeight">Weight (lbs)</label>
-                        <input type="number" id="userWeight" placeholder="e.g. 165" min="50" max="600">
-                    </div>
-                    <div class="form-row">
-                        <!-- Displayed in inches, converted to cm before sending to backend -->
-                        <label for="userHeight">Height (inches)</label>
-                        <input type="number" id="userHeight" placeholder="e.g. 68" min="36" max="96">
-                    </div>
+            </div>
+            <div class="infoList" id="biometricsList">
+                <div class="infoItem" onclick="enterEditMode('userNameDisplay', 'fullName')">
+                    <span class="label">Name:</span>
+                    <span class="value" id="userNameDisplay"></span>
+                    <span class="arrow">></span>
                 </div>
-
-                <!-- ── Fitness profile ── -->
-                <p class="section-heading">Fitness Profile</p>
-
-                <div class="form-row">
-                    <label for="activityLevel">Activity Level</label>
-                    <select id="activityLevel">
-                        <option value="">-- select --</option>
-                        <option value="1">1 – Sedentary (desk job, little exercise)</option>
-                        <option value="2">2 – Lightly Active (light exercise 1–3 days/wk)</option>
-                        <option value="3">3 – Moderately Active (moderate exercise 3–5 days/wk)</option>
-                        <option value="4">4 – Very Active (hard exercise 6–7 days/wk)</option>
-                    </select>
+                <div class="infoItem">
+                    <span class="label">Gender:</span>
+                    <span class="value" id="userGenderDisplay"></span>
+                    <span class="arrow">></span>
                 </div>
-
-                <div class="form-row">
-                    <label for="userGoal">Goal</label>
-                    <select id="userGoal">
-                        <option value="">-- select --</option>
-                        <option value="1">1 – Maintain (standard)</option>
-                        <option value="2">2 – Weight Loss (standard)</option>
-                        <option value="3">3 – Muscle Gain</option>
-                        <option value="4">4 – Maintain (Weight Lifter)</option>
-                        <option value="5">5 – Weight Loss (Weight Lifter)</option>
-                    </select>
+                <div class="infoItem">
+                    <span class="label">Age:</span>
+                    <span class="value" id="userAgeDisplay"></span>
+                    <span class="arrow">></span>
                 </div>
-
-                <!-- ── Account info ── -->
-                <p class="section-heading">Account Info</p>
-
-                <div class="form-row">
-                    <label for="userEmail">Email</label>
-                    <input type="email" id="userEmail" placeholder="you@email.com">
+                    <div class="infoItem" onclick="enterEditMode('userWeightDisplay', 'Weight')">
+                    <span class="label">Weight (Lbs):</span>
+                    <span class="value" id="userWeightDisplay"></span>
+                    <span class="arrow">></span>
                 </div>
-                <button type="submit" id="saveBtn" class="save-btn">
-                    Save Settings
-                </button>
-
-                <button type="button" class="RUGRbtn deleteBtn" style="margin-top:4px">Delete Account</button>
-            </form>
+                    <div class="infoItem" onclick="enterEditMode('userHeightDisplay', 'Height')">
+                    <span class="label">Height (In):</span>
+                    <span class="value" id="userHeightDisplay"></span>
+                    <span class="arrow">></span>
+                </div>
+            </div>
+            <h3 class="accountTxt">Account Info</h3>
+            <div class="infoList">
+                <div class="infoItem" onclick="enterEditMode('userEmailDisplay', 'email')">
+                    <span class="label">Email:</span>
+                    <span class="value" id="userEmailDisplay"></span>
+                    <span ><a href="#" class="arrow">></a></span>
+                </div>
+                
+                <div class="infoItem" onclick="enterEditMode('userPassword', 'Password')">
+                    <span class="label">Password:</span>
+                    <span class="value" id="userPassword">••••••••</span>
+                    <span class="arrow">></a></span>
+                </div>
+            </div>
+            
+            
+            <footer class="settingsFooter">
+                <div id="editControls" class="edControls">
+                    <button class="RUGRbtn cancelBtn" onclick="exitEditMode(false)">Cancel</button>
+                    <button class="RUGRbtn pagesBtn-primary" onclick="exitEditMode(true)">Save Changes</button>
+                </div>
+                <button class="RUGRbtn deleteBtn" id="deleteAccountBtn" onclick="deleteAccount()">Delete Account</button>
+            </footer>
+        </div>
+    </div>
+    <div class="dashContent">
+        <div class="card settingsCard">
+            <h2 class="resHeader">Changes to restrictions (if any)?</h2>
+            <p class="formSubtitle">Tell Us what to exclude.</p>
+            <div class="tagsGrid">
+                <div class="tag" onclick="toggleTag(this, 'vegan')">Vegan</div>
+                <div class="tag" onclick="toggleTag(this, 'vegetarian')">Vegetarian</div>
+                <div class="tag" onclick="toggleTag(this, 'gluten-free')">Gluten-Free</div>
+                <div class="tag" onclick="toggleTag(this, 'dairy-free')">Dairy-Free</div>
+                <div class="tag" onclick="toggleTag(this, 'keto')">Keto</div>
+                <div class="tag" onclick="toggleTag(this, 'nut-allergy')">No Nuts</div>
+                <div class="tag" onclick="toggleTag(this, 'pescatarian')">Pescatarian</div>
+                <div class="tag" onclick="toggleTag(this, 'Lactose Intolerant')">Lactose Intolerant</div>
+                <div class="tag" onclick="toggleTag(this, 'None')">None</div>
+            </div>
+            <button class="RUGRbtn pagesBtn-primary full-width mt-20" onclick="finishOnboarding()">Save & Recalculate Plan</button>
+            <button class="RUGRbtn pagesBtn-secondary full-width mt-10" onclick="history.back()">Back</button>
         </div>
     </div>
 
-    <div class="toast" id="toast">✅ Settings saved!</div>
-    <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+
+	<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
 </body>
 </html>

@@ -42,7 +42,7 @@
                         </button>
                     </form>
                     <!-- form elements i.e login link -->
-                    <p class="account">Already have an account? <a href="login.html">Login here</a></p>
+                    <p class="account">Already have an account? <a href="{{ url_for('html_urls', filename='login.html') }}">Login here</a></p>
                 </div>
                 <!-- form elements i.e mascot/motto-->
                 <div class="imageSide">
@@ -51,5 +51,6 @@
             </div>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='js/auth.js') }}"></script></body>
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
 </html>

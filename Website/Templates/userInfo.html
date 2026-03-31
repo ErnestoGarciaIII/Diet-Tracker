@@ -11,7 +11,7 @@
     <!-- progress bar section -->
     <div class="onboardingContainer">
         <div class="progressBarContainer">
-            <div class="profileProgressBar" style="width: 33%;"></div>
+            <div class="profileProgressBar" style="width: 50%;"></div>
         </div>
         <!-- title section -->
         <div class="formCard">
@@ -34,9 +34,9 @@
                     <div class="radioButton">
                         <div for="Sex" style="font-weight: bold;">Sex</div>
                         <div>
-                            <input type="radio" id="male" name="gender" value="male" required>
+                            <input type="radio" id="male" name="sex" value="Male" required>
                             <label for="male">Male</label>
-                            <input type="radio" id="female" name="gender" value="female" required>
+                            <input type="radio" id="female" name="sex" value="Female" required>
                             <label for="female">Female</label>
                         </div>
                     </div>
@@ -46,13 +46,39 @@
                     <label for="height">Height (in)</label>
                     <input type="number" id="userHeightDisplay" placeholder="e.g. 67" required>
                 </div>
-                <!-- form elements i.e activity level -->
-                <button type="submit" class="RUGRbtn pagesBtn-primary full-width">Continue</button>
-                <button class="RUGRbtn pagesBtn-secondary full-width" onclick="history.back()">Back</button>
+                <!-- form elements i.e. activity level -->
+                <div>
+                    <div class="radioButton">
+                        <div for="activityLevel" style="font-weight: bold;">Activity Level</div>
+                        <div>
+                            <input type="radio" id="sedentary" name="activityLevel" value="sedentary" required>
+                            <label for="sedentary">Sedentary</label>
+                            <input type="radio" id="light" name="activityLevel" value="light" required>
+                            <label for="light">Lightly Active</label>
+                            <input type="radio" id="moderate" name="activityLevel" value="moderate" required>
+                            <label for="moderate">Moderately Active</label>
+                            <input type="radio" id="very" name="activityLevel" value="very" required>
+                            <label for="very">Very Active</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- form elements i.e profile picture -->
+                <div class="inputGroup">
+                    <label style="font-weight: bold;">Profile Picture </label>
+                    <div class="avatarUploadCon">
+                        <img src="{{ url_for('static', filename='images/defaultProfile.jpg') }}" id="registrationPreview" class="navAvatar" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
+                        <button type="button" class="RUGRbtn pagesBtn-secondary" id="uploadTrigger">Choose Photo</button>
+                        <input type="file" id="userAvatarInput" accept="image/*" style="display: none;" required>
+                    </div>
+                </div>
+
+                <!-- form elements i.e activity level bar -->
+                <button type="button" id="continueBtn" class="RUGRbtn pagesBtn-primary full-width" data-url="{{ url_for('html_urls', filename='goals.html') }}">Continue</button>
+                <button type="button" id="backBtn" class="RUGRbtn pagesBtn-secondary full-width">Back</button>
             </form>
         </div>
         
     </div>
 	<script src="{{ url_for('static', filename='js/userInfo.js') }}"></script>
-	</body>
+</body>
 </html>

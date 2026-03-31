@@ -13,41 +13,39 @@
         <div class="progressBarContainer">
             <div class="profileProgressBar" style="width: 66%;"></div>
         </div>
-
+        <!-- title section -->
         <div class="formCard">
             <h2>What is your goal?</h2>
             <p class="formSubtitle">This helps the AI calculate your daily targets.</p>
-
-            <form id="goalForm">
-                <div class="goalGrid">
-                    <div class="goalCard" onclick="selectGoal(this, 'Lose')">
-                        <div class="goalIcon">🔥</div>
-                        <div class="goalContent">
-                            <h3>Weight Loss</h3>
-                            <p>Burn fat and get leaner</p>
-                        </div>
-                    </div>
-
-                    <div class="goalCard" onclick="selectGoal(this, 'Maintain')">
-                        <div class="goalIcon">⚖️</div>
-                        <div class="goalContent">
-                            <h3>Maintain</h3>
-                            <p>Keep your current weight</p>
-                        </div>
-                    </div>
-
-                    <div class="goalCard" onclick="selectGoal(this, 'Gain')">
-                        <div class="goalIcon">💪</div>
-                        <div class="goalContent">
-                            <h3>Muscle Build</h3>
-                            <p>Build strength and mass</p>
-                        </div>
+            <!-- section 1-->
+            <div class="goalGrid">
+                <div class="goalCard" id="lose" data-goalId="1">
+                    <div class="goalIcon">🔥</div>
+                    <div class="goalContent">
+                        <h3>Weight Loss</h3>
+                        <p>Burn fat and get leaner</p>
                     </div>
                 </div>
+                <!-- section 2-->
+                <div class="goalCard" id="maintain" data-goalId="2">
+                    <div class="goalIcon">⚖️</div>
+                    <div class="goalContent">
+                        <h3>Maintain</h3>
+                        <p>Keep your current weight</p>
+                    </div>
+                </div>
+                <!-- section 3-->
+                <div class="goalCard" id="gain" data-goalId="3">
+                    <div class="goalIcon">💪</div>
+                    <div class="goalContent">
+                        <h3>Muscle Build</h3>
+                        <p>Build strength and mass</p>
+                    </div>
+                </div>
+            </div>
 
-                <button type="submit" class="RUGRbtn pagesBtn-primary full-width">Continue</button>
-                <button type="button" class="RUGRbtn pagesBtn-secondary full-width" onclick="history.back()">Back</button>
-            </form>
+            <button type="button" id="continueBtn" class="RUGRbtn pagesBtn-primary full-width" data-url="{{ url_for('html_urls', filename='restrictions.html') }}">Continue</button>
+            <button type="button" id="backBtn" class="RUGRbtn pagesBtn-secondary full-width">Back</button>
         </div>
     </div>
 

@@ -1,46 +1,47 @@
-
-//--------------- Goals page JavaScript -----------------
-
 // Initialize the selected goal variable
 let selectedGoal = '';
 
+document.addEventListener('DOMContentLoaded', () => {
+    const cards = document.querySelectorAll('.goalCard');
+    cards.forEach(card => {
+        card.addEventListener('click', function () {
+            const goalId = parseInt(this.dataset.goalid);
+            selectGoal(this, goalId);
+        });
+    });
+
+    const continueBtn = document.getElementById('continueBtn');
+    if (continueBtn) {
+        continueBtn.addEventListener('click', async (event) => {
+            event.preventDefault();
+            await updateGoal();
+        });
+    }
+    // navigate to the history page when back button is clicked
+    const backButton = document.getElementById('backBtn').addEventListener('click', function () {
+        history.back();
+    });
+});
 /**
  * Handles the selection of a goal card
  * @param {HTMLElement} element - The card element that was clicked
  * @param {string} goal - The value of the goal (e.g., 'lose', 'gain')
  */
-
-function selectGoal(element, goal) {
-    // 1. Remove 'selected' class from all cards to reset the UI
+function selectGoal(element, goalId) {
     const allCards = document.querySelectorAll('.goalCard');
+
     allCards.forEach(card => {
         card.classList.remove('selected');
     });
 
-    // 2. Add 'selected' class to the clicked card for the visual highlight
     element.classList.add('selected');
-    
-    // 3. Store the selection in memory and LocalStorage for the AI to use later
-    selectedGoal = goal;
-    localStorage.setItem('userGoal', goal);
-    
-    console.log("Goal saved to LocalStorage:", goal);
+    selectedGoal = goalId;
+    console.log("Goal ID selected:", goalId);
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    const goalForm = document.getElementById('goalForm');
-    if (goalForm) {
-        goalForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            await nextStep();
-        });
-    }
-});
-
 /**
  * Validates selection and navigates to the next page
  */
-async function nextStep() {
+async function updateGoal() {
     if (!selectedGoal) {
         alert("Please select a goal to proceed!");
         return;
@@ -59,7 +60,7 @@ async function nextStep() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 user_id: user_id,
-                goal: selectedGoal
+                goal_id: selectedGoal
             })
         });
         const updateResult = await updateResponse.json();
@@ -68,13 +69,28 @@ async function nextStep() {
             throw new Error(updateResult.error || "Failed to update database");
         }
 
-        // Save goal to localStorage
-        localStorage.setItem('goal', JSON.stringify(updateResult));
-
         alert("User goal saved successfully!");
+        // Calculate DRI
+        const driResponse = await fetch('/api/dri', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: user_id
+            })
+        });
 
-        // Redirect to the final onboarding step
-        window.location.href = 'restrictions.html';
+        const driResult = await driResponse.json();
+
+        if (!driResponse.ok) {
+            throw new Error(driResult.error || "Failed to calculate DRI");
+        }
+
+        // Save DRI to localStorage -- leaving this for now, but this will be saved in the database in the future
+        localStorage.setItem('userProfile', JSON.stringify(driResult));
+        console.log(`DRI calculated:\n${driResult}`);
+        // navigate to the restrictions page
+        const continueBtn = document.getElementById('continueBtn')
+        window.location.href = continueBtn.dataset.url;
     } catch (error) {
         console.error("Error:", error);
         alert(error.message);

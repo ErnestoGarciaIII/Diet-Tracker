@@ -1,65 +1,60 @@
-// Initialize an array to hold multiple selections
-let selectedRestrictions = [];
+document.addEventListener('DOMContentLoaded', () => {
+    const tags = document.querySelectorAll('.tag');
+    let selectedRestrictions = [];
 
-/**
- * Toggles a restriction tag on or off
- * @param {HTMLElement} element - The tag element clicked
- * @param {string} value - The restriction value (e.g., 'vegan', 'nuts')
- */
-function toggleTag(element, value) {
-    // Check if the item is already in our array
-    const index = selectedRestrictions.indexOf(value);
+    tags.forEach(tag => {
+        tag.addEventListener('click', () => {
+            const value = tag.dataset.value;
 
-    if (index > -1) {
-        // If it exists, remove it (Deselect)
-        selectedRestrictions.splice(index, 1);
-        element.classList.remove('tag-active');
-    } else {
-        // If it doesn't exist, add it (Select)
-        selectedRestrictions.push(value);
-        element.classList.add('tag-active');
-    }
+            // Toggle selection
+            const index = selectedRestrictions.indexOf(value);
+            if (index > -1) {
+                selectedRestrictions.splice(index, 1);
+                tag.classList.remove('tag-active');
+            } else {
+                selectedRestrictions.push(value);
+                tag.classList.add('tag-active');
+            }
 
-    console.log("Current Restrictions:", selectedRestrictions);
-}
+            console.log("Current Restrictions:", selectedRestrictions);
+        });
+    });
 
-/**
- * Saves selections and completes the onboarding
- */
-async function finishOnboarding() {
-    // Get user_id from localStorage
-    const user_id = localStorage.getItem('user_id');
-    if (!user_id) {
-        alert("User not identified. Please log in again.");
-        return;
-    }
-    try {
-        const updateResponse = await fetch("/set-restrictions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                user_id: user_id,
-                restrictions: selectedRestrictions
-            })
-        })
-
-        const updateResult = await updateResponse.json();
-
-        if (!updateResponse.ok) {
-            throw new Error(updateResult.error || "Failed to update database");
+    const finishBtn = document.getElementById('finishBtn');
+    finishBtn.addEventListener('click', async () => {
+        const user_id = localStorage.getItem('user_id');
+        if (!user_id) {
+            alert("User not identified. Please log in again.");
+            return;
         }
 
-        // We save the array as a JSON string so LocalStorage can store it properly
-        localStorage.setItem('userRestrictions', JSON.stringify(selectedRestrictions));
+        try {
+            const updateResponse = await fetch("/set-restrictions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    user_id: user_id,
+                    restrictions: selectedRestrictions
+                })
+            });
 
-        alert("User restrictions saved successfully!");
-        
-        // Redirect to the final Dashboard
-        window.location.href = 'dashboard.html';
-    } catch (error) {
-        console.error("Error:", error);
-        alert(error.message);
-    }
-}
+            const updateResult = await updateResponse.json();
+
+            if (!updateResponse.ok) {
+                throw new Error(updateResult.error || "Failed to update database");
+            }
+
+            localStorage.setItem('userRestrictions', JSON.stringify(selectedRestrictions));
+            alert("User restrictions saved successfully!");
+            window.location.href = 'dashboard.html';
+        } catch (error) {
+            console.error("Error:", error);
+            alert(error.message);
+        }
+    });
+
+    const backBtn = document.getElementById('backBtn');
+    backBtn.addEventListener('click', () => {
+        history.back();
+    });
+});
