@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
-<<<<<<< Updated upstream
-    <link rel="stylesheet" href="..\static\stylesheets\mainStyleS.css">
-=======
 	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
->>>>>>> Stashed changes
 </head>
 <body id="loginPage">
     <div class="onboardingContainer">
@@ -37,28 +33,16 @@
                         </button>
                     </form>
                     <!-- form elements i.e different links -->
-<<<<<<< Updated upstream
-                    <p class="account" id="account">Don't have an account? <a href="..\Templates\register.html">Register here</a></p>
-=======
                     <p class="account" id="account">Don't have an account? <a href="{{ url_for('html_urls', filename='register.html') }}">Register here</a></p>
->>>>>>> Stashed changes
                     <p class="account" id="forgotPassword">Forgot password? <a href="#">Reset here</a></p>
                 </div>
                 <!-- form elements i.e mascot/motto-->
                 <div class="imageSide" id="imageSide">
-<<<<<<< Updated upstream
-                    <img src="..\static\images\MascotPilot.png" alt="Healthy Lifestyle">
-=======
                     <img src="{{ url_for('static', filename='images/MascotPilot.png') }}" alt="Healthy Lifestyle">
->>>>>>> Stashed changes
                 </div>
             </div>
         </div>
     </div>
-<<<<<<< Updated upstream
-    <script src="..\static\js\main.js"></script>
-=======
 	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
->>>>>>> Stashed changes
 </body>
 </html>

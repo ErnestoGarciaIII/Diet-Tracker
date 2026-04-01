@@ -2,7 +2,7 @@
 // PRIVATE STATE
 // ==========================
 let user = null;
-let localUserId = null;
+let userId = null;
 
 let progress = {
     calories: 0,
@@ -17,11 +17,14 @@ let ui = {
 // ==========================
 // USER STATE
 // ==========================
-export function setLocalUserId(user_id) {
-    localUserId = localStorage.setItem('user_id', user_id);
+export function setUserId(user_id) {
+    localStorage.setItem('user_id', user_id);
+    userId = user_id;
 }
-export function getLocalUserId() {
-    return localUserId;
+export function getUserId() {
+    if (!userId)
+        userId = localStorage.getItem('user_id'); //try to get a user id
+    return userId;  //userId can be null
 }
 export function setUser(userData) {
     user = userData;

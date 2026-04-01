@@ -3,7 +3,6 @@ import { getElement, getInputValue, showError } from '../utils.js';
 import * as State from '../state.js';
 
 export function initRegister() {
-    alert("you've entered the init method!")
     const form = getElement('credentialsForm');
     if (!form) return;
 
@@ -14,7 +13,6 @@ export function initRegister() {
         const email = getInputValue('email');
         const password = getInputValue('password');
         const confirm = getInputValue('confirmPassword');
-        alert("you made it past the getInputValueMethods!")
         if (!name || !email || !password || !confirm) {
             return showError("Please fill in all fields.");
         }
@@ -27,19 +25,14 @@ export function initRegister() {
             return showError("Passwords do not match.");
         }
 
-        alert(`${name} ; ${email} ; ${password}` )
-
         try {
             const data = await register(name, email, password);
-            alert(data.user_id);
+            State.setUserId(data.user_id);
             // go to userInfo page
-            State.setLocalUserId(data.user_id);
-            alert(State.getLocalUserId());
             const sumbitBtnData = getElement('submitBtn').dataset;
             window.location.href = sumbitBtnData.url;
-
         } catch (err) {
-            showError("hello" + err.message);
+            showError(err.message);
         }
     });
 }
