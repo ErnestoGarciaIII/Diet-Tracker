@@ -5,17 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Dashboard - PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
-<<<<<<< Updated upstream
-    <link rel="stylesheet" href="..\static\stylesheets\mainStyleS.css">
-</head>
-<body>
-    <nav class="navbar">
-        <img src="..\static\images\defaultAvatar.jpg" id="profilePreview" class="navAvatar">
-        <div>
-            <a href="..\Templates\dashboard.html">
-                <div class="navIcon">
-                    <i class="fa-regular fa-house fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
-=======
 	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
 <body id="historyPage">
@@ -26,61 +15,39 @@
             <a href="{{ url_for('html_urls', filename='dashboard.html') }}">
                 <div class="navIcon active">
                     <i class="fa-regular fa-house fa-beat fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
->>>>>>> Stashed changes
                 </div>
             </a>
         </div>
         <div>
-<<<<<<< Updated upstream
-            <a href="..\Templates\foodLog.html">
-=======
             <a href="{{ url_for('html_urls', filename='foodLog.html') }}">
->>>>>>> Stashed changes
                 <div class="navIcon">
                     <i class="fa-solid fa-clipboard fa-xl" style="color: rgb(94, 234, 100);"></i>
                 </div>
             </a>
         </div>
         <div>
-<<<<<<< Updated upstream
-            <a href="..\Templates\history.html">
-                <div class="navIcon active">
-                    <i class="fa-solid fa-calendar fa-beat fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
-=======
             <a href="{{ url_for('html_urls', filename='history.html') }}">
                 <div class="navIcon">
                     <i class="fa-solid fa-calendar fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
->>>>>>> Stashed changes
                 </div>
             </a>
         </div>
         <div>
-<<<<<<< Updated upstream
-            <a href="..\Templates\settings.html">
-=======
             <a href="{{ url_for('html_urls', filename='settings.html') }}">
->>>>>>> Stashed changes
                 <div class="navIcon">
                     <i class="fa-solid fa-gear fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
         <div>
-<<<<<<< Updated upstream
-            <a href="..\Templates\logout.html">
-=======
             <a href="{{ url_for('html_urls', filename='logout.html') }}">
->>>>>>> Stashed changes
                 <div class="navIcon">
                     <i class="fa-solid fa-arrow-right-from-bracket fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
     </nav>
-<<<<<<< Updated upstream
-=======
 	
->>>>>>> Stashed changes
     <main class="dashContent">
         <div class="card">
             <h1 class="trackerCard">Activity History</h1>
@@ -91,40 +58,6 @@
                 <h2 id="monthDisplay"></h2>
                 <button onclick="changeMonth(1)" class="calendarBtn"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
-<<<<<<< Updated upstream
-
-            <!-- calendar section-->
-            <div id="calendarGrid" class="calendarGrid">
-                <div class="day-label">Sun</div>
-                <div class="day-label">Mon</div>
-                <div class="day-label">Tue</div>
-                <div class="day-label">Wed</div>
-                <div class="day-label">Thu</div>
-                <div class="day-label">Fri</div>
-                <div class="day-label">Sat</div>
-            </div>
-
-            <!-- Jump to Today and Clear History Buttons -->
-            <div class="btnSec">
-                <button onclick="jumpToToday()" class="jumpBtn">
-                    <i class="fa-solid fa-calendar-day"></i> Jump to Today
-                </button>
-
-                <button onclick="clearHistory()" class="clearBtn">
-                    <i class="fa-solid fa-trash-can"></i> Clear All History
-                </button>
-            </div>
-
-            <!-- History display-->
-            <div id="dayDetails" class="dayDetails">
-                <h3 id="selectedDateHeader">Select a day</h3>
-                <div id="historyList"></div>
-            </div>
-        </div>
-    </main>
-    <script src="..\static\js\main.js"></script>
-=======
->>>>>>> Stashed changes
 
             <!-- calendar section-->
             <div id="calendarGrid" class="calendarGrid">
