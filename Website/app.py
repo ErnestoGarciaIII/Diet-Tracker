@@ -429,7 +429,7 @@ def get_nutrients():
     params = [fdc_id] + NUTRIENT_IDS
  
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_to_database();
         conn.row_factory = sqlite3.Row
         cur  = conn.cursor()
         cur.execute(sql, params)
