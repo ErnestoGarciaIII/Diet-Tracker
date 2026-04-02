@@ -23,6 +23,11 @@ async function loadUser() {
         getElement('userGoal').value = user.goal || '';
         getElement('userEmail').value = user.email || '';
 
+        // Load saved profile picture
+        if (getElement('profilePreview') && user.profile_picture) {
+            getElement('profilePreview').src = user.profile_picture;
+        }
+
     } catch (err) {
         showError("Failed to load user.");
     }

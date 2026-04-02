@@ -31,6 +31,11 @@ function renderUserInfo(user) {
         getElement('userNameDisplay').innerText = user.name || 'Guest User';
     }
 
+    // Load saved profile picture
+    if (getElement('profilePreview') && user.profile_picture) {
+        getElement('profilePreview').src = user.profile_picture;
+    }
+
     const calorieTarget = calculateCalories(user.goal);
 
     if (getElement('calorieTarget')) {
