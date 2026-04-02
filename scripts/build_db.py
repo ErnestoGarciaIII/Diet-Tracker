@@ -75,8 +75,9 @@ CREATE TABLE IF NOT EXISTS Users (
     sex TEXT,
     height_inches INTEGER,
     weight_lbs INTEGER,
-    goal INTEGER
-    activity_level INTEGER
+    goal INTEGER,
+    activity_level INTEGER,
+    profile_picture TEXT
 )
 """)
 

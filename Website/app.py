@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import sys
 import os
+from uuid import uuid4
 
 # Add the directory containing PlatePilotUser.py to path
 dietTrackerfolderDir = os.path.dirname(os.path.dirname(__file__))
@@ -31,7 +32,7 @@ def query_db_for_user_info(user_id, returnJSON=True):
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT name, email, age, sex, height_inches, weight_lbs, goal, activity_level
+            SELECT name, email, age, sex, height_inches, weight_lbs, goal, activity_level, profile_picture
             FROM Users
             WHERE id = ?
         """, (user_id,))
@@ -41,7 +42,7 @@ def query_db_for_user_info(user_id, returnJSON=True):
         if not row:
             return jsonify({'error': 'User not found'}), 404
 
-        name, email, age, sex, height_in, weight_lbs, goal, activity_level = row
+        name, email, age, sex, height_in, weight_lbs, goal, activity_level, profile_picture = row
 
         cur.execute("""
             SELECT r.name
@@ -62,10 +63,11 @@ def query_db_for_user_info(user_id, returnJSON=True):
                 'weight_lbs': weight_lbs,
                 'goal': goal,
                 'activity_level': activity_level,
+                'profile_picture': profile_picture,
                 'restrictions': restrictions
             })
         else:
-            return (name, email, age, sex, height_in, weight_lbs, goal, activity_level, restrictions)
+            return (name, email, age, sex, height_in, weight_lbs, goal, activity_level, profile_picture, restrictions)
 
     except Exception as e:
         print("[ERROR]: ", e)
@@ -155,9 +157,9 @@ def update_user():
 
         cur.execute("""
             UPDATE users
-            SET age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?
+            SET age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = COALESCE(?, profile_picture)
             WHERE id = ?
-        """, (age, weight_lbs, sex, height_inches, goal, activity_level, user_id))
+        """, (age, weight_lbs, sex, height_inches, goal, activity_level, data.get('profile_picture'), user_id))
 
         conn.commit()
         conn.close()
@@ -205,6 +207,39 @@ def update_goal():
     
     finally:
         conn.close()
+
+# Upload profile avatar
+@app.route('/api/upload-avatar', methods=['POST'])
+def upload_avatar():
+    try:
+        user_id = request.form.get('user_id')
+        avatar_file = request.files.get('avatar')
+
+        if not user_id or not avatar_file:
+            return jsonify({'error': 'Missing user_id or avatar file'}), 400
+
+        # Save file to static folder
+        upload_dir = os.path.join(os.path.dirname(__file__), 'static', 'images', 'user_avatars')
+        os.makedirs(upload_dir, exist_ok=True)
+
+        ext = os.path.splitext(avatar_file.filename)[1]
+        filename = f"user_{user_id}_{uuid4().hex}{ext}"
+        filepath = os.path.join(upload_dir, filename)
+        avatar_file.save(filepath)
+
+        profile_picture_url = f"/static/images/user_avatars/{filename}"
+
+        conn = connect_to_database()
+        cur = conn.cursor()
+        cur.execute("UPDATE Users SET profile_picture = ? WHERE id = ?", (profile_picture_url, user_id))
+        conn.commit()
+        conn.close()
+
+        return jsonify({'message': 'Avatar uploaded', 'profile_picture': profile_picture_url}), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
 
 #update user restrictions
 @app.route("/set-restrictions", methods=["POST"])
@@ -322,7 +357,7 @@ def calculate_dri():
     data = request.get_json()
     try:
         user_id = data.get('user_id')
-        (name, email, age, sex, height_in, weight_lbs, goal, activity_level, restrictions)=query_db_for_user_info(user_id=user_id, returnJSON=False)
+        (name, email, age, sex, height_in, weight_lbs, goal, activity_level, profile_picture, restrictions)=query_db_for_user_info(user_id=user_id, returnJSON=False)
         # convert height and weight to the correct units
         weight_kg = convert_lbs_to_kg(weight_lbs)
         height_cm = convert_inches_to_cm(height_in)

@@ -60,6 +60,23 @@ export async function updateUser(user) {
     });
 }
 
+export async function uploadAvatar(userId, file) {
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('avatar', file);
+
+    const res = await fetch('/api/upload-avatar', {
+        method: 'POST',
+        body: formData
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.error || 'Image upload failed');
+    }
+    return data;
+}
+
 // ==========================
 // GOALS
 // ==========================
