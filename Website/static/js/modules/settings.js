@@ -6,26 +6,29 @@ import { getUserId, getElement, showError, showSuccess } from '../utils.js';
 export function initSettings() {
     loadUser();
 
-    const btn = getElement('saveBtn');
-    if (btn) btn.addEventListener('click', saveSettings);
+    // Note: Save functionality disabled until edit mode is implemented
+    // const btn = getElement('saveBtn');
+    // if (btn) btn.addEventListener('click', saveSettings);
 }
 
 async function loadUser() {
     try {
         const user = await getUserInfo(getUserId());
 
-        getElement('userName').value = user.name || '';
-        getElement('userSex').value = user.sex || '';
-        getElement('userAge').value = user.age || '';
-        getElement('userWeight').value = user.weight_lbs || '';
-        getElement('userHeight').value = user.height_in || '';
-        getElement('activityLevel').value = user.activity_level || '';
-        getElement('userGoal').value = user.goal || '';
-        getElement('userEmail').value = user.email || '';
+        // Populate display elements (not input fields)
+        getElement('userNameDisplay').textContent = user.name || '';
+        getElement('userGenderDisplay').textContent = user.sex || '';
+        getElement('userAgeDisplay').textContent = user.age || '';
+        getElement('userWeightDisplay').textContent = user.weight_lbs || '';
+        getElement('userHeightDisplay').textContent = user.height_in || '';
+        getElement('userEmailDisplay').textContent = user.email || '';
 
-        // Load saved profile picture
-        if (getElement('profilePreview') && user.profile_picture) {
-            getElement('profilePreview').src = user.profile_picture;
+        // Load saved profile picture on all elements with this ID
+        if (user.profile_picture) {
+            const profileImages = document.querySelectorAll('#profilePreview');
+            profileImages.forEach(img => {
+                img.src = user.profile_picture;
+            });
         }
 
     } catch (err) {

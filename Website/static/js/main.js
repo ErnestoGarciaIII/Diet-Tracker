@@ -19,7 +19,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         Util.getElement('settingsPage') ||
         Util.getElement('goalsPage') ||
         Util.getElement('restrictionsPage') ||
-        Util.getElement('userInfoPage');
+        Util.getElement('userInfoPage') ||
+        Util.getElement('historyPage');
 
     // Page-specific initialization
     if (Util.getElement('homePage')); // Home page doesn't need init unless we add logic to it
@@ -33,6 +34,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (userId && protectedPage) {
             const user = await API.getUserInfo(userId);
             State.setUser(user);
+
+            // Load profile picture on all pages that have it
+            if (Util.getElement('profilePreview') && user.profile_picture) {
+                Util.getElement('profilePreview').src = user.profile_picture;
+            }
 
             // Initialize feature modules based on page
             if (Util.getElement('dashboardPage')) initDashboard();
