@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Build your profile - PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="..\static\stylesheets\mainStyleS.css">
+	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
-<body>
+<body id="userInfoPage">
     <!-- progress bar section -->
     <div class="onboardingContainer">
         <div class="progressBarContainer">
@@ -34,9 +34,9 @@
                     <div class="radioButton">
                         <div for="Sex" style="font-weight: bold;">Sex</div>
                         <div>
-                            <input type="radio" id="male" name="gender" value="Male" required>
+                            <input type="radio" id="male" name="sex" value="Male" required>
                             <label for="male">Male</label>
-                            <input type="radio" id="female" name="gender" value="Female" required>
+                            <input type="radio" id="female" name="sex" value="Female" required>
                             <label for="female">Female</label>
                         </div>
                     </div>
@@ -66,19 +66,19 @@
                 <div class="inputGroup">
                     <label style="font-weight: bold;">Profile Picture </label>
                     <div class="avatarUploadCon">
-                        <img src="..\static\images\defaultProfile.jpg" id="registrationPreview" class="navAvatar" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
+                        <img src="{{ url_for('static', filename='images/defaultProfile.jpg') }}" id="registrationPreview" class="navAvatar" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
                         <button type="button" class="RUGRbtn pagesBtn-secondary" id="uploadTrigger">Choose Photo</button>
                         <input type="file" id="userAvatarInput" accept="image/*" style="display: none;" required>
                     </div>
                 </div>
 
                 <!-- form elements i.e activity level bar -->
-                <button type="button" class="RUGRbtn pagesBtn-primary full-width" onclick="nextStep()">Continue</button>
-                <button type="button" class="RUGRbtn pagesBtn-secondary full-width" onclick="history.back()">Back</button>
+                <button type="button" id="continueBtn" class="RUGRbtn pagesBtn-primary full-width" data-url="{{ url_for('html_urls', filename='goals.html') }}">Continue</button>
+                <button type="button" id="backBtn" class="RUGRbtn pagesBtn-secondary full-width">Back</button>
             </form>
         </div>
         
     </div>
-    <script src="..\static\js\main.js"></script>
+	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

@@ -1,19 +1,79 @@
 from flask import Flask, request, jsonify, send_from_directory, render_template
 from werkzeug.security import generate_password_hash, check_password_hash
-from buildQuery import connectDB
 import sqlite3
 import sys
 import os
 
 # Add the directory containing PlatePilotUser.py to path
-sys.path.insert(0, os.path.dirname(__file__))
+dietTrackerfolderDir = os.path.dirname(os.path.dirname(__file__))
+sys.path.insert(0, dietTrackerfolderDir + "\\scripts")
 from PlatePilotUser import ppuser
-
+from buildQuery import connectDB
 app = Flask(__name__)
 
+# Helpers
 def connect_to_database():
     conn = connectDB()
     return conn
+
+def convert_lbs_to_kg(weight_lbs):
+    weightKg = round(weight_lbs * 0.453592, 2)
+    return weightKg
+
+def convert_inches_to_cm(height_in):
+    height_cm = round(height_in * 2.54, 2)
+    return height_cm
+
+def query_db_for_user_info(user_id, returnJSON=True):
+    conn = None
+    try:
+        conn = connect_to_database()
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT name, email, age, sex, height_inches, weight_lbs, goal, activity_level
+            FROM Users
+            WHERE id = ?
+        """, (user_id,))
+
+        row = cur.fetchone()
+
+        if not row:
+            return jsonify({'error': 'User not found'}), 404
+
+        name, email, age, sex, height_in, weight_lbs, goal, activity_level = row
+
+        cur.execute("""
+            SELECT r.name
+            FROM UserRestrictions ur
+            JOIN Restrictions r 
+            ON ur.restrictionId = r.restrictionId
+            WHERE ur.userId = ?
+        """, (user_id,))
+
+        restrictions = [r[0] for r in cur.fetchall()]
+        if(returnJSON):
+            return jsonify({
+                'name': name,
+                'email': email,
+                'age': age,
+                'sex': sex,
+                'height_in': height_in,
+                'weight_lbs': weight_lbs,
+                'goal': goal,
+                'activity_level': activity_level,
+                'restrictions': restrictions
+            })
+        else:
+            return (name, email, age, sex, height_in, weight_lbs, goal, activity_level, restrictions)
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+       if conn: conn.close()
+
 
 #Deliver HTML
 @app.route('/')
@@ -21,7 +81,7 @@ def index():
     return render_template('home.html')
 
 @app.route('/<path:filename>')
-def static_files(filename):
+def html_urls(filename):
     if not filename.endswith('.html'):
         return "Not Found", 404
     return render_template(filename)
@@ -33,6 +93,7 @@ def static_files(filename):
 @app.route('/api/register', methods=['POST'])
 def register_user():
     data = request.get_json()
+    conn = None 
 
     try:
         name = data.get('name')
@@ -40,6 +101,7 @@ def register_user():
         password = data.get('password')
 
         if not name or not email or not password:
+            print("[ERROR]: Missing fields in POST request!")
             return jsonify({'error': 'Missing required fields'}), 400
 
         hashed_password = generate_password_hash(password)
@@ -69,7 +131,8 @@ def register_user():
         return jsonify({'error': str(e)}), 500
     
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 #update user info
 @app.route('/api/update_user', methods=['POST'])
@@ -115,37 +178,22 @@ def update_goal():
 
     try:
         user_id = data.get('user_id')
-        goal = data.get('goal')  # must be an integer 1, 2, or 3
+        goal_id = data.get('goal_id')  # must be an integer 1, 2, or 3
 
-        if not user_id or goal is None:
+        if not user_id or goal_id is None:
             return jsonify({'error': 'Missing user_id or goal'}), 400
 
         conn = connect_to_database()
         cur = conn.cursor()
 
-        #Map goal to goalId
-        cur.execute(
-            f"""
-            SELECT goalsId, name
-            FROM Goals
-            WHERE name = (?)
-            """,
-            (goal,)
-        )
-        result = cur.fetchall()
-        print(f"Result from goalId query: {result}")
-        goalId = result[0][0]
-        print(f"Goal is: {goalId}")
+        print(f"Goal is: {goal_id}")
 
-        #ensure valid goal recieved
-        if not goalId:
-            return jsonify({'error': f"Invalid goal recieved: {goal}"})
         #update database
         cur.execute("""
             UPDATE users
             SET goal = ?
             WHERE id = ?
-        """, (goalId, user_id))
+        """, (goal_id, user_id))
         conn.commit()
         conn.close()
 
@@ -233,51 +281,10 @@ def get_user_info():
         user_id = int(request.args.get('user_id'))
         if not user_id:
             return jsonify({'error': 'Missing user_id'}), 400
-
-        conn = connect_to_database()
-        cur = conn.cursor()
-
-        cur.execute("""
-            SELECT name, email, age, sex, height_inches, weight_lbs, goal, activity_level
-            FROM Users
-            WHERE id = ?
-        """, (user_id,))
-
-        row = cur.fetchone()
-
-        if not row:
-            return jsonify({'error': 'User not found'}), 404
-
-        name, email, age, sex, height_in, weight_lbs, goal, activity_level = row
-
-        cur.execute("""
-            SELECT r.name
-            FROM UserRestrictions ur
-            JOIN Restrictions r 
-            ON ur.restrictionId = r.restrictionId
-            WHERE ur.userId = ?
-        """, (user_id,))
-
-        restrictions = [r[0] for r in cur.fetchall()]
-
-        return jsonify({
-            'name': name,
-            'email': email,
-            'age': age,
-            'sex': sex,
-            'height_in': height_in,
-            'weight_lbs': weight_lbs,
-            'goal': goal,
-            'activity_level': activity_level,
-            'restrictions': restrictions
-        })
-
+        return query_db_for_user_info(user_id=user_id, returnJSON=True)
     except Exception as e:
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
-
-    finally:
-        conn.close()
 
 # user login
 @app.route('/api/login', methods=['POST'])
@@ -314,13 +321,19 @@ def login_user():
 def calculate_dri():
     data = request.get_json()
     try:
+        user_id = data.get('user_id')
+        (name, email, age, sex, height_in, weight_lbs, goal, activity_level, restrictions)=query_db_for_user_info(user_id=user_id, returnJSON=False)
+        # convert height and weight to the correct units
+        weight_kg = convert_lbs_to_kg(weight_lbs)
+        height_cm = convert_inches_to_cm(height_in)
+        
         user = ppuser(
-            w=float(data['weight']),
-            h=float(data['height']),
-            a=int(data['age']),
-            s=str(data['sex']),
-            al=int(data['activity_level']),
-            g=int(data['goal'])
+            w=float(weight_kg),
+            h=float(height_cm),
+            a=int(age),
+            s=str(sex),
+            al=int(2),
+            g=int(goal)
         )
         user.setDRI()
         return jsonify({

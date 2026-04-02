@@ -6,12 +6,11 @@ import os
 
 
 sys.path.insert(0, os.path.dirname(__file__))
-from PlatePilotUser import ppuser
+from Website.PlatePilotUser import ppuser
 
 app = Flask(__name__,
-            template_folder=os.path.join(os.path.dirname(__file__), '..', 'html'),
-            static_folder=os.path.join(os.path.dirname(__file__), '..', 'html'))
-
+            template_folder=os.path.join(os.path.dirname(__file__), '\..', 'html'),
+            static_folder=os.path.join(os.path.dirname(__file__), '\..', 'html'))
 @app.route('/stylesheets/<path:filename>')
 def stylesheets(filename):
     import os
@@ -81,7 +80,7 @@ def calculate_dri():
         return jsonify({'error': str(e)}), 400
 
 
-DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'db', 'PlatePilot.db')
+DB_PATH = os.path.join(os.path.dirname(__file__), '\..', 'db', 'PlatePilot.db')
 
 NUTRIENT_IDS = [
     1106, 1162, 1114, 1175, 1158, 1079, 1109, 1185, 1165, 1178,
@@ -160,6 +159,10 @@ def get_nutrients():
  
     except sqlite3.OperationalError as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/userInfo', methods=['GET'])
+def get_userInfo():
+	
 
 @app.route('/<path:filename>')
 def server_static(filename):

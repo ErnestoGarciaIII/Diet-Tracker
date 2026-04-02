@@ -5,47 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Dashboard - PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="..\static\stylesheets\mainStyleS.css">
+	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
-<body>
-    <nav class="navbar">
-        <img src="..\static\images\Avatar.jpg" id="profilePreview" class="navAvatar">
+<body id="settingsPage">
+    <!-- Navigation Bar -->
+    <nav class="navbar"> "
+        <img src="{{ url_for('static', filename='images/defaultAvatar.jpg') }}" id="profilePreview" class="navAvatar">
         <div>
-            <a href="..\Templates\dashboard.html">
-                <div class="navIcon">
-                    <i class="fa-regular fa-house fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+            <a href="{{ url_for('html_urls', filename='dashboard.html') }}">
+                <div class="navIcon active">
+                    <i class="fa-regular fa-house fa-beat fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
         <div>
-            <a href="..\Templates\foodLog.html">
+            <a href="{{ url_for('html_urls', filename='foodLog.html') }}">
                 <div class="navIcon">
                     <i class="fa-solid fa-clipboard fa-xl" style="color: rgb(94, 234, 100);"></i>
                 </div>
             </a>
         </div>
         <div>
-            <a href="..\Templates\history.html">
+            <a href="{{ url_for('html_urls', filename='history.html') }}">
                 <div class="navIcon">
                     <i class="fa-solid fa-calendar fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
         <div>
-            <a href="..\Templates\settings.html">
-                <div class="navIcon active">
-                    <i class="fa-solid fa-gear fa-beat fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+            <a href="{{ url_for('html_urls', filename='settings.html') }}">
+                <div class="navIcon">
+                    <i class="fa-solid fa-gear fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
         <div>
-            <a href="..\Templates\logout.html">
+            <a href="{{ url_for('html_urls', filename='logout.html') }}">
                 <div class="navIcon">
                     <i class="fa-solid fa-arrow-right-from-bracket fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
     </nav>
+
     <div class="dashContent">
         <div class="card settingsCard">
             <h1 class="trackerCard">Account Settings</h1>
@@ -55,7 +57,7 @@
                 <div class="profilePicRow">
                     <span class="profileLabel"> Profile Picture</span>
                     <div class="avatarEdit">
-                        <img src="..\static\images\avatar.jpg" id="profilePreview" class="mainAvatar">
+                        <img src="{{ url_for('static', filename='images/avatar.jpg') }}" id="profilePreview" class="mainAvatar">
                         <div class="avatarControls">
                             <span class="upload" id="uploadTrigger">Upload new picture</span>
                             <span class="remove" id="removePic">Remove</span>
@@ -135,8 +137,6 @@
             <button class="RUGRbtn pagesBtn-secondary full-width mt-10" onclick="history.back()">Back</button>
         </div>
     </div>
-
-
-    <script src="..\static\js\main.js"></script>
+	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
