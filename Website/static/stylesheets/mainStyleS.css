@@ -712,9 +712,9 @@ p.change{
     height: 300px;
     width: 100%;
 }
-canvas #activityChart{
-    max-height: 175px;
-    width: 150px !important;
+#activityChart{
+    max-height: 300px;
+    width: 100% !important;
 }
 /* For mobile: Stack the sidebar on top */
 @media (max-width: 900px) {
@@ -868,6 +868,28 @@ canvas #activityChart{
     position: relative;
     display: flex;
     align-items: center;
+}
+.inputWrapper input{
+    width: 100%;
+    padding-right: 40px;
+    box-sizing: border-box;
+}
+
+#addFoodBtn {
+    position: absolute;
+    right: 5px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+}
+
+#addFoodBtn:hover {
+    opacity: 0.7;
 }
 
 ul {
