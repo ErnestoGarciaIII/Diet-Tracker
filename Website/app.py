@@ -504,9 +504,9 @@ def log_food_entry():
         conn = connect_to_database()
         cur = conn.cursor()
 
-        # Get today's date
-        from datetime import date
-        today = date.today().isoformat()
+        # Get today's date in the same format as frontend (toDateString)
+        from datetime import datetime
+        today = datetime.now().strftime('%a %b %d %Y')  # Format like "Wed Apr 02 2026"
 
         # Insert into FoodHistory
         cur.execute("""
@@ -547,7 +547,7 @@ def get_food_history(user_id):
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT dateLogged, foodName, calories
+            SELECT id, dateLogged, foodName, calories
             FROM FoodHistory
             WHERE userId = ?
             ORDER BY dateLogged DESC, timeLogged DESC
@@ -558,12 +558,157 @@ def get_food_history(user_id):
         history = []
         for row in rows:
             history.append({
-                'date': row[0],
-                'name': row[1],
-                'kcal': row[2]
+                'id': row[0],
+                'date': row[1],
+                'name': row[2],
+                'kcal': row[3]
             })
 
         return jsonify(history), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        if conn: conn.close()
+
+# Update Food Entry
+@app.route('/api/food-history/<int:entry_id>', methods=['PUT'])
+def update_food_entry(entry_id):
+    data = request.get_json()
+    food_name = data.get('name')
+    calories = data.get('kcal')
+    user_id = data.get('user_id')
+
+    if not food_name or calories is None or not user_id:
+        return jsonify({'error': 'name, kcal, and user_id are required'}), 400
+
+    conn = None
+    try:
+        conn = connect_to_database()
+        cur = conn.cursor()
+
+        # Update the food entry
+        cur.execute("""
+            UPDATE FoodHistory
+            SET foodName = ?, calories = ?
+            WHERE id = ? AND userId = ?
+        """, (food_name, calories, entry_id, user_id))
+
+        if cur.rowcount == 0:
+            return jsonify({'error': 'Food entry not found or not authorized'}), 404
+
+        conn.commit()
+
+        # Get updated total calories for the day
+        cur.execute("""
+            SELECT dateLogged FROM FoodHistory WHERE id = ?
+        """, (entry_id,))
+        
+        date_row = cur.fetchone()
+        if date_row:
+            cur.execute("""
+                SELECT SUM(calories) as total
+                FROM FoodHistory
+                WHERE userId = ? AND dateLogged = ?
+            """, (user_id, date_row[0]))
+            
+            result = cur.fetchone()
+            total_calories = result[0] if result[0] else 0
+        else:
+            total_calories = 0
+
+        return jsonify({
+            'message': 'Food entry updated successfully',
+            'totalCalories': total_calories
+        }), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        if conn: conn.close()
+
+# Delete Food Entry
+@app.route('/api/food-history/<int:entry_id>', methods=['DELETE'])
+def delete_food_entry(entry_id):
+    data = request.get_json()
+    user_id = data.get('user_id')
+
+    if not user_id:
+        return jsonify({'error': 'user_id is required'}), 400
+
+    conn = None
+    try:
+        conn = connect_to_database()
+        cur = conn.cursor()
+
+        # Get the date before deleting for total calculation
+        cur.execute("""
+            SELECT dateLogged FROM FoodHistory WHERE id = ? AND userId = ?
+        """, (entry_id, user_id))
+        
+        date_row = cur.fetchone()
+        if not date_row:
+            return jsonify({'error': 'Food entry not found or not authorized'}), 404
+
+        date_logged = date_row[0]
+
+        # Delete the food entry
+        cur.execute("""
+            DELETE FROM FoodHistory
+            WHERE id = ? AND userId = ?
+        """, (entry_id, user_id))
+
+        if cur.rowcount == 0:
+            return jsonify({'error': 'Food entry not found or not authorized'}), 404
+
+        conn.commit()
+
+        # Get updated total calories for the day
+        cur.execute("""
+            SELECT SUM(calories) as total
+            FROM FoodHistory
+            WHERE userId = ? AND dateLogged = ?
+        """, (user_id, date_logged))
+
+        result = cur.fetchone()
+        total_calories = result[0] if result[0] else 0
+
+        return jsonify({
+            'message': 'Food entry deleted successfully',
+            'totalCalories': total_calories
+        }), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        if conn: conn.close()
+
+# Clear All Food History
+@app.route('/api/food-history/clear/<user_id>', methods=['DELETE'])
+def clear_food_history(user_id):
+    conn = None
+    try:
+        conn = connect_to_database()
+        cur = conn.cursor()
+
+        # Delete all food history for the user
+        cur.execute("""
+            DELETE FROM FoodHistory
+            WHERE userId = ?
+        """, (user_id,))
+
+        deleted_count = cur.rowcount
+        conn.commit()
+
+        return jsonify({
+            'message': f'Cleared {deleted_count} food entries successfully'
+        }), 200
 
     except Exception as e:
         print("[ERROR]: ", e)

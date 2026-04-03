@@ -1,5 +1,5 @@
 import { getUserId } from '../utils.js';
-import { getFoodHistory } from '../api.js';
+import { getFoodHistory, updateFoodEntry, deleteFoodEntry, clearFoodHistory } from '../api.js';
 
 let foodHistoryData = [];
 
@@ -29,7 +29,7 @@ function renderCalendar() {
 
     // Convert date strings to toDateString format for matching
     const history = foodHistoryData.map(item => ({
-        date: new Date(item.date).toDateString(),
+        date: item.date,
         name: item.name,
         kcal: item.kcal
     }));
@@ -94,7 +94,7 @@ function showDayDetails(dateStr, logs) {
     list.innerHTML = '';
 
     if (!logs) {
-        logs = foodHistoryData.filter(item => new Date(item.date).toDateString() === dateStr);
+        logs = foodHistoryData.filter(item => item.date === dateStr);
     }
 
     if (logs.length === 0) {
@@ -106,8 +106,18 @@ function showDayDetails(dateStr, logs) {
         const item = document.createElement('div');
         item.className = "historyItem";
         item.innerHTML = `
-            <span class="label"><strong>${log.name}</strong></span>
-            <span class="value">${log.kcal} kcal</span>
+            <div class="food-info">
+                <span class="label"><strong>${log.name}</strong></span>
+                <span class="value">${log.kcal} kcal</span>
+            </div>
+            <div class="food-actions">
+                <button class="edit-btn" onclick="editFoodEntry(${log.id}, '${log.name}', ${log.kcal})">
+                    <i class="fa-solid fa-edit"></i>
+                </button>
+                <button class="delete-btn" onclick="deleteFoodEntry(${log.id}, '${log.name}')">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
         `;
         list.appendChild(item);
     });
@@ -129,8 +139,80 @@ window.jumpToToday = function() {
 // Clear all history
 window.clearHistory = function() {
     if (confirm('Are you sure you want to clear all history? This action cannot be undone.')) {
-        foodHistoryData = [];
-        renderCalendar();
-        showDayDetails();
+        clearFoodHistory(getUserId())
+            .then(result => {
+                // Clear local data
+                foodHistoryData = [];
+                
+                // Refresh the display
+                renderCalendar();
+                showDayDetails();
+                
+                alert(result.message);
+            })
+            .catch(err => {
+                console.error('Failed to clear food history:', err);
+                alert('Failed to clear food history. Please try again.');
+            });
     }
+};
+
+// Edit food entry
+window.editFoodEntry = function(entryId, currentName, currentCalories) {
+    const newName = prompt('Edit food name:', currentName);
+    if (newName === null) return; // User cancelled
+    
+    const newCalories = parseInt(prompt('Edit calories:', currentCalories));
+    if (isNaN(newCalories) || newCalories < 0) {
+        alert('Please enter a valid number of calories.');
+        return;
+    }
+    
+    if (newName.trim() === '' || newCalories === currentCalories && newName === currentName) {
+        return; // No changes made
+    }
+    
+    // Update the entry
+    updateFoodEntry(entryId, getUserId(), { name: newName.trim(), kcal: newCalories })
+        .then(result => {
+            // Update local data
+            const entryIndex = foodHistoryData.findIndex(item => item.id === entryId);
+            if (entryIndex !== -1) {
+                foodHistoryData[entryIndex].name = newName.trim();
+                foodHistoryData[entryIndex].kcal = newCalories;
+            }
+            
+            // Refresh the display
+            renderCalendar();
+            showDayDetails(document.getElementById('selectedDateHeader').innerText);
+            
+            alert('Food entry updated successfully!');
+        })
+        .catch(err => {
+            console.error('Failed to update food entry:', err);
+            alert('Failed to update food entry. Please try again.');
+        });
+};
+
+// Deletes food entry
+window.deleteFoodEntry = function(entryId, foodName) {
+    if (!confirm(`Are you sure you want to delete "${foodName}"?`)) {
+        return;
+    }
+    
+    deleteFoodEntry(entryId, getUserId())
+        .then(result => {
+            // Remove from local data
+            foodHistoryData = foodHistoryData.filter(item => item.id !== entryId);
+            
+            // Refresh the display
+            renderCalendar();
+            showDayDetails(document.getElementById('selectedDateHeader').innerText);
+            
+            alert('Food entry deleted successfully!');
+        })
+        .catch(err => {
+            console.error('Failed to delete food entry:', err);
+            alert('Failed to delete food entry. Please try again.');
+        });
 };
