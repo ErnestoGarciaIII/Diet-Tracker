@@ -3,6 +3,7 @@ import * as State from './state.js';
 import * as Util from './utils.js';
 import { initDashboard } from './modules/dashboard.js';
 import { initFoodLog } from './modules/foodLog.js';
+import { initHistory } from './modules/history.js';
 import { initRestrictions } from './modules/restrictions.js';
 import { initGoals } from './modules/goals.js';
 import { initUserInfo } from './modules/userInfo.js';
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Initialize feature modules based on page
             if (Util.getElement('dashboardPage')) initDashboard();
             if (Util.getElement('foodLogPage')) initFoodLog();
+            if (Util.getElement('historyPage')) initHistory();
             if (Util.getElement('restrictionsPage')) initRestrictions();
             if (Util.getElement('goalsPage')) initGoals();
             if (Util.getElement('userInfoPage')) initUserInfo();
