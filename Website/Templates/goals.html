@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Set Your Goal - PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="..\static\stylesheets\mainStyleS.css">
+	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
-<body>
-
+<body id="goalsPage">
     <div class="onboardingContainer">
         <div class="progressBarContainer">
             <div class="profileProgressBar" style="width: 66%;"></div>
@@ -19,7 +18,7 @@
             <p class="formSubtitle">This helps the AI calculate your daily targets.</p>
             <!-- section 1-->
             <div class="goalGrid">
-                <div class="goalCard" onclick="selectGoal(this, 'lose')">
+                <div class="goalCard" id="lose" data-goalId="1">
                     <div class="goalIcon">🔥</div>
                     <div class="goalContent">
                         <h3>Weight Loss</h3>
@@ -27,7 +26,7 @@
                     </div>
                 </div>
                 <!-- section 2-->
-                <div class="goalCard" onclick="selectGoal(this, 'maintain')">
+                <div class="goalCard" id="maintain" data-goalId="2">
                     <div class="goalIcon">⚖️</div>
                     <div class="goalContent">
                         <h3>Maintain</h3>
@@ -35,7 +34,7 @@
                     </div>
                 </div>
                 <!-- section 3-->
-                <div class="goalCard" onclick="selectGoal(this, 'gain')">
+                <div class="goalCard" id="gain" data-goalId="3">
                     <div class="goalIcon">💪</div>
                     <div class="goalContent">
                         <h3>Muscle Build</h3>
@@ -44,11 +43,11 @@
                 </div>
             </div>
 
-            <button class="RUGRbtn pagesBtn-primary full-width" onclick="nextStep2()">Continue</button>
-            <button class="RUGRbtn pagesBtn-secondary full-width" onclick="history.back()">Back</button>
+            <button type="button" id="continueBtn" class="RUGRbtn pagesBtn-primary full-width" data-url="{{ url_for('html_urls', filename='restrictions.html') }}">Continue</button>
+            <button type="button" id="backBtn" class="RUGRbtn pagesBtn-secondary full-width">Back</button>
         </div>
     </div>
 
-    <script src="..\static\js\main.js"></script>
+	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
