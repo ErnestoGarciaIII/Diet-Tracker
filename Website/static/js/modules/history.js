@@ -172,7 +172,7 @@ window.editFoodEntry = function(entryId, currentName, currentCalories) {
         return; // No changes made
     }
     
-    // Update the entry
+    // Updates the entry
     updateFoodEntry(entryId, getUserId(), { name: newName.trim(), kcal: newCalories })
         .then(result => {
             // Update local data
