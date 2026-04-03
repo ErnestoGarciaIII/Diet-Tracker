@@ -6,9 +6,11 @@ export function initFoodLog() {
     loadProfilePicture();
 
     const btn = document.getElementById('logButton');
-    if (!btn) return;
+    const addFoodBtn = document.getElementById('addFoodBtn');
+    if (!btn|| !addFoodBtn) return;
 
     btn.addEventListener('click', handleLogFood);
+    addFoodBtn.addEventListener('click', foodSearch);
 }
 
 async function loadProfilePicture() {
@@ -45,4 +47,19 @@ async function handleLogFood() {
     } catch (err) {
         showError(err.message);
     }
+}
+
+async function foodSearch() {
+    const foodName = getInputValue('foodInput');
+    if (!foodName) return;
+        console.log("No search criteria entered.");
+        return;
+
+    const message = 'Searching for: ${foodName}';
+    console.log(message);
+    alert(message);
+
+
+
+
 }

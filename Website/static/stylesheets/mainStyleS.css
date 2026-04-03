@@ -863,6 +863,13 @@ canvas #activityChart{
 	text-align: left;
 }
 
+
+.inputWrapper{
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
 ul {
     list-style: none;
     padding: 0;
