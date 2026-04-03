@@ -6,17 +6,17 @@ import os
 from uuid import uuid4
 
 # Add the directory containing PlatePilotUser.py to path
-dietTrackerfolderDir = os.path.dirname(os.path.dirname(__file__))
-sys.path.insert(0, dietTrackerfolderDir + "\\scripts")
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+scripts_path = os.path.join(parent_dir, 'scripts')
+sys.path.append(scripts_path)
+
 from PlatePilotUser import ppuser
-from buildQuery import connectDB
+from food_search import connectDB, apply_filter, active_filters, search_engine
+
 app = Flask(__name__)
 
 # Helpers
-def connect_to_database():
-    conn = connectDB()
-    return conn
-
 def convert_lbs_to_kg(weight_lbs):
     weightKg = round(weight_lbs * 0.453592, 2)
     return weightKg
