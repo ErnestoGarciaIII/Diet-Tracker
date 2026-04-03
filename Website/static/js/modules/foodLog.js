@@ -1,5 +1,5 @@
 import { logFood, getUserInfo } from '../api.js';
-import { getUserId, getElement, getInputValue, showError } from '../utils.js';
+import { getUserId, getElement, getInputValue, showError, showSuccess } from '../utils.js';
 import { updateProgress } from '../state.js';
 
 export function initFoodLog() {
@@ -35,6 +35,11 @@ async function handleLogFood() {
 
         updateProgress({ calories: result.totalCalories });
 
+        // Clear input fields
+        getElement('foodInput').value = '';
+        getElement('calInput').value = '';
+
+        showSuccess("Food logged successfully!");
         console.log("Food logged!");
 
     } catch (err) {

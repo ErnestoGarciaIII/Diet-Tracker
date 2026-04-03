@@ -488,6 +488,90 @@ def get_nutrients():
     finally:
         conn.close()
 
+# Log Food
+@app.route('/api/log-food', methods=['POST'])
+def log_food_entry():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    food_name = data.get('name')
+    calories = data.get('kcal')
+
+    if not user_id or not food_name or calories is None:
+        return jsonify({'error': 'user_id, name, and kcal are required'}), 400
+
+    conn = None
+    try:
+        conn = connect_to_database()
+        cur = conn.cursor()
+
+        # Get today's date
+        from datetime import date
+        today = date.today().isoformat()
+
+        # Insert into FoodHistory
+        cur.execute("""
+            INSERT INTO FoodHistory (userId, foodName, calories, dateLogged)
+            VALUES (?, ?, ?, ?)
+        """, (user_id, food_name, calories, today))
+
+        conn.commit()
+
+        # Get total calories for today
+        cur.execute("""
+            SELECT SUM(calories) as total
+            FROM FoodHistory
+            WHERE userId = ? AND dateLogged = ?
+        """, (user_id, today))
+
+        result = cur.fetchone()
+        total_calories = result[0] if result[0] else 0
+
+        return jsonify({
+            'message': 'Food logged successfully',
+            'totalCalories': total_calories
+        }), 201
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        if conn: conn.close()
+
+# Get Food History
+@app.route('/api/food-history/<user_id>', methods=['GET'])
+def get_food_history(user_id):
+    conn = None
+    try:
+        conn = connect_to_database()
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT dateLogged, foodName, calories
+            FROM FoodHistory
+            WHERE userId = ?
+            ORDER BY dateLogged DESC, timeLogged DESC
+        """, (user_id,))
+
+        rows = cur.fetchall()
+
+        history = []
+        for row in rows:
+            history.append({
+                'date': row[0],
+                'name': row[1],
+                'kcal': row[2]
+            })
+
+        return jsonify(history), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        if conn: conn.close()
+
 #Run server
 if __name__ == '__main__':
     print("PlatePilot server running at http://localhost:5000")

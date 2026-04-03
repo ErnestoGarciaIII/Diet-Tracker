@@ -1,8 +1,22 @@
-export function initHistory() {
+import { getUserId } from '../utils.js';
+import { getFoodHistory } from '../api.js';
+
+let foodHistoryData = [];
+
+export async function initHistory() {
     // Initialize viewDate to current date
     if (typeof viewDate === 'undefined') {
         window.viewDate = new Date();
     }
+    
+    try {
+        // Fetch food history from database
+        foodHistoryData = await getFoodHistory(getUserId());
+    } catch (err) {
+        console.error('Failed to load food history:', err);
+        foodHistoryData = [];
+    }
+    
     renderCalendar();
     showDayDetails(new Date().toDateString()); // Show today's details by default
 }
@@ -13,7 +27,12 @@ function renderCalendar() {
 
     if (!grid || !monthLabel) return;
 
-    const history = JSON.parse(localStorage.getItem('foodHistory')) || [];
+    // Convert date strings to toDateString format for matching
+    const history = foodHistoryData.map(item => ({
+        date: new Date(item.date).toDateString(),
+        name: item.name,
+        kcal: item.kcal
+    }));
     const now = new Date();
     const displayMonth = window.viewDate.getMonth();
     const displayYear = window.viewDate.getFullYear();
@@ -75,8 +94,7 @@ function showDayDetails(dateStr, logs) {
     list.innerHTML = '';
 
     if (!logs) {
-        const history = JSON.parse(localStorage.getItem('foodHistory')) || [];
-        logs = history.filter(item => item.date === dateStr);
+        logs = foodHistoryData.filter(item => new Date(item.date).toDateString() === dateStr);
     }
 
     if (logs.length === 0) {
@@ -111,7 +129,7 @@ window.jumpToToday = function() {
 // Clear all history
 window.clearHistory = function() {
     if (confirm('Are you sure you want to clear all history? This action cannot be undone.')) {
-        localStorage.removeItem('foodHistory');
+        foodHistoryData = [];
         renderCalendar();
         showDayDetails();
     }

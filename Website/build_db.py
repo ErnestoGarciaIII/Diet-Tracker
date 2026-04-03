@@ -127,5 +127,20 @@ cursor.executemany(
 
 print("Ensured goals table exists.")
 
+# Create FoodHistory Table
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS FoodHistory (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    userId INTEGER NOT NULL,
+    foodName TEXT NOT NULL,
+    calories INTEGER NOT NULL,
+    dateLogged DATE NOT NULL,
+    timeLogged TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE CASCADE
+);
+""")
+
+print("Ensured food history table exists.")
+
 conn.commit()
 conn.close()
