@@ -28,7 +28,7 @@ def convert_inches_to_cm(height_in):
 def query_db_for_user_info(user_id, returnJSON=True):
     conn = None
     try:
-        conn = connect_to_database()
+        conn = connectDB()
         cur = conn.cursor()
 
         cur.execute("""
@@ -108,7 +108,7 @@ def register_user():
 
         hashed_password = generate_password_hash(password)
 
-        conn = connect_to_database()
+        conn = connectDB()
         cur = conn.cursor()
 
         cur.execute("""
@@ -152,7 +152,7 @@ def update_user():
         if not user_id:
             return jsonify({'error': 'user_id is required'}), 400
 
-        conn = connect_to_database()
+        conn = connectDB()
         cur = conn.cursor()
 
         cur.execute("""
@@ -185,7 +185,7 @@ def update_goal():
         if not user_id or goal_id is None:
             return jsonify({'error': 'Missing user_id or goal'}), 400
 
-        conn = connect_to_database()
+        conn = connectDB()
         cur = conn.cursor()
 
         print(f"Goal is: {goal_id}")
@@ -229,13 +229,14 @@ def upload_avatar():
 
         profile_picture_url = f"/static/images/user_avatars/{filename}"
 
-        conn = connect_to_database()
+        conn = connectDB()
         cur = conn.cursor()
         cur.execute("UPDATE Users SET profile_picture = ? WHERE id = ?", (profile_picture_url, user_id))
         conn.commit()
         conn.close()
 
         return jsonify({'message': 'Avatar uploaded', 'profile_picture': profile_picture_url}), 200
+
 
     except Exception as e:
         print("[ERROR]: ", e)
@@ -249,7 +250,7 @@ def set_restrictions():
     user_id = data["user_id"]
     restriction_names = data["restrictions"]
 
-    conn = connect_to_database()
+    conn = connectDB()
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
@@ -330,7 +331,7 @@ def login_user():
         email = data.get('email')
         password = data.get('password')
 
-        conn = connect_to_database()
+        conn = connectDB()
         cur = conn.cursor()
 
         cur.execute("SELECT id, password FROM users WHERE email = ?", (email,))
@@ -388,105 +389,18 @@ NUTRIENT_IDS = [
     1099, 1100, 1238, 1090, 1101, 1102, 1091, 1092, 1103, 1093, 1095
 ]
 
-@app.route('/api/search', methods=['GET'])
-def search_food():
-    query = request.args.get('q', '').strip()
-    if not query:
-        return jsonify([])
-
-    search_term = f'%{query}%'
-    placeholders = ', '.join(['?'] * len(NUTRIENT_IDS))
-
-    sql = f"""
-        WITH filtered_foods AS (
-            SELECT f.fdc_id, f.description, fc.description as category
-            FROM food f
-            INNER JOIN food_category fc ON fc.id = f.food_category_id
-            WHERE f.description LIKE ?
-            AND fc.id NOT IN (3, 21, 22, 25)
-        )
-        SELECT
-            ff.description AS food_name,
-            ff.category,
-            n.name AS nutrient_name,
-            ROUND(AVG(fn.amount), 2) AS avg_amount,
-            n.unit_name AS unit
-        FROM filtered_foods ff
-        INNER JOIN food_nutrient fn ON ff.fdc_id = fn.fdc_id
-        INNER JOIN nutrient n ON fn.nutrient_id = n.id
-        WHERE n.id IN ({placeholders})
-        GROUP BY ff.description, n.id, n.unit_name
-        LIMIT 500;
-    """
-
-    params = [search_term] + NUTRIENT_IDS
-
+@app.route('/api/search-engine', methods=['GET'])
+def execute_search_engine():
+    data = request.get_json()
+    
     try:
-        conn = connect_to_database()
-        conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
-        cur.execute(sql, params)
-        rows = [dict(r) for r in cur.fetchall()]
-        conn.close()
-        return jsonify(rows)
-    except sqlite3.OperationalError as e:
-        return jsonify({'error': str(e)}), 500
-
+        food_name = int(request.args.get('name'))
+        if not food_name:
+            return jsonify({'error': 'Missing search criteria'}), 400
+        return query_db_for_user_info(food_name=food_name, returnJSON=True)
     except Exception as e:
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
-    
-    finally:
-        conn.close()
-
-@app.route('/api/nutrients', methods=['GET'])
-def get_nutrients():
-    fdc_id = request.args.get('fdc_id', '').strip()
-    if not fdc_id:
-        return jsonify({'error': 'fdc_id is required'}), 400
- 
-    placeholders = ', '.join(['?'] * len(NUTRIENT_IDS))
- 
-    sql = f"""
-        SELECT
-            f.description          AS food_name,
-            n.name                 AS nutrient_name,
-            ROUND(AVG(fn.amount), 2) AS avg_amount,
-            n.unit_name            AS unit
-        FROM   food f
-        INNER JOIN food_nutrient fn ON f.fdc_id      = fn.fdc_id
-        INNER JOIN nutrient      n  ON fn.nutrient_id = n.id
-        WHERE  f.fdc_id = ?
-          AND  n.id IN ({placeholders})
-        GROUP BY n.id, n.unit_name;
-    """
- 
-    params = [fdc_id] + NUTRIENT_IDS
- 
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        cur  = conn.cursor()
-        cur.execute(sql, params)
-        rows = cur.fetchall()
- 
-        if not rows:
-            return jsonify({'error': 'Food not found'}), 404
- 
-        food_name = rows[0]['food_name']
-        nutrients = { r['nutrient_name']: r['avg_amount'] for r in rows }
- 
-        return jsonify({ 'food_name': food_name, 'nutrients': nutrients })
- 
-    except sqlite3.OperationalError as e:
-        return jsonify({'error': str(e)}), 500
-
-    except Exception as e:
-        print("[ERROR]: ", e)
-        return jsonify({'error': str(e)}), 500
-    
-    finally:
-        conn.close()
 
 # Log Food
 @app.route('/api/log-food', methods=['POST'])
@@ -501,7 +415,7 @@ def log_food_entry():
 
     conn = None
     try:
-        conn = connect_to_database()
+        conn = connectDB()
         cur = conn.cursor()
 
         # Get today's date in the same format as frontend (toDateString)
@@ -543,7 +457,7 @@ def log_food_entry():
 def get_food_history(user_id):
     conn = None
     try:
-        conn = connect_to_database()
+        conn = connectDB()
         cur = conn.cursor()
 
         cur.execute("""
@@ -586,7 +500,7 @@ def update_food_entry(entry_id):
 
     conn = None
     try:
-        conn = connect_to_database()
+        conn = connectDB()
         cur = conn.cursor()
 
         # Update the food entry
@@ -642,7 +556,7 @@ def delete_food_entry(entry_id):
 
     conn = None
     try:
-        conn = connect_to_database()
+        conn = connectDB()
         cur = conn.cursor()
 
         # Get the date before deleting for total calculation
@@ -694,7 +608,7 @@ def delete_food_entry(entry_id):
 def clear_food_history(user_id):
     conn = None
     try:
-        conn = connect_to_database()
+        conn = connectDB()
         cur = conn.cursor()
 
         # Delete all food history for the user
