@@ -63,7 +63,8 @@ def buildQuery():
         (36, NULL, 'Cheese'),
         (37, NULL, 'Yogurt'),
         (38, NULL, 'Egg & Egg Substitutes'),
-        (39, NULL, 'Vegetarian Frozen Meats');
+        (39, NULL, 'Vegetarian Frozen Meats'),
+        (40, NULL, 'Frozen Appetizers & Hors D''oeuvres');
     """
     updateQuery = f"""
     UPDATE food
