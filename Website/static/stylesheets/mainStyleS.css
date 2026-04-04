@@ -870,6 +870,23 @@ p.change{
     max-width: 900px;
 }
 
+.foodLogLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
+    gap: 24px;
+    max-width: 1320px;
+    align-items: start;
+}
+
+.foodLogCard,
+.foodSummaryCard, .foodRecoCard {
+    margin-bottom: 0;
+}
+
+.contRight{
+    background-color: #16a34a;
+}
+
 .resultContent{
     margin-top: 2rem;
     border-top: 1px solid #eee;
@@ -974,6 +991,12 @@ li {
 	flex: 1;
 	color: #333; 
 	font-weight: 500; 
+}
+
+@media (max-width: 1024px) {
+    .foodLogLayout {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* -------------------------- Calendar Styling -------------------------------- */
@@ -1170,6 +1193,7 @@ li {
     }
 
 }
+
 
 /* ----------------------Account settings page -------------------------------------- */
 .settingsCard {
@@ -1387,6 +1411,33 @@ li {
 
 .cartItemContent {
     flex: 1;
+}
+
+.servingControls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.servingLabel {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.portionInput {
+    width: 80px;
+    padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+}
+
+.unitSelect {
+    padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
 }
 
 .cartItemName {

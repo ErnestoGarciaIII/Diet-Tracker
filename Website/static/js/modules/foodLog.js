@@ -3,6 +3,7 @@ import { getUserId, getElement, getInputValue, showError, showSuccess } from '..
 import { updateProgress } from '../state.js';
 
 let foodCart = []; 
+const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
 
 export function initFoodLog() {
     console.log("Hello there!");
@@ -51,9 +52,14 @@ async function handleLogCart() {
     try {
         let totalCalories = 0;
         for (const food of foodCart) {
-            const portion = food.portion || 1;
+            const portion = Number(food.portion) > 0 ? Number(food.portion) : 1;
             const kcal = Math.round(food.calories * portion);
-            await logFood(getUserId(), { name: food.name, kcal: kcal, portion: food.portion || 1 });
+            const servingLabel = `${portion} ${food.unit || 'Serving'}${portion === 1 ? '' : 's'}`;
+            await logFood(getUserId(), {
+                name: `${food.name} (${servingLabel})`,
+                kcal: kcal,
+                portion: portion
+            });
             totalCalories += kcal;
         }
 
@@ -62,6 +68,7 @@ async function handleLogCart() {
         // Clears the cart
         foodCart = [];
         displayCart();
+        showSuccess('Foods logged successfully.');
 
 
     } catch (err) {
@@ -129,6 +136,32 @@ function displaySearchResults(results) {
     });
 }
 
+function displayRecommendations(recResults) {
+    const recommendList = getElement('recommendList');
+    if (!recommendList) return;
+
+    // clears previous results
+    recommendList.innerHTML = '';
+
+    if (recResults.length === 0) {
+        recommendList.innerHTML = '<p>No recommendations available.</p>';
+        return;
+    }
+
+    //* create recommendation items
+    recResults.forEach(result => {
+        const [fdcId, productName, categoryName] = result;
+        const recItem = document.createElement('div');
+        recItem.className = 'recItem';
+        recItem.innerHTML = `
+            <div class="recName">${productName}</div>
+            <div class="recCategory">${categoryName}</div>
+        `;
+
+        recommendList.appendChild(recItem);
+    });
+}
+
 async function selectFood(foodName, fdcId) {
     try {
         const response = await fetch(`/api/get-nutrients?fdc_id=${fdcId}`);
@@ -139,6 +172,7 @@ async function selectFood(foodName, fdcId) {
             name: foodName,
             calories: calories,
             portion: 1,
+            unit: 'Serving',
             fdcId: fdcId
         });
         displayCart();
@@ -148,10 +182,20 @@ async function selectFood(foodName, fdcId) {
             name: foodName,
             calories: 0,
             portion: 1,
+            unit: 'Serving',
             fdcId: fdcId
         });
         displayCart();
     }
+}
+
+function removeFromCart(index) {
+    if (Number.isNaN(index) || index < 0 || index >= foodCart.length) {
+        return;
+    }
+
+    foodCart.splice(index, 1);
+    displayCart();
 }
 
 function displayCart() {
@@ -168,19 +212,41 @@ function displayCart() {
     foodCart.forEach((food, index) => {
         const cartItem = document.createElement('div');
         cartItem.className = 'cartItem';
+        const portionValue = Number(food.portion) > 0 ? Number(food.portion) : 1;
+        const kcalTotal = Math.round((food.calories || 0) * portionValue);
+
+        const unitOptions = SERVING_UNITS.map((unit) => {
+            const selected = (food.unit || 'Serving') === unit ? 'selected' : '';
+            return `<option value="${unit}" ${selected}>${unit}</option>`;
+        }).join('');
+
         cartItem.innerHTML = `
             <div class="cartItemContent">
                 <span class="cartItemName">${food.name}</span>
-                <label style="margin-left:10px;font-size:0.95em;">Portion: </label>
-                <input type="number" min="0.1" step="0.1" value="${food.portion || 1}" class="portionInput" data-index="${index}" style="width:50px;margin-left:4px;">
+                <span class="cartItemCalories">${kcalTotal} kcal</span>
+                <div class="servingControls">
+                    <label class="servingLabel" for="portion-${index}">Serving size:</label>
+                    <input
+                        type="number"
+                        min="0.1"
+                        step="0.1"
+                        value="${portionValue}"
+                        id="portion-${index}"
+                        class="portionInput"
+                        data-index="${index}"
+                    >
+                    <select class="unitSelect" data-index="${index}" aria-label="Serving unit">
+                        ${unitOptions}
+                    </select>
+                </div>
             </div>
-            <button class="removeBtn" onclick="removeFromCart(${index})">
+            <button class="removeBtn" data-index="${index}" aria-label="Remove food">
                 <i class="fa-solid fa-trash"></i>
             </button>
         `;
         historyList.appendChild(cartItem);
     });
-    // Added event listeners for portion inputs
+
     const portionInputs = historyList.querySelectorAll('.portionInput');
     portionInputs.forEach(input => {
         input.addEventListener('change', (e) => {
@@ -188,7 +254,24 @@ function displayCart() {
             let val = parseFloat(input.value);
             if (isNaN(val) || val <= 0) val = 1;
             foodCart[idx].portion = val;
-            displayCart(); // re-render to update kcal
+            displayCart();
+        });
+    });
+
+    const unitSelects = historyList.querySelectorAll('.unitSelect');
+    unitSelects.forEach(select => {
+        select.addEventListener('change', () => {
+            const idx = parseInt(select.dataset.index);
+            if (!foodCart[idx]) return;
+            foodCart[idx].unit = select.value;
+        });
+    });
+
+    const removeButtons = historyList.querySelectorAll('.removeBtn');
+    removeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const idx = parseInt(button.dataset.index);
+            removeFromCart(idx);
         });
     });
 }
