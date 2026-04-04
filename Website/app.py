@@ -391,15 +391,24 @@ NUTRIENT_IDS = [
 
 @app.route('/api/search-engine', methods=['GET'])
 def execute_search_engine():
-    data = request.get_json()
+    user_id = request.args.get('user_id')
+    food_name = request.args.get('name')
     
+    if no user_id:
+        return jsonify({'error': 'User ID required to maintain session'}), 400
+
+    if user_id not in active_user_conns:
+        active_user_conns[user_id] = connectDB()
+
+    conn = active_user_conns[user_id]
+
+    if not food_name:
+        return jsonify({'error': 'No string received'}), 400
+
     try:
-        food_name = int(request.args.get('name'))
-        if not food_name:
-            return jsonify({'error': 'Missing search criteria'}), 400
-        return query_db_for_user_info(food_name=food_name, returnJSON=True)
+        results = search_engine(food_name, conn)
+        return jsonify(results), 200
     except Exception as e:
-        print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
 
 # Log Food

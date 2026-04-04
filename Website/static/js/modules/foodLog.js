@@ -58,8 +58,13 @@ async function foodSearch() {
     const message = 'Searching for: ${foodName}';
     console.log(message);
     alert(message);
-
-
+    
+    try {
+	const reponse = await fetch('/api/search-engine?name=${encodeURICOmponent(foodName)}');
+	const data = await response.json();	
+    } catch (err) {
+	console.error("Fetch error:", err);
+    }
 
 
 }
