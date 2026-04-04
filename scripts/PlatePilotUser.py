@@ -130,6 +130,7 @@ class ppuser():
                 self.ERR = 662 - (9.53 * self.age) + self.activity_level * ((9.36 * self.weight) + (539.6 * self.height * 2.5 / 100))
                 self.micros["Calcium"] = 1000
                 self.micros["Iron"] = 8
+                self.micros["Fiber"] = 3800
                 self.micros["Magnesium"] = 400
                 self.micros["Phosphorus"] = 700
                 self.micros["Potassium"] = 3400
@@ -155,6 +156,7 @@ class ppuser():
                 self.ERR = 662 - (9.53 * self.age) + self.activity_level * ((9.36 * self.weight) + (539.6 * self.height * 2.5 / 100))
                 self.micros["Calcium"] = 1000
                 self.micros["Iron"] = 8
+                self.micros["Fiber"] = 3800
                 self.micros["Magnesium"] = 420
                 self.micros["Phosphorus"] = 700
                 self.micros["Potassium"] = 3400
@@ -178,13 +180,14 @@ class ppuser():
             elif self.age > 50:
                 self.ERR = 662 - (9.53 * self.age) + self.activity_level * ((9.36 * self.weight) + (539.6 * self.height * 2.5 / 100))	
                 self.micros["Calcium"] = 1000
+                self.micros["Iron"] = 8
+                self.micros["Fiber"] = 3000
                 self.micros["Magnesium"] = 420
                 self.micros["Phosphorus"] = 700
                 self.micros["Potassium"] = 3400
                 self.micros["Sodium"] = 1300
                 self.micros["Zinc"] = 11
                 self.micros["Copper"] = 0.9
-                self.micros["Iron"] = 8
                 self.micros["Manganese"] = 2.3
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 900
@@ -205,6 +208,7 @@ class ppuser():
             if 19 <= self.age <= 30:
                 self.ERR = 354 - (6.91 * self.age) + self.activity_level * ((9.36 * self.weight) + (726 * self.height * 2.5 / 100))	
                 self.micros["Calcium"] = 1000
+                self.micros["Fiber"] = 2500
                 self.micros["Magnesium"] = 310
                 self.micros["Phosphorus"] = 700
                 self.micros["Potassium"] = 2600
@@ -231,6 +235,7 @@ class ppuser():
             elif 31 <= self.age <= 50:
                 self.ERR = 354 - (6.91 * self.age) + self.activity_level * ((9.36 * self.weight) + (726 * self.height * 2.5 / 100))	
                 self.micros["Calcium"] = 1000
+                self.micros["Fiber"] = 2500
                 self.micros["Magnesium"] = 320
                 self.micros["Phosphorus"] = 700
                 self.micros["Potassium"] = 2600
@@ -257,6 +262,7 @@ class ppuser():
 
                 self.ERR = 354 - (6.91 * self.age) + self.activity_level * ((9.36 * self.weight) + (726 * self.height * 2.5 / 100))		
                 self.micros["Calcium"] = 1200
+                self.micros["Fiber"] = 2100
                 self.micros["Magnesium"] = 320
                 self.micros["Phosphorus"] = 700
                 self.micros["Potassium"] = 2600
