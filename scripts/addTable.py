@@ -29,7 +29,7 @@ def add_that_table():
             
     db_dir = Path(__file__)
 
-    conn = sqlite3.connect('..\db\PlatePilot.db') #connects or creates local db 
+    conn = sqlite3.connect(f'..\db\PlatePilot.db') #connects or creates local db 
 
     for file in files:
         try:

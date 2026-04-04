@@ -141,7 +141,11 @@ def register_user():
 #update user info
 @app.route('/api/update_user', methods=['POST'])
 def update_user():
+    conn = None
     data = request.get_json()
+
+    if data is None:
+        return jsonify({'error': 'Invalid JSON payload'}), 400
 
     try:
         user_id = data.get('user_id')
@@ -157,14 +161,24 @@ def update_user():
         conn = connectDB()
         cur = conn.cursor()
 
-        cur.execute("""
-            UPDATE users
-            SET age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = COALESCE(?, profile_picture)
-            WHERE id = ?
-        """, (age, weight_lbs, sex, height_inches, goal, activity_level, data.get('profile_picture'), user_id))
+        # Handle profile_picture separately - allow explicit None to remove
+        profile_picture = data.get('profile_picture')
+        if profile_picture is None and 'profile_picture' in data:
+            # User explicitly set to None, remove the picture
+            cur.execute("""
+                UPDATE users
+                SET name = COALESCE(?, name), email = COALESCE(?, email), age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = NULL
+                WHERE id = ?
+            """, (data.get('name'), data.get('email'), age, weight_lbs, sex, height_inches, goal, activity_level, user_id))
+        else:
+            # Normal update with or without profile_picture
+            cur.execute("""
+                UPDATE users
+                SET name = COALESCE(?, name), email = COALESCE(?, email), age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = COALESCE(?, profile_picture)
+                WHERE id = ?
+            """, (data.get('name'), data.get('email'), age, weight_lbs, sex, height_inches, goal, activity_level, data.get('profile_picture'), user_id))
 
         conn.commit()
-        conn.close()
 
         return jsonify({'message': 'User details updated successfully'}), 200
 
@@ -173,7 +187,8 @@ def update_user():
         return jsonify({'error': str(e)}), 500
     
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 #Updates user goals
 @app.route('/api/update_goal', methods=['POST'])
@@ -391,12 +406,16 @@ NUTRIENT_IDS = [
     1099, 1100, 1238, 1090, 1101, 1102, 1091, 1092, 1103, 1093, 1095
 ]
 
+@app.route('/api/apply-filter', methods=['GET'])
+def apply_that_filter():
+
+
 @app.route('/api/search-engine', methods=['GET'])
 def execute_search_engine():
     user_id = request.args.get('user_id')
     food_name = request.args.get('name')
     
-    if no user_id:
+    if not user_id:
         return jsonify({'error': 'User ID required to maintain session'}), 400
 
     if user_id not in active_user_conns:
@@ -490,6 +509,34 @@ def get_food_history(user_id):
             })
 
         return jsonify(history), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        if conn: conn.close()
+
+# Get Progress
+@app.route('/api/progress/<user_id>', methods=['GET'])
+def get_progress(user_id):
+    conn = None
+    try:
+        from datetime import datetime
+        conn = connectDB()
+        cur = conn.cursor()
+        today = datetime.now().strftime('%a %b %d %Y')
+
+        cur.execute("""
+            SELECT SUM(calories) as total
+            FROM FoodHistory
+            WHERE userId = ? AND dateLogged = ?
+        """, (user_id, today))
+
+        result = cur.fetchone()
+        total_calories = result[0] if result and result[0] else 0
+
+        return jsonify({'calories': total_calories}), 200
 
     except Exception as e:
         print("[ERROR]: ", e)

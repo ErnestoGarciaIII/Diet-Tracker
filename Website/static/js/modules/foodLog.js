@@ -3,14 +3,17 @@ import { getUserId, getElement, getInputValue, showError, showSuccess } from '..
 import { updateProgress } from '../state.js';
 
 export function initFoodLog() {
+    console.log("Hello there!");
     loadProfilePicture();
 
     const btn = document.getElementById('logButton');
     const addFoodBtn = document.getElementById('addFoodBtn');
-    if (!btn|| !addFoodBtn) return;
-
-    btn.addEventListener('click', handleLogFood);
-    addFoodBtn.addEventListener('click', foodSearch);
+    if (btn) {
+    	btn.addEventListener('click', handleLogFood);
+    }
+    if (addFoodBtn) {
+	addFoodBtn.addEventListener('click', foodSearch);
+    }
 }
 
 async function loadProfilePicture() {
@@ -31,7 +34,6 @@ async function handleLogFood() {
     if (!food || !calories) {
         return showError("Enter food and calories.");
     }
-
     try {
         const result = await logFood(getUserId(), { name: food, kcal: calories });
 
@@ -51,17 +53,18 @@ async function handleLogFood() {
 
 async function foodSearch() {
     const foodName = getInputValue('foodInput');
-    if (!foodName) return;
+    const userId = getUserId();
+    if (!foodName) {
         console.log("No search criteria entered.");
-        return;
-
-    const message = 'Searching for: ${foodName}';
+    }
+    const message = `Searching for: ${foodName}`;
     console.log(message);
     alert(message);
     
     try {
-	const reponse = await fetch('/api/search-engine?name=${encodeURICOmponent(foodName)}');
-	const data = await response.json();	
+	const response = await fetch(`/api/search-engine?name=${encodeURIComponent(foodName)}&user_id=${userId}`);
+	const data = await response.json();
+	console.log(data);
     } catch (err) {
 	console.error("Fetch error:", err);
     }
