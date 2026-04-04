@@ -1,2 +1,5 @@
-# Ignores the folder with the csv files for the master_food.db
-FoodData_Central_csv_2025-12-18/
+db/
+.vs/
+__pycache__/
+scripts/
+ToDo.txt
