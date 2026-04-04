@@ -429,7 +429,7 @@ def execute_search_engine():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
- # Get Nutrients for Food
+# Get Nutrients of Food
 @app.route('/api/get-nutrients', methods=['GET'])
 def get_nutrients():
     fdc_id = request.args.get('fdc_id')
@@ -442,7 +442,7 @@ def get_nutrients():
         conn = connectDB()
         cur = conn.cursor()
         
-        # Get calories (energy) for the food
+        # Get calories
         cur.execute("""
             SELECT fn.amount, n.name
             FROM food_nutrient fn
