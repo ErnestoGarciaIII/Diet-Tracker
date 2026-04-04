@@ -47,11 +47,11 @@
             </a>
         </div>
     </nav>
-
-    <main class="dashContent">    
+    <!-- Food Log Section -->
+    <main class="logContent">    
         <div class="card trackerCard">
             <h2> Fuel the plane ✈️</h2>
-            <p class="formSubtitle"> Log your calories to move the plane.</p>
+            <p class="formSubtitle">Search for foods, select them, and log your calories to move the plane.</p>
             <!-- Food Input -->
             <div class="inputGroup">
                 <label for="foodInput"> Food Name</label>
@@ -62,39 +62,50 @@
                     </button>
                 </div>
                 <!-- filter button section-->
-                 
-
+                <div class="filterButtons">
+                    <button id="VeganFilBtn" class="filterBtn" data-value="Vegan">Vegan</button>
+                    <button id="vegFilBtn" class="filterBtn" data-value="Vegetarian">Vegetarian</button>
+                    <button id="dairyFilBtn" class="filterBtn" data-value="Dairy-Free">Dairy-Free</button>
+                    <button id="ketoFilBtn" class="filterBtn" data-value="Keto">Keto</button>
+                    <button id="nutsFilBtn" class="filterBtn" data-value="No Nuts">No Nuts</button>
+                    <button id="pescFilBtn" class="filterBtn" data-value="Pescatarian">Pescatarian</button>
+                    <button id="shellFilBtn" class="filterBtn" data-value="Shellfish">Shellfish</button>
+                    <button id="soyFilBtn" class="filterBtn" data-value="Soy Dairy">Soy Dairy</button>
+                    <button id="eggFilBtn" class="filterBtn" data-value="Egg-Free">Egg-Free</button>
+                </div>
                 <datalist id="foodSearch"></datalist>
-            </div>
-            <div class="inputGroup">
-                <label for="calInput"> Calories (kcal)</label>
-                <input type="number" id="calInput" placeholder="e.g. 350">
-            </div>
-            <!--
-            <div class="inputGroup">
-                <label for="macrosInput"> Macros</label>
-                <input type="number" id="macrosInput" placeholder="e.g. 350">
-            </div>
-            <div class="inputGroup">
-                <label for="microsInput"> Micros</label>
-                <input type="number" id="microsInput" placeholder="e.g. 350">
-            </div>
-            -->
 
-            <!-- Log Food Button -->
-            <button class="RUGRbtn pagesBtn-primary full-width" id="logButton">Log Food</button>
+                <div class="inputGroup">
+                    <label for="calInput"> Calories (kcal)</label>
+                    <input type="number" id="calInput" placeholder="e.g. 350">
+                </div>
+            </div>
+            <div class="resultContent" id="resultContent">
+                <h3>Search Results:</h3>
+                <div id="resultsList"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Log Summary (cart) section-->
+    <main class="logContent">
+        <div class="summaryCard trackerCard">
+            <h2> Log Summary</h2>
+            <p class="formSubtitle"> Review your log before submitting.</p>
             <!-- shows vague current logged items-->
             <div class="logContainer">
-                <label>Today's Log:</label>
-                <ul id="foodLog"></ul>
+                <label>Foods to Log:</label>
+                <div id="historyList"></div>
             </div>
-            <!-- History Link and return to dashboard link -->
+            <!-- Log Food Button -->
+            <button class="RUGRbtn pagesBtn-primary full-width" id="logButton">Log Selected Foods</button>
+            <!-- History Link link -->
             <div>
                 <a href="{{ url_for('html_urls', filename='history.html') }}" class="navLink"> View History 
                     <i class="fa-solid fa-arrow-right fa-xlg" style="color: #3498db;"></i>
                 </a>
             </div>
-
+            <!-- Dashboard Link -->
             <div>
                 <a href="{{ url_for('html_urls', filename='dashboard.html') }}" class="navLink">Back to Dashboard
                     <i class="fa-solid fa-arrow-right fa-xlg" style="color: #3498db;"></i>
@@ -103,6 +114,6 @@
         </div>
     </main>
 
-    <script type="module" src="..\static\js\main.js"></script>
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
