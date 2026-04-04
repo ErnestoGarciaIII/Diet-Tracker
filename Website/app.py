@@ -410,6 +410,7 @@ NUTRIENT_IDS = [
 def execute_search_engine():
     user_id = request.args.get('user_id')
     food_name = request.args.get('name')
+    filters_str = request.args.get('filters', '')
     
     if not user_id:
         return jsonify({'error': 'User ID required to maintain session'}), 400
@@ -427,6 +428,43 @@ def execute_search_engine():
         return jsonify(results), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+ # Get Nutrients for Food
+@app.route('/api/get-nutrients', methods=['GET'])
+def get_nutrients():
+    fdc_id = request.args.get('fdc_id')
+    
+    if not fdc_id:
+        return jsonify({'error': 'fdc_id is required'}), 400
+    
+    conn = None
+    try:
+        conn = connectDB()
+        cur = conn.cursor()
+        
+        # Get calories (energy) for the food
+        cur.execute("""
+            SELECT fn.amount, n.name
+            FROM food_nutrient fn
+            JOIN nutrient n ON fn.nutrient_id = n.id
+            WHERE fn.fdc_id = ? AND n.name = 'Energy'
+        """, (fdc_id,))
+        
+        result = cur.fetchone()
+        calories = result[0] if result else None
+        
+        return jsonify({
+            'calories': calories,
+            'fdc_id': fdc_id
+        }), 200
+        
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+    
+    finally:
+        if conn:
+            conn.close()
 
 # Log Food
 @app.route('/api/log-food', methods=['POST'])
