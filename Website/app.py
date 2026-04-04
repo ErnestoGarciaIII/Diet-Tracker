@@ -16,6 +16,8 @@ from food_search import connectDB, apply_filter, active_filters, search_engine
 
 app = Flask(__name__)
 
+active_user_conns = {}
+
 # Helpers
 def convert_lbs_to_kg(weight_lbs):
     weightKg = round(weight_lbs * 0.453592, 2)
