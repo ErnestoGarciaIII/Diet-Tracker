@@ -126,12 +126,12 @@ async function selectFood(foodName, fdcId) {
         const response = await fetch(`/api/get-nutrients?fdc_id=${fdcId}`);
         const data = await response.json();
         
-        const calories = data.calories ? Math.round(data.calories) : 0;
+        //const calories = data.calories ? Math.round(data.calories) : 0;
         
         // Add to cart
         foodCart.push({
             name: foodName,
-            calories: calories,
+            //calories: calories,
             fdcId: fdcId
         });
         
@@ -172,7 +172,7 @@ function displayCart() {
         cartItem.innerHTML = `
             <div class="cartItemContent">
                 <span class="cartItemName">${food.name}</span>
-                <span class="cartItemCalories">${food.calories} kcal</span>
+                
             </div>
             <button class="removeBtn" onclick="removeFromCart(${index})">
                 <i class="fa-solid fa-trash"></i>

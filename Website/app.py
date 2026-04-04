@@ -408,6 +408,7 @@ NUTRIENT_IDS = [
 
 @app.route('/api/apply-filter', methods=['GET'])
 def apply_that_filter():
+    return 0;
 
 
 @app.route('/api/search-engine', methods=['GET'])

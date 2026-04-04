@@ -5,4 +5,5 @@ export function logout() {
     // clear frontend state
     clearUser();
     resetState();
+    window.location.href = "{{ url_for('html_urls', filename='login.html') }}";
 }
