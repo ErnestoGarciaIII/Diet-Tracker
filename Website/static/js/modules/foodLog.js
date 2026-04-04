@@ -2,7 +2,7 @@ import { logFood, getUserInfo } from '../api.js';
 import { getUserId, getElement, getInputValue, showError, showSuccess } from '../utils.js';
 import { updateProgress } from '../state.js';
 
-let foodCart = []; // Array to store selected foods before logging
+let foodCart = []; 
 
 export function initFoodLog() {
     console.log("Hello there!");
@@ -19,6 +19,16 @@ export function initFoodLog() {
     
     // Display initial empty cart
     displayCart();
+
+    const foodInput = document.getElementById('foodInput');
+    if (foodInput) {
+        foodInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                foodSearch();
+            }
+        });
+    }
 }
 
 async function loadProfilePicture() {
@@ -47,14 +57,10 @@ async function handleLogCart() {
 
         updateProgress({ calories: totalCalories });
 
-        // Clear cart
+        // Clears the cart
         foodCart = [];
         displayCart();
 
-        // Clear search results
-        getElement('resultsList').innerHTML = '';
-
-        showSuccess(`${foodCart.length} food(s) logged successfully!`);
 
     } catch (err) {
         showError(err.message);
@@ -125,24 +131,13 @@ async function selectFood(foodName, fdcId) {
     try {
         const response = await fetch(`/api/get-nutrients?fdc_id=${fdcId}`);
         const data = await response.json();
-        
-        //const calories = data.calories ? Math.round(data.calories) : 0;
-        
         // Add to cart
         foodCart.push({
             name: foodName,
-            //calories: calories,
             fdcId: fdcId
         });
-        
         displayCart();
-        
-        // Clear search results
-        getElement('resultsList').innerHTML = '';
-        
-        showSuccess(`Added ${foodName} to cart!`);
     } catch (err) {
-        console.warn("Could not fetch calories for selected food:", err);
         // Add to cart with 0 calories
         foodCart.push({
             name: foodName,
@@ -150,8 +145,6 @@ async function selectFood(foodName, fdcId) {
             fdcId: fdcId
         });
         displayCart();
-        getElement('resultsList').innerHTML = '';
-        showSuccess(`Added ${foodName} to cart! (calories unknown)`);
     }
 }
 
@@ -182,11 +175,10 @@ function displayCart() {
     });
 }
 
-// Global function for HTML onclick
+
 window.removeFromCart = function(index) {
     if (index >= 0 && index < foodCart.length) {
-        const removedFood = foodCart.splice(index, 1)[0];
+        foodCart.splice(index, 1);
         displayCart();
-        showSuccess(`Removed ${removedFood.name} from cart.`);
     }
 };
