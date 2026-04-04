@@ -3,31 +3,30 @@
 import { getUserInfo, updateUser } from '../api.js';
 import { getUserId, getElement, showError, showSuccess } from '../utils.js';
 
+let currentUser = null;
+
 export function initSettings() {
     loadUser();
-
-    // Note: Save functionality disabled until edit mode is implemented
-    // const btn = getElement('saveBtn');
-    // if (btn) btn.addEventListener('click', saveSettings);
 }
 
 async function loadUser() {
     try {
-        const user = await getUserInfo(getUserId());
+        currentUser = await getUserInfo(getUserId());
+        currentUser.user_id = getUserId();
 
-        // Populate display elements (not input fields)
-        getElement('userNameDisplay').textContent = user.name || '';
-        getElement('userGenderDisplay').textContent = user.sex || '';
-        getElement('userAgeDisplay').textContent = user.age || '';
-        getElement('userWeightDisplay').textContent = user.weight_lbs || '';
-        getElement('userHeightDisplay').textContent = user.height_in || '';
-        getElement('userEmailDisplay').textContent = user.email || '';
+        // Populate display elements
+        getElement('userNameDisplay').textContent = currentUser.name || '';
+        getElement('userGenderDisplay').textContent = currentUser.sex || '';
+        getElement('userAgeDisplay').textContent = currentUser.age || '';
+        getElement('userWeightDisplay').textContent = currentUser.weight_lbs || '';
+        getElement('userHeightDisplay').textContent = currentUser.height_in || '';
+        getElement('userEmailDisplay').textContent = currentUser.email || '';
 
-        // Load saved profile picture on all elements with this ID
-        if (user.profile_picture) {
+        // Load profile picture
+        if (currentUser.profile_picture) {
             const profileImages = document.querySelectorAll('#profilePreview');
             profileImages.forEach(img => {
-                img.src = user.profile_picture;
+                img.src = currentUser.profile_picture;
             });
         }
 
@@ -36,23 +35,83 @@ async function loadUser() {
     }
 }
 
-async function saveSettings() {
-    const user = {
-        user_id: getUserId(),
-        name: getElement('userName').value,
-        sex: getElement('userSex').value,
-        age: parseInt(getElement('userAge').value),
-        weight_lbs: parseFloat(getElement('userWeight').value),
-        height_in: parseFloat(getElement('userHeight').value),
-        activity_level: parseInt(getElement('activityLevel').value),
-        goal: parseInt(getElement('userGoal').value),
-        email: getElement('userEmail').value
+// Make this function global so HTML can call it
+window.enterEditMode = function(displayId, fieldName) {
+    const displayElement = getElement(displayId);
+    if (!displayElement) return;
+
+    const currentValue = displayElement.textContent;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentValue;
+    input.className = 'editInput';
+
+    // Replace the span with input
+    displayElement.parentNode.replaceChild(input, displayElement);
+
+    // Focus the input
+    input.focus();
+
+    // On blur or enter, save
+    let isSaving = false;
+    const revertToDisplay = () => {
+        if (input.parentNode) {
+            input.parentNode.replaceChild(displayElement, input);
+        }
     };
 
-    try {
-        await updateUser(user);
-        showSuccess("Settings updated!");
-    } catch (err) {
-        showError(err.message);
-    }
-}
+    const save = async () => {
+        if (isSaving) return;
+        isSaving = true;
+
+        const newValue = input.value.trim();
+        if (newValue === currentValue) {
+            revertToDisplay();
+            isSaving = false;
+            return;
+        }
+
+        // Update currentUser
+        const fieldMap = {
+            'fullName': 'name',
+            'Weight': 'weight_lbs',
+            'Height': 'height_in',
+            'email': 'email'
+        };
+        const apiField = fieldMap[fieldName] || fieldName.toLowerCase();
+        
+        let parsedValue = newValue;
+        if (['age', 'weight_lbs', 'height_in'].includes(apiField)) {
+            parsedValue = parseFloat(newValue);
+            if (isNaN(parsedValue)) {
+                showError("Invalid number");
+                revertToDisplay();
+                isSaving = false;
+                return;
+            }
+        }
+        
+        currentUser[apiField] = parsedValue;
+
+        try {
+            await updateUser(currentUser);
+            displayElement.textContent = newValue;
+            revertToDisplay();
+            showSuccess("Updated successfully!");
+        } catch (err) {
+            showError("Failed to update: " + err.message);
+            revertToDisplay();
+        }
+        isSaving = false;
+    };
+
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            save();
+        } else if (e.key === 'Escape') {
+            revertToDisplay();
+        }
+    });
+};
