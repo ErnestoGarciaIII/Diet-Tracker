@@ -396,7 +396,7 @@ def execute_search_engine():
     user_id = request.args.get('user_id')
     food_name = request.args.get('name')
     
-    if no user_id:
+    if not user_id:
         return jsonify({'error': 'User ID required to maintain session'}), 400
 
     if user_id not in active_user_conns:
@@ -490,6 +490,34 @@ def get_food_history(user_id):
             })
 
         return jsonify(history), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        if conn: conn.close()
+
+# Get Progress
+@app.route('/api/progress/<user_id>', methods=['GET'])
+def get_progress(user_id):
+    conn = None
+    try:
+        from datetime import datetime
+        conn = connectDB()
+        cur = conn.cursor()
+        today = datetime.now().strftime('%a %b %d %Y')
+
+        cur.execute("""
+            SELECT SUM(calories) as total
+            FROM FoodHistory
+            WHERE userId = ? AND dateLogged = ?
+        """, (user_id, today))
+
+        result = cur.fetchone()
+        total_calories = result[0] if result and result[0] else 0
+
+        return jsonify({'calories': total_calories}), 200
 
     except Exception as e:
         print("[ERROR]: ", e)

@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         if (userId && protectedPage) {
             const user = await API.getUserInfo(userId);
+            user.user_id = userId;
             State.setUser(user);
 
             // Load profile picture on all pages that have it
