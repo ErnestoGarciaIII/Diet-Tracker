@@ -406,6 +406,10 @@ NUTRIENT_IDS = [
     1099, 1100, 1238, 1090, 1101, 1102, 1091, 1092, 1103, 1093, 1095
 ]
 
+@app.route('/api/apply-filter', methods=['GET'])
+def apply_that_filter():
+
+
 @app.route('/api/search-engine', methods=['GET'])
 def execute_search_engine():
     user_id = request.args.get('user_id')

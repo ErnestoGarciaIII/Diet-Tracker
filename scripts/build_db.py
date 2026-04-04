@@ -35,7 +35,7 @@ db_dir = Path(__file__)
 conn = sqlite3.connect('../db/PlatePilot.db')
 cursor = conn.cursor()
 
-files = ['food', 'nutrient', 'food_nutrient', 'food_portion', 'food_category', 'branded_food']
+files = ['food', 'nutrient', 'food_nutrient', 'food_portion', 'food_category']
 
 for file in files:
     try:
@@ -76,7 +76,8 @@ CREATE TABLE IF NOT EXISTS Users (
     height_inches INTEGER,
     weight_lbs INTEGER,
     goal INTEGER,
-    activity_level INTEGER
+    activity_level INTEGER,
+    profile_picture TEXT
 )
 """)
 
@@ -89,11 +90,12 @@ CREATE TABLE IF NOT EXISTS Restrictions (
     name TEXT NOT NULL UNIQUE
 );
 """)
-restrictions = [("Vegan",), ("Vegetarian",), ("Gluten-Free",), ("Dairy-Free",), ("Keto",), ("Nut-Free",), ("Pescatarian",), ("Lactose-Free",)]
-cursor.executemany(
-    "INSERT OR IGNORE INTO Restrictions (name) VALUES (?)",
-    restrictions
-)
+
+# Insert restrictions, ensuring "None" gets ID 0
+cursor.execute('INSERT OR IGNORE INTO Restrictions (restrictionId, name) VALUES (0, ?)', ('None',))
+restrictions = ["Vegetarian", "Vegan", "Nut-Allergy", "Egg-Allergy", "Shellfish-Allergy", "Soy-Allergy", "Dairy-Free", "Pescatarian", "Keto"]
+for restriction in restrictions:
+    cursor.execute("INSERT OR IGNORE INTO Restrictions (name) VALUES (?)", (restriction,))
 
 print("Ensured restrictions table exists.")
 
@@ -124,6 +126,21 @@ cursor.executemany(
 )
 
 print("Ensured goals table exists.")
+
+# Create FoodHistory Table
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS FoodHistory (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    userId INTEGER NOT NULL,
+    foodName TEXT NOT NULL,
+    calories INTEGER NOT NULL,
+    dateLogged DATE NOT NULL,
+    timeLogged TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE CASCADE
+);
+""")
+
+print("Ensured food history table exists.")
 
 conn.commit()
 conn.close()
