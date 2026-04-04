@@ -36,7 +36,7 @@ def query_db_for_user_info(user_id, returnJSON=True):
         cur.execute("""
             SELECT name, email, age, sex, height_inches, weight_lbs, goal, activity_level, profile_picture
             FROM Users
-            WHERE id = ?
+            WHERE userId = ?
         """, (user_id,))
 
         row = cur.fetchone()
@@ -168,14 +168,14 @@ def update_user():
             cur.execute("""
                 UPDATE users
                 SET name = COALESCE(?, name), email = COALESCE(?, email), age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = NULL
-                WHERE id = ?
+                WHERE userId = ?
             """, (data.get('name'), data.get('email'), age, weight_lbs, sex, height_inches, goal, activity_level, user_id))
         else:
             # Normal update with or without profile_picture
             cur.execute("""
                 UPDATE users
                 SET name = COALESCE(?, name), email = COALESCE(?, email), age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = COALESCE(?, profile_picture)
-                WHERE id = ?
+                WHERE userId = ?
             """, (data.get('name'), data.get('email'), age, weight_lbs, sex, height_inches, goal, activity_level, data.get('profile_picture'), user_id))
 
         conn.commit()
@@ -211,7 +211,7 @@ def update_goal():
         cur.execute("""
             UPDATE users
             SET goal = ?
-            WHERE id = ?
+            WHERE userId = ?
         """, (goal_id, user_id))
         conn.commit()
         conn.close()
@@ -248,7 +248,7 @@ def upload_avatar():
 
         conn = connectDB()
         cur = conn.cursor()
-        cur.execute("UPDATE Users SET profile_picture = ? WHERE id = ?", (profile_picture_url, user_id))
+        cur.execute("UPDATE Users SET profile_picture = ? WHERE userId = ?", (profile_picture_url, user_id))
         conn.commit()
         conn.close()
 
@@ -351,7 +351,7 @@ def login_user():
         conn = connectDB()
         cur = conn.cursor()
 
-        cur.execute("SELECT id, password FROM users WHERE email = ?", (email,))
+        cur.execute("SELECT userId, password FROM users WHERE email = ?", (email,))
         user = cur.fetchone()
 
         if user and check_password_hash(user[1], password):

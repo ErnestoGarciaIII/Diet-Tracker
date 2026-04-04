@@ -119,7 +119,7 @@ def build_food_history_table(conn, cursor):
         portion REAL DEFAULT 1,
         dateLogged DATE NOT NULL,
         timeLogged TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE CASCADE
+        FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
     )
     """)
     print("Finished building FoodHistory table\n")
