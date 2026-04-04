@@ -84,12 +84,8 @@ def buildQuery():
     
     return categoryQuery, foodQuery, restrictionsQuery
 
-def runQuery(categoryQuery, foodQuery, restrictionsQuery):
+def runQuery(categoryQuery, foodQuery, restrictionsQuery, conn, cursor):
     
-    connection = connectDB()
-
-    cursor = connection.cursor()
-
     try:
         cursor.execute("DELETE FROM Restrictions")
         cursor.execute("DELETE FROM food_category WHERE id BETWEEN 29 AND 40")
@@ -101,8 +97,6 @@ def runQuery(categoryQuery, foodQuery, restrictionsQuery):
         print(f"Finished updating category_id column...\n")
         print(f"Im gonna fugg up that Restrictions table muahahahahahhaa >:) ")
         cursor.execute(restrictionsQuery)
-
-        connection.commit()
 
     except sqlite3.OperationalError as e:
 
@@ -117,8 +111,9 @@ def main():
     checkArgs()
     
     categoryQuery, foodQuery, restrictionsQuery = buildQuery()
-
-    runQuery(categoryQuery, foodQuery, restrictionsQuery)
+    conn = connectDB()
+    cursor = conn.cursor()
+    runQuery(categoryQuery, foodQuery, restrictionsQuery, conn, cursor)
 
 
 
