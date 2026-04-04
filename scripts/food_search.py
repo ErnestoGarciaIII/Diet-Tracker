@@ -4,7 +4,7 @@ import os
 
 def connectDB():
     try: 
-        connection = sqlite3.connect(f"../db/PlatePilot.db")
+        connection = sqlite3.connect(f"../db/PlatePilot.db", check_same_thread=False)
     except sqlite3.OperationalError as e:
         print(f"Unable to connect to the database...")
         print(e)

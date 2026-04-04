@@ -78,8 +78,27 @@
             </div>
             <!-- History display-->
             <div id="dayDetails" class="dayDetails">
-                <h3 id="selectedDateHeader">Select a day</h3>
-                <div id="historyList"></div>
+                <h3 id="selectedDateHeader"></h3>
+                <div id="historyList">
+                    <!-- {% for log in history %}
+                    <div class="historyItem">
+                        <div class="foodInfo">
+                            <span class="label"><strong>${{ log.name }}</strong></span>
+                            <span class="value">Portion: {{ log.portion or 1 }}</span>
+                        </div>
+                        <div class="foodActions">
+                            <button class="editBtn" data-id="{{ log.id }}" data-name="{{ log.name }}" data-kcal="{{ log.kcal }}" data-portion="{{ log.portion or 1 }}">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button class="deleteBtn" data-id="{{ log.id }}" data-name="{{ log.name }}">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div> No logs for this day. </div>
+                    {% endfor %} -->
+                </div>
             </div>
         </div>
     </main>

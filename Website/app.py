@@ -408,12 +408,14 @@ NUTRIENT_IDS = [
 
 @app.route('/api/apply-filter', methods=['GET'])
 def apply_that_filter():
+    return 0;
 
 
 @app.route('/api/search-engine', methods=['GET'])
 def execute_search_engine():
     user_id = request.args.get('user_id')
     food_name = request.args.get('name')
+    filters_str = request.args.get('filters', '')
     
     if not user_id:
         return jsonify({'error': 'User ID required to maintain session'}), 400
@@ -432,6 +434,43 @@ def execute_search_engine():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# Get Nutrients of Food
+@app.route('/api/get-nutrients', methods=['GET'])
+def get_nutrients():
+    fdc_id = request.args.get('fdc_id')
+    
+    if not fdc_id:
+        return jsonify({'error': 'fdc_id is required'}), 400
+    
+    conn = None
+    try:
+        conn = connectDB()
+        cur = conn.cursor()
+        
+        # Get calories
+        cur.execute("""
+            SELECT fn.amount, n.name
+            FROM food_nutrient fn
+            JOIN nutrient n ON fn.nutrient_id = n.id
+            WHERE fn.fdc_id = ? AND n.name = 'Energy'
+        """, (fdc_id,))
+        
+        result = cur.fetchone()
+        calories = result[0] if result else None
+        
+        return jsonify({
+            'calories': calories,
+            'fdc_id': fdc_id
+        }), 200
+        
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+    
+    finally:
+        if conn:
+            conn.close()
+
 # Log Food
 @app.route('/api/log-food', methods=['POST'])
 def log_food_entry():
@@ -439,6 +478,8 @@ def log_food_entry():
     user_id = data.get('user_id')
     food_name = data.get('name')
     calories = data.get('kcal')
+    portion = data.get('portion', 1)
+
 
     if not user_id or not food_name or calories is None:
         return jsonify({'error': 'user_id, name, and kcal are required'}), 400
@@ -454,9 +495,9 @@ def log_food_entry():
 
         # Insert into FoodHistory
         cur.execute("""
-            INSERT INTO FoodHistory (userId, foodName, calories, dateLogged)
-            VALUES (?, ?, ?, ?)
-        """, (user_id, food_name, calories, today))
+            INSERT INTO FoodHistory (userId, foodName, calories, dateLogged, portion)
+            VALUES (?, ?, ?, ?, ?)
+        """, (user_id, food_name, calories, today, portion))
 
         conn.commit()
 
@@ -491,7 +532,7 @@ def get_food_history(user_id):
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT id, dateLogged, foodName, calories
+            SELECT id, dateLogged, foodName, calories, portion
             FROM FoodHistory
             WHERE userId = ?
             ORDER BY dateLogged DESC, timeLogged DESC
@@ -505,7 +546,8 @@ def get_food_history(user_id):
                 'id': row[0],
                 'date': row[1],
                 'name': row[2],
-                'kcal': row[3]
+                'kcal': row[3],
+                'portion': row[4] if row[4] is not None else 1  # Default portion to 1 if null
             })
 
         return jsonify(history), 200
@@ -552,6 +594,7 @@ def update_food_entry(entry_id):
     food_name = data.get('name')
     calories = data.get('kcal')
     user_id = data.get('user_id')
+    portion = data.get('portion', 1)
 
     if not food_name or calories is None or not user_id:
         return jsonify({'error': 'name, kcal, and user_id are required'}), 400
@@ -564,9 +607,9 @@ def update_food_entry(entry_id):
         # Update the food entry
         cur.execute("""
             UPDATE FoodHistory
-            SET foodName = ?, calories = ?
+            SET foodName = ?, calories = ?, portion = ?
             WHERE id = ? AND userId = ?
-        """, (food_name, calories, entry_id, user_id))
+        """, (food_name, calories, portion, entry_id, user_id))
 
         if cur.rowcount == 0:
             return jsonify({'error': 'Food entry not found or not authorized'}), 404
@@ -688,6 +731,7 @@ def clear_food_history(user_id):
 
     finally:
         if conn: conn.close()
+
 
 #Run server
 if __name__ == '__main__':
