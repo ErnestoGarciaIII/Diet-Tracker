@@ -51,8 +51,10 @@ async function handleLogCart() {
     try {
         let totalCalories = 0;
         for (const food of foodCart) {
-            await logFood(getUserId(), { name: food.name, kcal: food.calories });
-            totalCalories += food.calories;
+            const portion = food.portion || 1;
+            const kcal = Math.round(food.calories * portion);
+            await logFood(getUserId(), { name: food.name, kcal: kcal, portion: food.portion || 1 });
+            totalCalories += kcal;
         }
 
         updateProgress({ calories: totalCalories });
@@ -131,9 +133,12 @@ async function selectFood(foodName, fdcId) {
     try {
         const response = await fetch(`/api/get-nutrients?fdc_id=${fdcId}`);
         const data = await response.json();
+        const calories = data.calories ? Math.round(data.calories) : 0;
         // Add to cart
         foodCart.push({
             name: foodName,
+            calories: calories,
+            portion: 1,
             fdcId: fdcId
         });
         displayCart();
@@ -142,6 +147,7 @@ async function selectFood(foodName, fdcId) {
         foodCart.push({
             name: foodName,
             calories: 0,
+            portion: 1,
             fdcId: fdcId
         });
         displayCart();
@@ -165,7 +171,8 @@ function displayCart() {
         cartItem.innerHTML = `
             <div class="cartItemContent">
                 <span class="cartItemName">${food.name}</span>
-                
+                <label style="margin-left:10px;font-size:0.95em;">Portion: </label>
+                <input type="number" min="0.1" step="0.1" value="${food.portion || 1}" class="portionInput" data-index="${index}" style="width:50px;margin-left:4px;">
             </div>
             <button class="removeBtn" onclick="removeFromCart(${index})">
                 <i class="fa-solid fa-trash"></i>
@@ -173,12 +180,16 @@ function displayCart() {
         `;
         historyList.appendChild(cartItem);
     });
+    // Added event listeners for portion inputs
+    const portionInputs = historyList.querySelectorAll('.portionInput');
+    portionInputs.forEach(input => {
+        input.addEventListener('change', (e) => {
+            const idx = parseInt(input.dataset.index);
+            let val = parseFloat(input.value);
+            if (isNaN(val) || val <= 0) val = 1;
+            foodCart[idx].portion = val;
+            displayCart(); // re-render to update kcal
+        });
+    });
 }
 
-
-window.removeFromCart = function(index) {
-    if (index >= 0 && index < foodCart.length) {
-        foodCart.splice(index, 1);
-        displayCart();
-    }
-};

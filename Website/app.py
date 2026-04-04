@@ -478,6 +478,8 @@ def log_food_entry():
     user_id = data.get('user_id')
     food_name = data.get('name')
     calories = data.get('kcal')
+    portion = data.get('portion', 1)
+
 
     if not user_id or not food_name or calories is None:
         return jsonify({'error': 'user_id, name, and kcal are required'}), 400
@@ -493,9 +495,9 @@ def log_food_entry():
 
         # Insert into FoodHistory
         cur.execute("""
-            INSERT INTO FoodHistory (userId, foodName, calories, dateLogged)
-            VALUES (?, ?, ?, ?)
-        """, (user_id, food_name, calories, today))
+            INSERT INTO FoodHistory (userId, foodName, calories, dateLogged, portion)
+            VALUES (?, ?, ?, ?, ?)
+        """, (user_id, food_name, calories, today, portion))
 
         conn.commit()
 
@@ -530,7 +532,7 @@ def get_food_history(user_id):
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT id, dateLogged, foodName, calories
+            SELECT id, dateLogged, foodName, calories, portion
             FROM FoodHistory
             WHERE userId = ?
             ORDER BY dateLogged DESC, timeLogged DESC
@@ -544,7 +546,8 @@ def get_food_history(user_id):
                 'id': row[0],
                 'date': row[1],
                 'name': row[2],
-                'kcal': row[3]
+                'kcal': row[3],
+                'portion': row[4] if row[4] is not None else 1  # Default portion to 1 if null
             })
 
         return jsonify(history), 200
@@ -591,6 +594,7 @@ def update_food_entry(entry_id):
     food_name = data.get('name')
     calories = data.get('kcal')
     user_id = data.get('user_id')
+    portion = data.get('portion', 1)
 
     if not food_name or calories is None or not user_id:
         return jsonify({'error': 'name, kcal, and user_id are required'}), 400
@@ -603,9 +607,9 @@ def update_food_entry(entry_id):
         # Update the food entry
         cur.execute("""
             UPDATE FoodHistory
-            SET foodName = ?, calories = ?
+            SET foodName = ?, calories = ?, portion = ?
             WHERE id = ? AND userId = ?
-        """, (food_name, calories, entry_id, user_id))
+        """, (food_name, calories, portion, entry_id, user_id))
 
         if cur.rowcount == 0:
             return jsonify({'error': 'Food entry not found or not authorized'}), 404
@@ -727,6 +731,7 @@ def clear_food_history(user_id):
 
     finally:
         if conn: conn.close()
+
 
 #Run server
 if __name__ == '__main__':
