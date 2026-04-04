@@ -9,12 +9,12 @@
 </head>
 <body id="historyPage">
     <!-- Navigation Bar -->
-    <nav class="navbar"> "
-        <img src="{{ url_for('static', filename='images/defaultAvatar.jpg') }}" id="profilePreview" class="navAvatar">
+    <nav class="navbar">
+        <img id="profilePreview" class="navAvatar">
         <div>
             <a href="{{ url_for('html_urls', filename='dashboard.html') }}">
-                <div class="navIcon active">
-                    <i class="fa-regular fa-house fa-beat fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                <div class="navIcon">
+                    <i class="fa-regular fa-house fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
@@ -27,8 +27,8 @@
         </div>
         <div>
             <a href="{{ url_for('html_urls', filename='history.html') }}">
-                <div class="navIcon">
-                    <i class="fa-solid fa-calendar fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                <div class="navIcon active">
+                    <i class="fa-solid fa-calendar fa-beat fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
@@ -47,6 +47,7 @@
             </a>
         </div>
     </nav>
+	
     <main class="dashContent">
         <div class="card">
             <h1 class="trackerCard">Activity History</h1>
@@ -60,26 +61,21 @@
 
             <!-- calendar section-->
             <div id="calendarGrid" class="calendarGrid">
-                <div class="day-label">Sun</div>
-                <div class="day-label">Mon</div>
-                <div class="day-label">Tue</div>
-                <div class="day-label">Wed</div>
-                <div class="day-label">Thu</div>
-                <div class="day-label">Fri</div>
-                <div class="day-label">Sat</div>
+                <div class="dayLabel">Sun</div>
+                <div class="dayLabel">Mon</div>
+                <div class="dayLabel">Tue</div>
+                <div class="dayLabel">Wed</div>
+                <div class="dayLabel">Thu</div>
+                <div class="dayLabel">Fri</div>
+                <div class="dayLabel">Sat</div>
             </div>
 
-            <!-- Jump to Today and Clear History Buttons -->
+            <!-- Jump to Today Button -->
             <div class="btnSec">
-                <button onclick="jumpToToday()" class="jumpBtn">
+                <button class="jumpBtn">
                     <i class="fa-solid fa-calendar-day"></i> Jump to Today
                 </button>
-
-                <button onclick="clearHistory()" class="clearBtn">
-                    <i class="fa-solid fa-trash-can"></i> Clear All History
-                </button>
             </div>
-
             <!-- History display-->
             <div id="dayDetails" class="dayDetails">
                 <h3 id="selectedDateHeader">Select a day</h3>

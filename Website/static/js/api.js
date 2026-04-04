@@ -60,6 +60,23 @@ export async function updateUser(user) {
     });
 }
 
+export async function uploadAvatar(userId, file) {
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('avatar', file);
+
+    const res = await fetch('/api/upload-avatar', {
+        method: 'POST',
+        body: formData
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.error || 'Image upload failed');
+    }
+    return data;
+}
+
 // ==========================
 // GOALS
 // ==========================
@@ -121,4 +138,32 @@ export async function getProgress(userId) {
 // ==========================
 export async function getFoodHistory(userId) {
     return request(`/api/food-history/${userId}`);
+}
+
+// Update Food Entry
+export async function updateFoodEntry(entryId, userId, foodData) {
+    return request(`/api/food-history/${entryId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            user_id: userId,
+            ...foodData
+        })
+    });
+}
+
+// Delete Food Entry
+export async function deleteFoodEntry(entryId, userId) {
+    return request(`/api/food-history/${entryId}`, {
+        method: 'DELETE',
+        body: JSON.stringify({
+            user_id: userId
+        })
+    });
+}
+
+// Clear All Food History
+export async function clearFoodHistory(userId) {
+    return request(`/api/food-history/clear/${userId}`, {
+        method: 'DELETE'
+    });
 }

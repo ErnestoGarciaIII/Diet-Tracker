@@ -10,8 +10,8 @@
 </head>
 <body id="dashboardPage">
     <!-- Navigation Bar -->
-    <nav class="navbar"> "
-        <img src="{{ url_for('static', filename='images/defaultAvatar.jpg') }}" id="profilePreview" class="navAvatar">
+    <nav class="navbar">
+        <img id="profilePreview" class="navAvatar">
         <div>
             <a href="{{ url_for('html_urls', filename='dashboard.html') }}">
                 <div class="navIcon active">
@@ -91,6 +91,7 @@
                 </div>
             </div> 
         </div>
+        <!-- activity chart-->
         <div class="chartContainer">
             <div class="card chartCard">
                 <h3>7-Day Activity Level</h3>

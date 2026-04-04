@@ -31,6 +31,11 @@ function renderUserInfo(user) {
         getElement('userNameDisplay').innerText = user.name || 'Guest User';
     }
 
+    // Load saved profile picture
+    if (getElement('profilePreview') && user.profile_picture) {
+        getElement('profilePreview').src = user.profile_picture;
+    }
+
     const calorieTarget = calculateCalories(user.goal);
 
     if (getElement('calorieTarget')) {
@@ -66,7 +71,7 @@ function renderRestrictions(restrictions) {
 // ==========================
 async function loadProgress() {
     try {
-        const userId = State.getUser().user_id;
+        const userId = State.getUserId();
         const progress = await API.getProgress(userId);
 
         State.setProgress(progress);
@@ -146,12 +151,14 @@ export async function renderActivityChart() {
     if (!ctx) return;
 
     try {
-        const userId = State.getUser().user_id;
+        const userId = State.getUserId();
         const history = await API.getFoodHistory(userId);
 
         const days = 7;
         const labels = [];
         const caloriesData = [];
+        const macrosData = [];
+        const microsData = [];
 
         for (let i = days - 1; i >= 0; i--) {
             const d = new Date();
@@ -170,19 +177,56 @@ export async function renderActivityChart() {
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels,
+                labels: labels,
                 datasets: [{
                     label: 'Calories (kcal)',
                     data: caloriesData,
                     backgroundColor: 'rgba(22, 163, 74, 0.6)',
                     borderColor: '#16a34a',
                     borderWidth: 2,
-                    borderRadius: 8
+                    borderRadius: 4,
+                    barPercentage: 0.8,
+                    categoryPercentage: 0.7
+                },
+                {
+                    label: 'Macros',
+                    data: macrosData,
+                    backgroundColor: '#3498db',
+                    borderColor: '',
+                    borderWidth: 2,
+                    borderRadius: 4,
+                    barPercentage: 0.8,
+                    categoryPercentage: 0.7
+                },
+                {
+                    label: 'Micros',
+                    data: microsData,
+                    backgroundColor: '#f1c40f',
+                    borderColor: '',
+                    borderWidth: 2,
+                    borderRadius: 4,
+                    barPercentage: 0.8,
+                    categoryPercentage: 0.7
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false
+			    maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {color: 'rgba(0,0,0,0.05)'}
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: true,
+                        position: 'top',
+                        labels: {boxWidth: 12, font: {size: 11}}
+                    }
+                }
             }
         });
 
