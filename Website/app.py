@@ -141,7 +141,11 @@ def register_user():
 #update user info
 @app.route('/api/update_user', methods=['POST'])
 def update_user():
+    conn = None
     data = request.get_json()
+
+    if data is None:
+        return jsonify({'error': 'Invalid JSON payload'}), 400
 
     try:
         user_id = data.get('user_id')
@@ -157,14 +161,24 @@ def update_user():
         conn = connectDB()
         cur = conn.cursor()
 
-        cur.execute("""
-            UPDATE users
-            SET age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = COALESCE(?, profile_picture)
-            WHERE id = ?
-        """, (age, weight_lbs, sex, height_inches, goal, activity_level, data.get('profile_picture'), user_id))
+        # Handle profile_picture separately - allow explicit None to remove
+        profile_picture = data.get('profile_picture')
+        if profile_picture is None and 'profile_picture' in data:
+            # User explicitly set to None, remove the picture
+            cur.execute("""
+                UPDATE users
+                SET name = COALESCE(?, name), email = COALESCE(?, email), age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = NULL
+                WHERE id = ?
+            """, (data.get('name'), data.get('email'), age, weight_lbs, sex, height_inches, goal, activity_level, user_id))
+        else:
+            # Normal update with or without profile_picture
+            cur.execute("""
+                UPDATE users
+                SET name = COALESCE(?, name), email = COALESCE(?, email), age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = COALESCE(?, profile_picture)
+                WHERE id = ?
+            """, (data.get('name'), data.get('email'), age, weight_lbs, sex, height_inches, goal, activity_level, data.get('profile_picture'), user_id))
 
         conn.commit()
-        conn.close()
 
         return jsonify({'message': 'User details updated successfully'}), 200
 
@@ -173,7 +187,8 @@ def update_user():
         return jsonify({'error': str(e)}), 500
     
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 #Updates user goals
 @app.route('/api/update_goal', methods=['POST'])
