@@ -2,146 +2,147 @@ import pandas as pd
 import sqlite3
 import sys
 from pathlib import Path
-
+from food_search import connectDB
+from updateTables import buildQuery, runQuery
 help_flags = {"h", "-h", "--h", "help", "-help", "--help"}
 
-if(len(sys.argv) > 1):
-    if sys.argv[1].lower() in help_flags:
-        print("""
-              -----                     build_db.py help                        -----
-              -----                  Do you really need this?                   -----
-              -----                                                             -----
-              ----- USAGE: Builds initial database using food.csv, nutrient.csv -----
-              ----- food_nutrient.csv, food_portion.csv, and branded_food.csv   -----
-              ----- THIS SCRIPT WILL REPLACE THE TABLES THAT ALREADY EXIST IF   -----
-              -----      THE 'PlatePilot.db' EXISTS IN THE SAME DIRECTORY      -----
-              -----                      AS THIS SCRIPT                         -----
-              -----       FoodData_Central_csv_2025-12-18 folder must be        -----
-              -----                 adjacent to this script                     -----
-              -----                                                             -----
-              -----                        Good luck!                           -----
-              """)
-        sys.exit(0)
-    else:
-        print("""Error: unexpected arguments... see usage...\n
-              -----           USAGE: python build_db.py             -----
-              -----        OR: python build_db.py <argument>        -----
-              -----   Acceptable args: h -h --h help -help --help   -----
-              """)
-        sys.exit(1)
+def checkArgs():
+    if(len(sys.argv) > 1):
+        if sys.argv[1].lower() in help_flags:
+            print("""
+                -----                     build_db.py help                        -----
+                -----                  Do you really need this?                   -----
+                -----                                                             -----
+                ----- USAGE: Builds initial database using food.csv, nutrient.csv -----
+                ----- food_nutrient.csv, food_portion.csv, and branded_food.csv   -----
+                ----- THIS SCRIPT WILL REPLACE THE TABLES THAT ALREADY EXIST IF   -----
+                -----      THE 'PlatePilot.db' EXISTS IN THE SAME DIRECTORY      -----
+                -----                      AS THIS SCRIPT                         -----
+                -----       FoodData_Central_csv_2025-12-18 folder must be        -----
+                -----                 adjacent to this script                     -----
+                -----                                                             -----
+                -----                        Good luck!                           -----
+                """)
+            sys.exit(0)
+        else:
+            print("""Error: unexpected arguments... see usage...\n
+                -----           USAGE: python build_db.py             -----
+                -----        OR: python build_db.py <argument>        -----
+                -----   Acceptable args: h -h --h help -help --help   -----
+                """)
+            sys.exit(1)
 
-db_dir = Path(__file__)
-
-conn = sqlite3.connect('../db/PlatePilot.db')
-cursor = conn.cursor()
-
-files = ['food', 'nutrient', 'food_nutrient', 'food_portion', 'food_category']
-
-for file in files:
+ 
+def build_food_table(conn):
+    files = ['food', 'nutrient', 'food_nutrient', 'food_portion', 'food_category']
     try:
-        # Check if table already exists
-        cursor.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-            (file,)
-        )
-        exists = cursor.fetchone()
-
-        if exists:
-            print(f"Table '{file}' already exists. Skipping import.")
-            continue
-
-        df = pd.read_csv(
-            f'../db/FoodData_Central_csv_2025-12-18/{file}.csv',
-            low_memory=False
-        )
-
-        print(f"Building table for {file}")
-        df.to_sql(file, conn, index=False)
-        print(f"Imported {file} table.")
-
-    except Exception as e:
-        print(f"Unexpected error occurred...\n{e}\nExiting...")
+        for file in files:
+            print(f"Reading {file}.csv...")
+            df = pd.read_csv(f'../db/FoodData_Central_csv_2025-12-18/{file}.csv', low_memory=False)
+            print(f"Building table for {file}")
+            df.to_sql(file, conn, if_exists='replace', index=False)
+            print(f"Imported {file} table.")
+    except sqlite3.OperationalError as e:
+        print(f"SQL Operation error occurred...\n{e}\nExiting...")
         conn.close()
         sys.exit(1)
 
-# Create blank users table if it does not exist
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS Users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    age INTEGER,
-    sex TEXT,
-    height_inches INTEGER,
-    weight_lbs INTEGER,
-    goal INTEGER,
-    activity_level INTEGER,
-    profile_picture TEXT
-)
-""")
+def build_users_table(conn, cursor):
+    cursor.execute("DROP TABLE IF EXISTS Users")
+    cursor.execute("""
+    CREATE TABLE Users (
+        userId INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        age INTEGER,
+        sex TEXT,
+        height_inches INTEGER,
+        weight_lbs INTEGER,
+        goal INTEGER,
+        activity_level INTEGER,
+        profile_picture TEXT
+    )
+    """)
 
-print("Ensured users table exists.")
+def build_restrictions_table(conn, cursor):
+    cursor.execute("DROP TABLE IF EXISTS Restrictions")
+    print(f"Attempting to build Restrictions table")
+    cursor.execute("""
+    CREATE TABLE Restrictions (
+        restrictionId INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE
+    )
+    """)
+    cursor.execute('INSERT INTO Restrictions (restrictionId, name) VALUES (0, ?)', ('None',))
+    restrictions = ["Vegetarian", "Vegan", "Nut-Allergy", "Egg-Allergy", "Shellfish-Allergy", "Soy-Allergy", "Dairy-Free", "Pescatarian", "Keto"]
+    for restriction in restrictions:
+        cursor.execute("INSERT INTO Restrictions (name) VALUES (?)", (restriction,))
+    print("Finished building Restrictions table\n")
 
-#Create Restrictions table
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS Restrictions (
-    restrictionId INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE
-);
-""")
+def build_user_restrictions_table(conn, cursor):
+    cursor.execute("DROP TABLE IF EXISTS UserRestrictions")
+    print(f"Attempting to build UserRestrictions table...")
+    cursor.execute("""
+    CREATE TABLE UserRestrictions (
+        userId INTEGER,
+        restrictionId INTEGER,
+        PRIMARY KEY (userId, restrictionId),
+        FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE,
+        FOREIGN KEY (restrictionId) REFERENCES Restrictions(restrictionId) ON DELETE CASCADE
+    )
+    """)
+    print("Finished building UserRestrictions table\n")
 
-# Insert restrictions, ensuring "None" gets ID 0
-cursor.execute('INSERT OR IGNORE INTO Restrictions (restrictionId, name) VALUES (0, ?)', ('None',))
-restrictions = ["Vegetarian", "Vegan", "Nut-Allergy", "Egg-Allergy", "Shellfish-Allergy", "Soy-Allergy", "Dairy-Free", "Pescatarian", "Keto"]
-for restriction in restrictions:
-    cursor.execute("INSERT OR IGNORE INTO Restrictions (name) VALUES (?)", (restriction,))
+def build_goals_table(conn, cursor):
+    cursor.execute("DROP TABLE IF EXISTS Goals")
+    print(f"Attempting to build Goals table...")
+    cursor.execute("""
+    CREATE TABLE Goals (
+        goalsId INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE
+    )
+    """)
+    goals = [("Lose",), ("Maintain",), ("Gain",)]
+    cursor.executemany("INSERT INTO Goals (name) VALUES (?)", goals)
+    print("Finished building Goals table\n")
 
-print("Ensured restrictions table exists.")
+def build_food_history_table(conn, cursor):
+    cursor.execute("DROP TABLE IF EXISTS FoodHistory")
+    print(f"Attempting to build FoodHistory table...")
+    cursor.execute("""
+    CREATE TABLE FoodHistory (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER NOT NULL,
+        foodName TEXT NOT NULL,
+        calories INTEGER NOT NULL,
+        portion REAL DEFAULT 1,
+        dateLogged DATE NOT NULL,
+        timeLogged TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE CASCADE
+    )
+    """)
+    print("Finished building FoodHistory table\n")
 
-#Create UserRestrictions table
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS UserRestrictions (
-    userId INTEGER,
-    restrictionId INTEGER,
-    PRIMARY KEY (userId, restrictionId),
-    FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE,
-    FOREIGN KEY (restrictionId) REFERENCES Restrictions(restrictionId) ON DELETE CASCADE
-);
-""")
+def main():
 
-print("Ensured user restrictions table exists.")
+    checkArgs()
 
-#Create Goals Table
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS Goals (
-    goalsId INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE
-);
-""")
-goals = [("Lose",), ("Maintain",), ("Gain",)]
-cursor.executemany(
-    "INSERT OR IGNORE INTO Goals (name) VALUES (?)",
-    goals
-)
+    conn = connectDB()
+    cursor = conn.cursor()
 
-print("Ensured goals table exists.")
+    build_food_table(conn)
+    build_users_table(conn, cursor)
+    build_restrictions_table(conn, cursor)
+    build_user_restrictions_table(conn, cursor)
+    build_goals_table(conn, cursor)
+    build_food_history_table(conn, cursor)
 
-# Create FoodHistory Table
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS FoodHistory (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    userId INTEGER NOT NULL,
-    foodName TEXT NOT NULL,
-    calories INTEGER NOT NULL,
-    portion REAL DEFAULT 1,
-    dateLogged DATE NOT NULL,
-    timeLogged TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE CASCADE
-);
-""")
+    categoryQuery, foodQuery, restrictionsQuery = buildQuery()
+    runQuery(categoryQuery, foodQuery, restrictionsQuery, conn, cursor)
 
-print("Ensured food history table exists.")
+    conn.commit()
+    conn.close()
 
-conn.commit()
-conn.close()
+if __name__ == "__main__":
+    main()
