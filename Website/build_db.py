@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS Restrictions (
 
 # Insert restrictions, ensuring "None" gets ID 0
 cursor.execute('INSERT OR IGNORE INTO Restrictions (restrictionId, name) VALUES (0, ?)', ('None',))
-restrictions = ["Vegan", "Vegetarian", "Gluten-Free", "Dairy-Free", "Keto", "Nut-Free", "Pescatarian", "Lactose-Free"]
+restrictions = ["Vegetarian", "Vegan", "Nut-Allergy", "Egg-Allergy", "Shellfish-Allergy", "Soy-Allergy", "Dairy-Free", "Pescatarian", "Keto"]
 for restriction in restrictions:
     cursor.execute("INSERT OR IGNORE INTO Restrictions (name) VALUES (?)", (restriction,))
 
