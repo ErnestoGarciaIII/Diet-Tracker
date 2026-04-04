@@ -712,9 +712,9 @@ p.change{
     height: 300px;
     width: 100%;
 }
-canvas #activityChart{
-    max-height: 175px;
-    width: 150px !important;
+#activityChart{
+    max-height: 300px;
+    width: 100% !important;
 }
 /* For mobile: Stack the sidebar on top */
 @media (max-width: 900px) {
@@ -733,6 +733,7 @@ canvas #activityChart{
     position: relative;
     border: 3px solid #fff;
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
 }
 
 /* Adds the Dashed Flight Path */
@@ -746,11 +747,29 @@ canvas #activityChart{
     border-top: 2px dashed rgba(255,255,255,0.6);
     z-index: 1;
 }
-
-#dashProgressBar {
+/* all progress bars */
+#kcalProgressBar {
     width: 0%;
     height: 100%;
-    background: rgba(52, 152, 219, 0.3);
+    background: rgba(22, 163, 74, 0.6);
+    border-radius: 25px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+}
+#gProgressBar {
+    width: 0%;
+    height: 100%;
+    background: rgba(54, 162, 235, 0.6);
+    border-radius: 25px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+}
+#mgProgressBar {
+    width: 0%;
+    height: 100%;
+    background: rgba(255, 206, 86, 0.6);
     border-radius: 25px;
     transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -758,6 +777,30 @@ canvas #activityChart{
 }
 
 #planeIcon {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    font-size: 35px;
+    z-index: 3;
+    transform: translate(-50%, -50%);
+    transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+    filter: drop-shadow(2px 5px 5px rgba(0,0,0,0.2));
+    cursor: default;
+}
+
+#planeIcon1 {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    font-size: 35px;
+    z-index: 3;
+    transform: translate(-50%, -50%);
+    transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+    filter: drop-shadow(2px 5px 5px rgba(0,0,0,0.2));
+    cursor: default;
+}
+
+#planeIcon2 {
     position: absolute;
     top: 50%;
     left: 0%;
@@ -818,6 +861,35 @@ canvas #activityChart{
 
 .logContainer label{
 	text-align: left;
+}
+
+
+.inputWrapper{
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.inputWrapper input{
+    width: 100%;
+    padding-right: 40px;
+    box-sizing: border-box;
+}
+
+#addFoodBtn {
+    position: absolute;
+    right: 5px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+}
+
+#addFoodBtn:hover {
+    opacity: 0.7;
 }
 
 ul {
@@ -935,7 +1007,47 @@ li {
     margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     border-left: 4px solid #16a34a;
+}
+
+.food-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+}
+
+.food-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 15px;
+}
+
+.edit-btn, .delete-btn {
+    background: none;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 14px;
+}
+
+.edit-btn {
+    color: #2563eb;
+}
+
+.edit-btn:hover {
+    background-color: #dbeafe;
+}
+
+.delete-btn {
+    color: #dc2626;
+}
+
+.delete-btn:hover {
+    background-color: #fee2e2;
 }
 
 /* ------------calendar navigation ------------------- */

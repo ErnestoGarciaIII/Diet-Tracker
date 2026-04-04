@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="..\static\stylesheets\mainStyleS.css">
+	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
 <body>
-    <div class="onboardingContainer">
+    <div class="onboardingContainer" id="registerPage">
         <h1 id="mainTitle">PlatePilot</h1> 
         <div class="formCard loginCard"> 
             <div class="mainFlex">
@@ -37,20 +37,20 @@
                             <input type="password" id="confirmPassword" placeholder="Repeat password" required>
                         </div>
                         <!-- form elements i.e submit button -->
-                        <button class="RUGRbtn pagesBtn-primary full-width" type="submit">
+                        <button class="RUGRbtn pagesBtn-primary full-width" type="submit" id="submitBtn" data-url="{{ url_for('html_urls', filename='userInfo.html') }}">
                             Sign Up
                         </button>
                     </form>
                     <!-- form elements i.e login link -->
-                    <p class="account">Already have an account? <a href="..\Templates\login.html">Login here</a></p>
+                    <p class="account">Already have an account? <a href="{{ url_for('html_urls', filename='login.html') }}">Login here</a></p>
                 </div>
                 <!-- form elements i.e mascot/motto-->
                 <div class="imageSide">
-                    <img src="..\static\images\MascotPilot.png" alt="Healthy Food">
+                    <img src="{{ url_for('static', filename='images/MascotPilot.png') }}" alt="Healthy Food">
                 </div>
             </div>
         </div>
     </div>
-    <script src="..\static\js\main.js"></script>
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

@@ -5,76 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Dashboard - PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
-<<<<<<< HEAD
-    <link rel="stylesheet" href="stylesheets/mainStyleS.css">
+	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
-<body>
+<body id="historyPage">
+    <!-- Navigation Bar -->
     <nav class="navbar">
-        <div class="logo">PlatePilot</div>
+        <img id="profilePreview" class="navAvatar">
         <div>
-            <a href="dashboard.html">
-=======
-    <link rel="stylesheet" href="..\static\stylesheets\mainStyleS.css">
-</head>
-<body>
-    <nav class="navbar">
-        <img src="..\static\images\defaultAvatar.jpg" id="profilePreview" class="navAvatar">
-        <div>
-            <a href="..\Templates\dashboard.html">
->>>>>>> 98d647beacc130793d4ece9066f99ac8e8df8d46
+            <a href="{{ url_for('html_urls', filename='dashboard.html') }}">
                 <div class="navIcon">
                     <i class="fa-regular fa-house fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
         <div>
-<<<<<<< HEAD
-            <a href="foodLog.html">
-=======
-            <a href="..\Templates\foodLog.html">
->>>>>>> 98d647beacc130793d4ece9066f99ac8e8df8d46
+            <a href="{{ url_for('html_urls', filename='foodLog.html') }}">
                 <div class="navIcon">
                     <i class="fa-solid fa-clipboard fa-xl" style="color: rgb(94, 234, 100);"></i>
                 </div>
             </a>
         </div>
         <div>
-<<<<<<< HEAD
-            <a href="history.html">
-=======
-            <a href="..\Templates\history.html">
->>>>>>> 98d647beacc130793d4ece9066f99ac8e8df8d46
+            <a href="{{ url_for('html_urls', filename='history.html') }}">
                 <div class="navIcon active">
                     <i class="fa-solid fa-calendar fa-beat fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
         <div>
-<<<<<<< HEAD
-            <a href="settings.html">
-=======
-            <a href="..\Templates\settings.html">
->>>>>>> 98d647beacc130793d4ece9066f99ac8e8df8d46
+            <a href="{{ url_for('html_urls', filename='settings.html') }}">
                 <div class="navIcon">
                     <i class="fa-solid fa-gear fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
         <div>
-<<<<<<< HEAD
-            <a href="logout.html">
-=======
-            <a href="..\Templates\logout.html">
->>>>>>> 98d647beacc130793d4ece9066f99ac8e8df8d46
+            <a href="{{ url_for('html_urls', filename='logout.html') }}">
                 <div class="navIcon">
                     <i class="fa-solid fa-arrow-right-from-bracket fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
     </nav>
-<<<<<<< HEAD
-
-=======
+	
     <main class="dashContent">
         <div class="card">
             <h1 class="trackerCard">Activity History</h1>
@@ -88,26 +61,21 @@
 
             <!-- calendar section-->
             <div id="calendarGrid" class="calendarGrid">
-                <div class="day-label">Sun</div>
-                <div class="day-label">Mon</div>
-                <div class="day-label">Tue</div>
-                <div class="day-label">Wed</div>
-                <div class="day-label">Thu</div>
-                <div class="day-label">Fri</div>
-                <div class="day-label">Sat</div>
+                <div class="dayLabel">Sun</div>
+                <div class="dayLabel">Mon</div>
+                <div class="dayLabel">Tue</div>
+                <div class="dayLabel">Wed</div>
+                <div class="dayLabel">Thu</div>
+                <div class="dayLabel">Fri</div>
+                <div class="dayLabel">Sat</div>
             </div>
 
-            <!-- Jump to Today and Clear History Buttons -->
+            <!-- Jump to Today Button -->
             <div class="btnSec">
-                <button onclick="jumpToToday()" class="jumpBtn">
+                <button class="jumpBtn">
                     <i class="fa-solid fa-calendar-day"></i> Jump to Today
                 </button>
-
-                <button onclick="clearHistory()" class="clearBtn">
-                    <i class="fa-solid fa-trash-can"></i> Clear All History
-                </button>
             </div>
-
             <!-- History display-->
             <div id="dayDetails" class="dayDetails">
                 <h3 id="selectedDateHeader">Select a day</h3>
@@ -115,9 +83,6 @@
             </div>
         </div>
     </main>
-    <script src="..\static\js\main.js"></script>
->>>>>>> 98d647beacc130793d4ece9066f99ac8e8df8d46
-
-
+	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
