@@ -108,10 +108,10 @@ function showDayDetails(dateStr, logs) {
         item.innerHTML = `
             <div class="food-info">
                 <span class="label"><strong>${log.name}</strong></span>
-                <span class="value">${log.kcal} kcal</span>
+                <span class="value">Portion: ${log.portion || 1}</span>
             </div>
             <div class="food-actions">
-                <button class="edit-btn" onclick="editFoodEntry(${log.id}, '${log.name}', ${log.kcal})">
+                <button class="edit-btn" onclick="editFoodEntry(${log.id}, '${log.name}', ${log.kcal}, ${log.portion || 1})">
                     <i class="fa-solid fa-edit"></i>
                 </button>
                 <button class="delete-btn" onclick="deleteFoodEntry(${log.id}, '${log.name}')">
@@ -158,34 +158,33 @@ window.clearHistory = function() {
 };
 
 // Edit food entry
-window.editFoodEntry = function(entryId, currentName, currentCalories) {
-    const newName = prompt('Edit food name:', currentName);
-    if (newName === null) return; // User cancelled
-    
-    const newCalories = parseInt(prompt('Edit calories:', currentCalories));
-    if (isNaN(newCalories) || newCalories < 0) {
-        alert('Please enter a valid number of calories.');
+window.editFoodEntry = function(entryId, currentName, currentCalories, currentPortion) {
+    const entry = foodHistoryData.find(item => item.id === entryId);
+    const baseKcal = entry && entry.base_kcal ? entry.base_kcal : (currentCalories / (currentPortion || 1));
+
+    const newPortion = parseFloat(prompt('Edit portion size:', currentPortion));
+    if (isNaN(newPortion) || newPortion <= 0) {
+        alert('Please enter a valid portion size.');
         return;
     }
-    
-    if (newName.trim() === '' || newCalories === currentCalories && newName === currentName) {
+    if (newPortion === currentPortion) {
         return; // No changes made
     }
-    
-    // Updates the entry
-    updateFoodEntry(entryId, getUserId(), { name: newName.trim(), kcal: newCalories })
+
+    const newKcal = Math.round(baseKcal * newPortion);
+
+    updateFoodEntry(entryId, getUserId(), { name: currentName, kcal: newKcal, portion: newPortion })
         .then(result => {
             // Update local data
             const entryIndex = foodHistoryData.findIndex(item => item.id === entryId);
             if (entryIndex !== -1) {
-                foodHistoryData[entryIndex].name = newName.trim();
-                foodHistoryData[entryIndex].kcal = newCalories;
+                foodHistoryData[entryIndex].name = currentName.trim();
+                foodHistoryData[entryIndex].kcal = newKcal;
+                foodHistoryData[entryIndex].portion = newPortion;
+                foodHistoryData[entryIndex].base_kcal = baseKcal;
             }
-            
-            // Refresh the display
             renderCalendar();
             showDayDetails(document.getElementById('selectedDateHeader').innerText);
-            
             alert('Food entry updated successfully!');
         })
         .catch(err => {
