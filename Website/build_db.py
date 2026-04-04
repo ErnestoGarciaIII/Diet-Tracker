@@ -51,7 +51,7 @@ for file in files:
             continue
 
         df = pd.read_csv(
-            f'FoodData_Central_csv_2025-12-18/{file}.csv',
+            f'../db/FoodData_Central_csv_2025-12-18/{file}.csv',
             low_memory=False
         )
 
