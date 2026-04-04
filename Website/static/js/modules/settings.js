@@ -1,12 +1,13 @@
 ﻿﻿// modules/settings.js
 
-import { getUserInfo, updateUser } from '../api.js';
+import { getUserInfo, updateUser, uploadAvatar } from '../api.js';
 import { getUserId, getElement, showError, showSuccess } from '../utils.js';
 
 let currentUser = null;
 
 export function initSettings() {
     loadUser();
+    setupAvatarControls();
 }
 
 async function loadUser() {
@@ -34,6 +35,80 @@ async function loadUser() {
         showError("Failed to load user.");
     }
 }
+
+function setupAvatarControls() {
+    const uploadTrigger = getElement('uploadTrigger');
+    const fileInput = getElement('hiddenFileInput');
+    const removePic = getElement('removePic');
+
+    if (uploadTrigger && fileInput) {
+        uploadTrigger.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showError("Please select an image file.");
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showError("File is too large. Maximum 5MB.");
+                return;
+            }
+
+            try {
+                const result = await uploadAvatar(getUserId(), file);
+                currentUser.profile_picture = result.profile_picture;
+                
+                // Update preview images
+                const profileImages = document.querySelectorAll('#profilePreview');
+                profileImages.forEach(img => {
+                    img.src = result.profile_picture;
+                });
+
+                showSuccess("Profile picture updated!");
+            } catch (err) {
+                showError("Failed to upload image: " + err.message);
+            }
+
+            // Reset file input
+            fileInput.value = '';
+        });
+    }
+
+    if (removePic) {
+        removePic.addEventListener('click', async () => {
+            if (!currentUser.profile_picture) {
+                showError("No picture to remove.");
+                return;
+            }
+
+            try {
+                // Update user with null profile_picture
+                currentUser.profile_picture = null;
+                await updateUser(currentUser);
+
+                // Reset to default avatar
+                const defaultAvatar = '/static/images/avatar.jpg';
+                const profileImages = document.querySelectorAll('#profilePreview');
+                profileImages.forEach(img => {
+                    img.src = defaultAvatar;
+                });
+
+                showSuccess("Profile picture removed!");
+            } catch (err) {
+                showError("Failed to remove picture: " + err.message);
+            }
+        });
+    }
+}
+
 
 // Make this function global so HTML can call it
 window.enterEditMode = function(displayId, fieldName) {
