@@ -101,7 +101,7 @@ function updateProgressUI(progress) {
 
     const percent = Math.min((calories / activeTier.goal) * 100, 100);
 
-    const bar = getElement('dashProgressBar');
+    const bar = getElement('kcalProgressBar');
     const plane = getElement('planeIcon');
 
     if (bar) bar.style.width = percent + "%";

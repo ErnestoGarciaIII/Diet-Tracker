@@ -36,7 +36,7 @@ def query_db_for_user_info(user_id, returnJSON=True):
         cur.execute("""
             SELECT name, email, age, sex, height_inches, weight_lbs, goal, activity_level, profile_picture
             FROM Users
-            WHERE id = ?
+            WHERE userId = ?
         """, (user_id,))
 
         row = cur.fetchone()
@@ -168,14 +168,14 @@ def update_user():
             cur.execute("""
                 UPDATE users
                 SET name = COALESCE(?, name), email = COALESCE(?, email), age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = NULL
-                WHERE id = ?
+                WHERE userId = ?
             """, (data.get('name'), data.get('email'), age, weight_lbs, sex, height_inches, goal, activity_level, user_id))
         else:
             # Normal update with or without profile_picture
             cur.execute("""
                 UPDATE users
                 SET name = COALESCE(?, name), email = COALESCE(?, email), age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = COALESCE(?, profile_picture)
-                WHERE id = ?
+                WHERE userId = ?
             """, (data.get('name'), data.get('email'), age, weight_lbs, sex, height_inches, goal, activity_level, data.get('profile_picture'), user_id))
 
         conn.commit()
@@ -211,7 +211,7 @@ def update_goal():
         cur.execute("""
             UPDATE users
             SET goal = ?
-            WHERE id = ?
+            WHERE userId = ?
         """, (goal_id, user_id))
         conn.commit()
         conn.close()
@@ -248,7 +248,7 @@ def upload_avatar():
 
         conn = connectDB()
         cur = conn.cursor()
-        cur.execute("UPDATE Users SET profile_picture = ? WHERE id = ?", (profile_picture_url, user_id))
+        cur.execute("UPDATE Users SET profile_picture = ? WHERE userId = ?", (profile_picture_url, user_id))
         conn.commit()
         conn.close()
 
@@ -351,7 +351,7 @@ def login_user():
         conn = connectDB()
         cur = conn.cursor()
 
-        cur.execute("SELECT id, password FROM users WHERE email = ?", (email,))
+        cur.execute("SELECT userId, password FROM users WHERE email = ?", (email,))
         user = cur.fetchone()
 
         if user and check_password_hash(user[1], password):
@@ -439,6 +439,7 @@ def apply_that_filter():
 def execute_search_engine():
     user_id = request.args.get('user_id')
     food_name = request.args.get('name')
+    filters_str = request.args.get('filters', '')
     
     if not user_id:
         return jsonify({'error': 'User ID required to maintain session'}), 400
@@ -457,6 +458,43 @@ def execute_search_engine():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# Get Nutrients of Food
+@app.route('/api/get-nutrients', methods=['GET'])
+def get_nutrients():
+    fdc_id = request.args.get('fdc_id')
+    
+    if not fdc_id:
+        return jsonify({'error': 'fdc_id is required'}), 400
+    
+    conn = None
+    try:
+        conn = connectDB()
+        cur = conn.cursor()
+        
+        # Get calories
+        cur.execute("""
+            SELECT fn.amount, n.name
+            FROM food_nutrient fn
+            JOIN nutrient n ON fn.nutrient_id = n.id
+            WHERE fn.fdc_id = ? AND n.name = 'Energy'
+        """, (fdc_id,))
+        
+        result = cur.fetchone()
+        calories = result[0] if result else None
+        
+        return jsonify({
+            'calories': calories,
+            'fdc_id': fdc_id
+        }), 200
+        
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+    
+    finally:
+        if conn:
+            conn.close()
+
 # Log Food
 @app.route('/api/log-food', methods=['POST'])
 def log_food_entry():
@@ -464,6 +502,8 @@ def log_food_entry():
     user_id = data.get('user_id')
     food_name = data.get('name')
     calories = data.get('kcal')
+    portion = data.get('portion', 1)
+
 
     if not user_id or not food_name or calories is None:
         return jsonify({'error': 'user_id, name, and kcal are required'}), 400
@@ -479,9 +519,9 @@ def log_food_entry():
 
         # Insert into FoodHistory
         cur.execute("""
-            INSERT INTO FoodHistory (userId, foodName, calories, dateLogged)
-            VALUES (?, ?, ?, ?)
-        """, (user_id, food_name, calories, today))
+            INSERT INTO FoodHistory (userId, foodName, calories, dateLogged, portion)
+            VALUES (?, ?, ?, ?, ?)
+        """, (user_id, food_name, calories, today, portion))
 
         conn.commit()
 
@@ -516,7 +556,7 @@ def get_food_history(user_id):
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT id, dateLogged, foodName, calories
+            SELECT id, dateLogged, foodName, calories, portion
             FROM FoodHistory
             WHERE userId = ?
             ORDER BY dateLogged DESC, timeLogged DESC
@@ -530,7 +570,8 @@ def get_food_history(user_id):
                 'id': row[0],
                 'date': row[1],
                 'name': row[2],
-                'kcal': row[3]
+                'kcal': row[3],
+                'portion': row[4] if row[4] is not None else 1  # Default portion to 1 if null
             })
 
         return jsonify(history), 200
@@ -577,6 +618,7 @@ def update_food_entry(entry_id):
     food_name = data.get('name')
     calories = data.get('kcal')
     user_id = data.get('user_id')
+    portion = data.get('portion', 1)
 
     if not food_name or calories is None or not user_id:
         return jsonify({'error': 'name, kcal, and user_id are required'}), 400
@@ -589,9 +631,9 @@ def update_food_entry(entry_id):
         # Update the food entry
         cur.execute("""
             UPDATE FoodHistory
-            SET foodName = ?, calories = ?
+            SET foodName = ?, calories = ?, portion = ?
             WHERE id = ? AND userId = ?
-        """, (food_name, calories, entry_id, user_id))
+        """, (food_name, calories, portion, entry_id, user_id))
 
         if cur.rowcount == 0:
             return jsonify({'error': 'Food entry not found or not authorized'}), 404
@@ -713,6 +755,7 @@ def clear_food_history(user_id):
 
     finally:
         if conn: conn.close()
+
 
 #Run server
 if __name__ == '__main__':
