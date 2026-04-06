@@ -406,8 +406,33 @@ NUTRIENT_IDS = [
     1099, 1100, 1238, 1090, 1101, 1102, 1091, 1092, 1103, 1093, 1095
 ]
 
-@app.route('/api/apply-filter', methods=['GET'])
+@app.route('/api/apply-filter', methods=['POST'])
 def apply_that_filter():
+    data = request.get_json()
+    try:
+        user_id = data.get('user_id')
+        restrictionId = data.get('restriction_id')
+        
+        if not user_id:
+            return jsonify({'error': 'User ID required to maintain session'}), 400
+
+        if user_id not in active_user_conns:
+            active_user_conns[user_id] = connectDB()
+
+        conn = active_user_conns[user_id]
+
+        if not restrictionId:
+            return jsonify({'error': 'Restriction ID is required to set a filter'}), 400
+        
+        apply_filter(restrictionId, conn)
+
+        return jsonify({
+            'message': 'Filter set successfully',
+            'filterId': restrictionId
+        }), 201
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 400
 
 
 @app.route('/api/search-engine', methods=['GET'])

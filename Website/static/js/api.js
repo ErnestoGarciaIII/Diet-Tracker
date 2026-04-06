@@ -127,6 +127,23 @@ export async function logFood(userId, food) {
 }
 
 // ==========================
+// FOOD SEARCHING
+// ==========================
+export async function apply_Filter(userId, restrictionId) {
+    return request('/api/apply-filter', {
+        method: 'POST',
+        body: JSON.stringify({
+            user_id: userId,
+            restriction_id: restrictionId
+        })
+    });
+}
+
+export async function searchFood(userId, foodName) {
+    return request(`/api/search-engine?name=${encodeURIComponent(foodName)}&user_id=${userId}`);
+}
+
+// ==========================
 // PROGRESS
 // ==========================
 export async function getProgress(userId) {

@@ -1,4 +1,4 @@
-import { logFood, getUserInfo } from '../api.js';
+import { logFood, getUserInfo, apply_Filter, searchFood } from '../api.js';
 import { getUserId, getElement, getInputValue, showError, showSuccess } from '../utils.js';
 import { updateProgress } from '../state.js';
 
@@ -62,12 +62,31 @@ async function foodSearch() {
     alert(message);
     
     try {
-	const response = await fetch(`/api/search-engine?name=${encodeURIComponent(foodName)}&user_id=${userId}`);
+	const response = await searchFood(userId, foodName);
 	const data = await response.json();
 	console.log(data);
     } catch (err) {
-	console.error("Fetch error:", err);
+	console.error("Fetch error: ", err);
+    }
+}
+
+async function applyFilter(restrictionId) {
+    const userId = getUserId();
+    if (!userId) {
+        const message = "No userId found. Cannot set filter.";
+        console.error("[ERROR]" + message);
+        alert(message);
     }
 
+    const message = `Applying filter: ${restrictionId}`;
+    console.log(message);
+    alert(message);
 
+    try {
+        const response = await apply_Filter(userId, restrictionId);
+        const data = await response.json();
+        console.log(data);
+    } catch (err) {
+        console.error("Post error: " + err);
+    }
 }
