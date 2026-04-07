@@ -129,18 +129,22 @@ export async function logFood(userId, food) {
 // ==========================
 // FOOD SEARCHING
 // ==========================
-export async function apply_Filter(userId, restrictionId) {
+export async function apply_Filter(userId, restriction) {
     return request('/api/apply-filter', {
         method: 'POST',
         body: JSON.stringify({
             user_id: userId,
-            restriction_id: restrictionId
+            restriction: restriction
         })
     });
 }
 
 export async function searchFood(userId, foodName) {
     return request(`/api/search-engine?name=${encodeURIComponent(foodName)}&user_id=${userId}`);
+}
+
+export async function getNutrients(fdcId) {
+    return request(`/api/get-nutrients?fdc_id=${fdcId}`);
 }
 
 // ==========================

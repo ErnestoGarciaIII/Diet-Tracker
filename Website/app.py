@@ -411,8 +411,11 @@ def apply_that_filter():
     data = request.get_json()
     try:
         user_id = data.get('user_id')
-        restrictionId = data.get('restriction_id')
+        restriction = data.get('restriction')
         
+        if not restriction:
+            return jsonify({'error': 'Restriction is required to set a filter'}), 400
+
         if not user_id:
             return jsonify({'error': 'User ID required to maintain session'}), 400
 
@@ -420,10 +423,17 @@ def apply_that_filter():
             active_user_conns[user_id] = connectDB()
 
         conn = active_user_conns[user_id]
+        cur = conn.cursor()
 
-        if not restrictionId:
-            return jsonify({'error': 'Restriction ID is required to set a filter'}), 400
+        cur.execute("""
+            SELECT restrictionId
+            FROM Restrictions
+            WHERE name = ?
+        """, (restriction,))
         
+        restrictionId = cur.fetchone()
+        print(f"Applying filter: ${restriction} RestrictionId: ${restrictionId}")
+
         apply_filter(restrictionId, conn)
 
         return jsonify({

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Dashboard - PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="..\static\stylesheets\mainStyleS.css">
+	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
 <body class="bod1" id="foodLogPage">
     <!-- Navigation Bar -->
@@ -67,11 +67,11 @@
                     <button id="vegFilBtn" class="filterBtn" data-value="Vegetarian">Vegetarian</button>
                     <button id="dairyFilBtn" class="filterBtn" data-value="Dairy-Free">Dairy-Free</button>
                     <button id="ketoFilBtn" class="filterBtn" data-value="Keto">Keto</button>
-                    <button id="nutsFilBtn" class="filterBtn" data-value="No Nuts">No Nuts</button>
+                    <button id="nutsFilBtn" class="filterBtn" data-value="Nut-Allergy">No Nuts</button>
                     <button id="pescFilBtn" class="filterBtn" data-value="Pescatarian">Pescatarian</button>
-                    <button id="shellFilBtn" class="filterBtn" data-value="Shellfish">Shellfish</button>
-                    <button id="soyFilBtn" class="filterBtn" data-value="Soy Free">Soy Free</button>
-                    <button id="eggFilBtn" class="filterBtn" data-value="Egg-Free">Egg-Free</button>
+                    <button id="shellFilBtn" class="filterBtn" data-value="Shellfish-Allergy">Shellfish</button>
+                    <button id="soyFilBtn" class="filterBtn" data-value="Soy-Allergy">Soy Free</button>
+                    <button id="eggFilBtn" class="filterBtn" data-value="Egg-Allergy">Egg-Free</button>
                 </div>
                 <datalist id="foodSearch"></datalist>
             </div>
