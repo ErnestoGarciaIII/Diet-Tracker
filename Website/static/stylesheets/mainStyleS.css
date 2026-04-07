@@ -176,18 +176,6 @@ p.change{
     font-family: inherit;
 }
 
-.filterBtn {
-    background: #eee;
-    border: none;
-    padding: 8px 12px;
-    cursor: pointer;
-}
-
-.filterBtn.active {
-    background: green;
-    color: white;
-}
-
 /* Primary Button and Secondary Button (For "Back" buttons) */
 .pagesBtn-primary {
     background-color: #16a34a; /* A vibrant, healthy green */
@@ -957,6 +945,11 @@ p.change{
 }
 .filterBtn:hover{
     background-color: #8e8f92;
+    color: white;
+}
+
+.filterBtn.active {
+    background: green;
     color: white;
 }
 
