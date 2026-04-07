@@ -948,6 +948,11 @@ p.change{
     color: white;
 }
 
+.filterBtn.active {
+    background: green;
+    color: white;
+}
+
 ul {
     list-style: none;
     padding: 0;

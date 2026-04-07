@@ -1,4 +1,4 @@
-import { logFood, getUserInfo } from '../api.js';
+import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients } from '../api.js';
 import { getUserId, getElement, getInputValue, showError, showSuccess } from '../utils.js';
 import { updateProgress } from '../state.js';
 
@@ -9,19 +9,40 @@ export function initFoodLog() {
     console.log("Hello there!");
     loadProfilePicture();
 
-    const btn = document.getElementById('logButton');
-    const addFoodBtn = document.getElementById('addFoodBtn');
+    const btn = getElement('logButton');
     if (btn) {
     	btn.addEventListener('click', handleLogCart);
     }
+
+    const addFoodBtn = getElement('addFoodBtn');
     if (addFoodBtn) {
 	addFoodBtn.addEventListener('click', foodSearch);
     }
-    
+
+    const filtersContainer = document.querySelector('.filterButtons');
+    const activeFilters = new Set();
+    filtersContainer.addEventListener('click', (e) => {
+        const filterBtn = e.target.closest('.filterBtn');
+        if (!filterBtn) return;
+
+        const filter = filterBtn.dataset.value;
+
+        filterBtn.classList.toggle('active');
+
+        if (activeFilters.has(filter)) {
+            // calling applyFilters again will remove it from the active filters in the database
+            activeFilters.delete(filter);
+        } else {
+            activeFilters.add(filter);
+        }
+
+        applyFilter(filter);
+    });
+
     // Display initial empty cart
     displayCart();
 
-    const foodInput = document.getElementById('foodInput');
+    const foodInput = getElement('foodInput');
     if (foodInput) {
         foodInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -88,11 +109,7 @@ async function foodSearch() {
     alert(message);
     
     try {
-        let url = `/api/search-engine?name=${encodeURIComponent(foodName)}&user_id=${userId}`;
-
-        
-        const response = await fetch(url);
-        const data = await response.json();
+        const data = await searchFood(userId, foodName);;
         
         if (data.error) {
             showError(data.error);
@@ -164,8 +181,7 @@ function displayRecommendations(recResults) {
 
 async function selectFood(foodName, fdcId) {
     try {
-        const response = await fetch(`/api/get-nutrients?fdc_id=${fdcId}`);
-        const data = await response.json();
+        const data = await getNutrients(fdcId);
         const calories = data.calories ? Math.round(data.calories) : 0;
         // Add to cart
         foodCart.push({
@@ -276,3 +292,22 @@ function displayCart() {
     });
 }
 
+async function applyFilter(filter) {
+    const userId = getUserId();
+    if (!userId) {
+        const message = "No userId found. Cannot set filter.";
+        console.error("[ERROR]", message);
+        alert(message);
+    }
+
+    const message = `Applying filter: ${filter}`;
+    console.log(message);
+    alert(message);
+
+    try {
+        const data = await apply_Filter(userId, filter);
+        console.log(data);
+    } catch (err) {
+        console.error("Post error: ", err);
+    }
+}
