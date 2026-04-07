@@ -9,12 +9,12 @@
 </head>
 <body id="settingsPage">
     <!-- Navigation Bar -->
-    <nav class="navbar"> "
-        <img src="{{ url_for('static', filename='images/defaultAvatar.jpg') }}" id="profilePreview" class="navAvatar">
+    <nav class="navbar">
+        <img id="profilePreview" class="navAvatar">
         <div>
             <a href="{{ url_for('html_urls', filename='dashboard.html') }}">
-                <div class="navIcon active">
-                    <i class="fa-regular fa-house fa-beat fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                <div class="navIcon">
+                    <i class="fa-regular fa-house fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
@@ -34,8 +34,8 @@
         </div>
         <div>
             <a href="{{ url_for('html_urls', filename='settings.html') }}">
-                <div class="navIcon">
-                    <i class="fa-solid fa-gear fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
+                <div class="navIcon active">
+                    <i class="fa-solid fa-gear fa-beat fa-xl" style="color: rgba(94, 234, 100, 1.00);"></i>
                 </div>
             </a>
         </div>
@@ -57,7 +57,7 @@
                 <div class="profilePicRow">
                     <span class="profileLabel"> Profile Picture</span>
                     <div class="avatarEdit">
-                        <img src="{{ url_for('static', filename='images/avatar.jpg') }}" id="profilePreview" class="mainAvatar">
+                        <img src="{{ url_for('static', filename='images/defaultProfile.jpg') }}" id="profilePreview" class="mainAvatar">
                         <div class="avatarControls">
                             <span class="upload" id="uploadTrigger">Upload new picture</span>
                             <span class="remove" id="removePic">Remove</span>
@@ -72,12 +72,12 @@
                     <span class="value" id="userNameDisplay"></span>
                     <span class="arrow">></span>
                 </div>
-                <div class="infoItem">
+                <div class="infoItem" onclick="enterEditMode('userGenderDisplay', 'sex')">
                     <span class="label">Gender:</span>
                     <span class="value" id="userGenderDisplay"></span>
                     <span class="arrow">></span>
                 </div>
-                <div class="infoItem">
+                <div class="infoItem" onclick="enterEditMode('userAgeDisplay', 'age')">
                     <span class="label">Age:</span>
                     <span class="value" id="userAgeDisplay"></span>
                     <span class="arrow">></span>
@@ -98,13 +98,13 @@
                 <div class="infoItem" onclick="enterEditMode('userEmailDisplay', 'email')">
                     <span class="label">Email:</span>
                     <span class="value" id="userEmailDisplay"></span>
-                    <span ><a href="#" class="arrow">></a></span>
+                    <span ><a class="arrow">></a></span>
                 </div>
                 
-                <div class="infoItem" onclick="enterEditMode('userPassword', 'Password')">
+                <div class="infoItem" onclick="enterEditMode('userPassword', 'password')">
                     <span class="label">Password:</span>
                     <span class="value" id="userPassword">••••••••</span>
-                    <span class="arrow">></a></span>
+                    <span class="arrow">></span>
                 </div>
             </div>
             

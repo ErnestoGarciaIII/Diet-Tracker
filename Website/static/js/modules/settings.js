@@ -1,50 +1,192 @@
-﻿// modules/settings.js
+﻿﻿// modules/settings.js
 
-import { getUserInfo, updateUser } from '../api.js';
+import { getUserInfo, updateUser, uploadAvatar } from '../api.js';
 import { getUserId, getElement, showError, showSuccess } from '../utils.js';
+
+let currentUser = null;
 
 export function initSettings() {
     loadUser();
-
-    const btn = getElement('saveBtn');
-    if (btn) btn.addEventListener('click', saveSettings);
+    setupAvatarControls();
 }
 
 async function loadUser() {
     try {
-        const user = await getUserInfo(getUserId());
+        currentUser = await getUserInfo(getUserId());
+        currentUser.user_id = getUserId();
 
-        getElement('userName').value = user.name || '';
-        getElement('userSex').value = user.sex || '';
-        getElement('userAge').value = user.age || '';
-        getElement('userWeight').value = user.weight_lbs || '';
-        getElement('userHeight').value = user.height_in || '';
-        getElement('activityLevel').value = user.activity_level || '';
-        getElement('userGoal').value = user.goal || '';
-        getElement('userEmail').value = user.email || '';
+        // Populate display elements
+        getElement('userNameDisplay').textContent = currentUser.name || '';
+        getElement('userGenderDisplay').textContent = currentUser.sex || '';
+        getElement('userAgeDisplay').textContent = currentUser.age || '';
+        getElement('userWeightDisplay').textContent = currentUser.weight_lbs || '';
+        getElement('userHeightDisplay').textContent = currentUser.height_in || '';
+        getElement('userEmailDisplay').textContent = currentUser.email || '';
+
+        // Load profile picture
+        if (currentUser.profile_picture) {
+            const profileImages = document.querySelectorAll('#profilePreview');
+            profileImages.forEach(img => {
+                img.src = currentUser.profile_picture;
+            });
+        }
 
     } catch (err) {
         showError("Failed to load user.");
     }
 }
 
-async function saveSettings() {
-    const user = {
-        user_id: getUserId(),
-        name: getElement('userName').value,
-        sex: getElement('userSex').value,
-        age: parseInt(getElement('userAge').value),
-        weight_lbs: parseFloat(getElement('userWeight').value),
-        height_in: parseFloat(getElement('userHeight').value),
-        activity_level: parseInt(getElement('activityLevel').value),
-        goal: parseInt(getElement('userGoal').value),
-        email: getElement('userEmail').value
-    };
+function setupAvatarControls() {
+    const uploadTrigger = getElement('uploadTrigger');
+    const fileInput = getElement('hiddenFileInput');
+    const removePic = getElement('removePic');
 
-    try {
-        await updateUser(user);
-        showSuccess("Settings updated!");
-    } catch (err) {
-        showError(err.message);
+    if (uploadTrigger && fileInput) {
+        uploadTrigger.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showError("Please select an image file.");
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showError("File is too large. Maximum 5MB.");
+                return;
+            }
+
+            try {
+                const result = await uploadAvatar(getUserId(), file);
+                currentUser.profile_picture = result.profile_picture;
+                
+                // Update preview images
+                const profileImages = document.querySelectorAll('#profilePreview');
+                profileImages.forEach(img => {
+                    img.src = result.profile_picture;
+                });
+
+                showSuccess("Profile picture updated!");
+            } catch (err) {
+                showError("Failed to upload image: " + err.message);
+            }
+
+            // Reset file input
+            fileInput.value = '';
+        });
+    }
+
+    if (removePic) {
+        removePic.addEventListener('click', async () => {
+            if (!currentUser.profile_picture) {
+                showError("No picture to remove.");
+                return;
+            }
+
+            try {
+                // Update user with null profile_picture
+                currentUser.profile_picture = null;
+                await updateUser(currentUser);
+
+                // Reset to default avatar
+                const defaultAvatar = '/static/images/avatar.jpg';
+                const profileImages = document.querySelectorAll('#profilePreview');
+                profileImages.forEach(img => {
+                    img.src = defaultAvatar;
+                });
+
+                showSuccess("Profile picture removed!");
+            } catch (err) {
+                showError("Failed to remove picture: " + err.message);
+            }
+        });
     }
 }
+
+
+// Make this function global so HTML can call it
+window.enterEditMode = function(displayId, fieldName) {
+    const displayElement = getElement(displayId);
+    if (!displayElement) return;
+
+    const currentValue = displayElement.textContent;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentValue;
+    input.className = 'editInput';
+
+    // Replace the span with input
+    displayElement.parentNode.replaceChild(input, displayElement);
+
+    // Focus the input
+    input.focus();
+
+    // On blur or enter, save
+    let isSaving = false;
+    const revertToDisplay = () => {
+        if (input.parentNode) {
+            input.parentNode.replaceChild(displayElement, input);
+        }
+    };
+
+    const save = async () => {
+        if (isSaving) return;
+        isSaving = true;
+
+        const newValue = input.value.trim();
+        if (newValue === currentValue) {
+            revertToDisplay();
+            isSaving = false;
+            return;
+        }
+
+        // Update currentUser
+        const fieldMap = {
+            'fullName': 'name',
+            'Weight': 'weight_lbs',
+            'Height': 'height_in',
+            'email': 'email'
+        };
+        const apiField = fieldMap[fieldName] || fieldName.toLowerCase();
+        
+        let parsedValue = newValue;
+        if (['age', 'weight_lbs', 'height_in'].includes(apiField)) {
+            parsedValue = parseFloat(newValue);
+            if (isNaN(parsedValue)) {
+                showError("Invalid number");
+                revertToDisplay();
+                isSaving = false;
+                return;
+            }
+        }
+        
+        currentUser[apiField] = parsedValue;
+
+        try {
+            await updateUser(currentUser);
+            displayElement.textContent = newValue;
+            revertToDisplay();
+            showSuccess("Updated successfully!");
+        } catch (err) {
+            showError("Failed to update: " + err.message);
+            revertToDisplay();
+        }
+        isSaving = false;
+    };
+
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            save();
+        } else if (e.key === 'Escape') {
+            revertToDisplay();
+        }
+    });
+};
