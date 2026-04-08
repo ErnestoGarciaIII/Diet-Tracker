@@ -12,6 +12,7 @@ async function request(url, options = {}) {
             ...options
         });
 
+        const status = res.status;
         const data = await res.json();
 
         if (!res.ok) {
