@@ -32,7 +32,7 @@ def checkArgs():
                 """)
             sys.exit(1)
 
- 
+
 def build_food_table(conn):
     files = ['food', 'nutrient', 'food_nutrient', 'food_portion', 'food_category']
     try:
@@ -55,6 +55,7 @@ def build_users_table(conn, cursor):
         name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
+        date_of_birth TEXT,
         age INTEGER,
         sex TEXT,
         height_inches INTEGER,
@@ -130,10 +131,10 @@ def build_top_foods_table(conn, cursor):
     cursor.execute("""
     CREATE TABLE TopFoods (
         fdc_id INTEGER,
-        item_name, TEXT,
+        description TEXT,
         nutrient_id INTEGER,
         amount_per_gram REAL,
-        food_category TEXT,
+        food_category_id INTEGER,
         PRIMARY KEY (fdc_id, nutrient_id)
     );
     """)
