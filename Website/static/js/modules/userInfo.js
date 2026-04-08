@@ -1,6 +1,17 @@
 import { updateUser, uploadAvatar } from '../api.js';
 import { getUserId, getInputValue, getCheckedValue, showError, showSuccess } from '../utils.js';
 
+function calculateAge(dateOfBirth) {
+    const today = new Date();
+    const birth = new Date(dateOfBirth);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+    return age;
+}
+
 export function initUserInfo() {
     const btn = document.getElementById('continueBtn');
     const uploadTrigger = document.getElementById('uploadTrigger');
@@ -55,7 +66,8 @@ async function handleSubmit(e, selectedProfilePicture) {
 
     const user = {
         user_id,
-        age: parseInt(getInputValue('userAgeDisplay')),
+        date_of_birth: getInputValue('userDobDisplay'),
+        age: calculateAge(getInputValue('userDobDisplay')),
         weight_lbs: parseFloat(getInputValue('userWeightDisplay')),
         height_in: parseFloat(getInputValue('userHeightDisplay')),
         sex: getCheckedValue('sex'),
@@ -64,7 +76,7 @@ async function handleSubmit(e, selectedProfilePicture) {
         profile_picture: selectedProfilePicture
     };
 
-    if (!user.age || !user.weight_lbs || !user.height_in || !user.sex || !user.activity_level) {
+    if (!user.date_of_birth || isNaN(user.age) || !user.weight_lbs || !user.height_in || !user.sex || !user.activity_level) {
         return showError("Please fill in all fields.");
     }
 
