@@ -24,19 +24,18 @@ export function initFoodLog() {
     filtersContainer.addEventListener('click', (e) => {
         const filterBtn = e.target.closest('.filterBtn');
         if (!filterBtn) return;
-
         const filter = filterBtn.dataset.value;
-
-        filterBtn.classList.toggle('active');
-
-        if (activeFilters.has(filter)) {
-            // calling applyFilters again will remove it from the active filters in the database
-            activeFilters.delete(filter);
-        } else {
-            activeFilters.add(filter);
-        }
-
-        applyFilter(filter);
+        applyFilter(filter).then(response => {
+            if (response?.result?.includes("success")) {
+                console.log(`[INFO] Filter (${filter}) was applied successfully.`)
+                if (activeFilters.has(filter)) {
+                    activeFilters.delete(filter);
+                } else {
+                    activeFilters.add(filter);
+                }
+                filterBtn.classList.toggle('active');
+            }
+        });
     });
 
     // Display initial empty cart
@@ -305,8 +304,7 @@ async function applyFilter(filter) {
     alert(message);
 
     try {
-        const data = await apply_Filter(userId, filter);
-        console.log(data);
+        return await apply_Filter(userId, filter);
     } catch (err) {
         console.error("Post error: ", err);
     }

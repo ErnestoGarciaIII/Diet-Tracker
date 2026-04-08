@@ -458,7 +458,8 @@ def apply_that_filter():
 
         return jsonify({
             'message': 'Filter set successfully',
-            'filterId': restrictionId
+            'filterId': restrictionId,
+            'result': 'success'
         }), 201
     except Exception as e:
         print("[ERROR]: ", e)
