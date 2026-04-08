@@ -452,6 +452,10 @@ def apply_that_filter():
         """, (restriction,))
         
         restrictionId = cur.fetchone()
+
+        if restrictionId is None:
+            return jsonify({'error': f'Restriction "{restrictionId[0]}" not found'}), 404
+
         print(f"Applying filter: ${restriction} RestrictionId: ${restrictionId[0]}")
 
         apply_filter(restrictionId[0], conn)
@@ -470,7 +474,6 @@ def apply_that_filter():
 def execute_search_engine():
     user_id = request.args.get('user_id')
     food_name = request.args.get('name')
-    filters_str = request.args.get('filters', '')
     
     if not user_id:
         return jsonify({'error': 'User ID required to maintain session'}), 400

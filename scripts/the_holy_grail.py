@@ -17,19 +17,19 @@ def rate_food(food_nutrients, consumed_nutrients, dri, upper_limits):
         
         remaining = max(0, dri[nutrient] - consumed_nutrients[nutrient])
         
-        deficit = remaining / dri[nutrients]
+        deficit = remaining / dri[nutrient]
 
         fill = min(food_amount, remaining)
         benefit = (deficit ** 2) * (fill / dri[nutrient])
 
         over_consumption_penalty = 0.0
         if nutrient in upper_limits:
-            over_consumption_penalty, severity = upper_limits[nutrient]
+            ul_value, severity = upper_limits[nutrient]
             if over_consumption_penalty is not None:
                 projected = consumed_nutrients[nutrient] + food_amount
                 if projected > ul_value: 
                     over_consumption_percent = (projected - ul_value) / ul_value
-                    over_consumption_penalty = severity * (overage_pct ** 2)
+                    over_consumption_penalty = severity * (over_consumption_percent ** 2)
         
         score += benefit - ul_penalty
 

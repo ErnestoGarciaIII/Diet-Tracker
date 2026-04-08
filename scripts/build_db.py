@@ -1,9 +1,12 @@
 import pandas as pd
 import sqlite3
 import sys
+import os 
+
 from pathlib import Path
 from food_search import connectDB
 from updateTables import buildQuery, runQuery
+
 help_flags = {"h", "-h", "--h", "help", "-help", "--help"}
 
 def checkArgs():
@@ -140,6 +143,69 @@ def build_top_foods_table(conn, cursor):
     """)
     print(f"Finished building TopFoods table")
 
+def build_food_restrictions_table(conn, cursor):
+    cursor.execute("DROP TABLE IF EXISTS FoodRestrictions")
+    cursor.execute("""
+    CREATE TABLE FoodRestrictions (
+        fdc_id INTEGER,
+        restrictionId INTEGER,
+        PRIMARY KEY (fdc_id, restrictionId),
+        FOREIGN KEY (fdc_id) REFERENCES food(fdc_id),
+        FOREIGN KEY (restrictionId) REFERENCES Restrictions(restrictionId) ON DELETE CASCADE
+    )
+    """)
+    cursor.execute("CREATE INDEX idx_res_lookup ON FoodRestrictions(restrictionId)")
+    print("Finished building FoodRestrictions junction table\n")
+
+def populate_food_tags(conn, cursor):
+    print("Labeling foods based on query templates...")
+    
+    tag_map = {
+        1: "vegetarian_query.sql",
+        2: "vegan_query.sql",
+        3: "nut_allergy_query.sql",
+        4: "egg_allergy_query.sql",
+        5: "shellfish_allergy_query.sql",
+        6: "soy_allergy_query.sql",
+        7: "dairy_allergy_query.sql",
+        8: "pescatarian_query.sql",
+        9: "keto_query.sql"
+    }
+
+    query_dir = "../scripts/query_templates" 
+
+    for res_id, file_name in tag_map.items():
+        path = os.path.join(query_dir, file_name)
+        if os.path.exists(path):
+            with open(path, 'r') as f:
+                filter_sql = f.read().replace("{table_name}", "food")
+                
+            cursor.execute(f"""
+                INSERT OR IGNORE INTO FoodRestrictions (fdc_id, restrictionId)
+                SELECT fdc_id, {res_id} FROM ({filter_sql})
+            """)
+    print("Food labeling complete.\n")
+
+def populate_top_foods(conn, cursor):
+    sql_path = os.path.join("../scripts/query_templates", "insert_top_foods.sql")
+    
+    if not os.path.exists(sql_path):
+        print(f"Error: Could not find {sql_path}. Skipping TopFoods insertion.")
+        return
+
+    print(f"Reading {sql_path} and inserting data into TopFoods...")
+    
+    try:
+        with open(sql_path, 'r') as file:
+            insert_query = file.read()
+        
+        cursor.execute(insert_query)
+        conn.commit()
+        print("Finished populating TopFoods table.\n")
+        
+    except sqlite3.Error as e:
+        print(f"Error inserting into TopFoods: {e}")
+
 def main():
 
     checkArgs()
@@ -153,10 +219,15 @@ def main():
     build_user_restrictions_table(conn, cursor)
     build_goals_table(conn, cursor)
     build_food_history_table(conn, cursor)
-    build_top_foods_table(conn, cursor)
 
     categoryQuery, foodQuery, restrictionsQuery = buildQuery()
     runQuery(categoryQuery, foodQuery, restrictionsQuery, conn, cursor)
+    
+    build_food_restrictions_table(conn, cursor)
+    populate_food_tags(conn, cursor)
+    
+    build_top_foods_table(conn, cursor)
+    populate_top_foods(conn, cursor)
 
     conn.commit()
     conn.close()
