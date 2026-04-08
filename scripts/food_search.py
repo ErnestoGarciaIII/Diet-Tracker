@@ -39,43 +39,25 @@ def apply_filter(filter_id, connection):
             9: os.path.join(query_dir, "keto_query.sql")
     }
     
-    if filter_id in filter_map:
-        with open(filter_map[filter_id], 'r') as f:
-            filter_logic = f.read()
-    else:
-        filter_logic = "SELECT fdc_id, description, food_category_id FROM food"
-
-    filter_query = f"""
-    WITH Filters AS (
-        {filter_logic}
-    );
-    """
+    target_tables = [ ("food", "temp_filter_pool"), ("TopFoods", "temp_top_foods_pool") ]
     
     cursor = connection.cursor()
-    cursor.execute("DROP TABLE IF EXISTS temp_filter_pool")
 
-    if not active_filters:
-        cursor.execute("CREATE TEMP TABLE temp_filter_pool AS SELECT fdc_id FROM food")
-    else: 
-        queries = []
-        for fid in active_filters:
-            if fid in filter_map:
-                with open(filter_map[fid], 'r') as f:
-                    raw_sql = f.read().strip().rstrip(';')
-                    
-                    # Wrap the original query in a CTE and just grab the ID
-                    # This is much safer than string replacement!
-                    wrapped_sql = f"""
-                    SELECT fdc_id FROM (
-                        {raw_sql}
-                    )
-                    """
-                    queries.append(wrapped_sql)
-        if queries:
-            combined_logic = " INTERSECT ".join(queries)
-            cursor.execute(f"CREATE TEMP TABLE temp_filter_pool AS {combined_logic}")
-        else:
-            cursor.execute("CREATE TEMP TABLE temp_filter_pool AS SELECT fdc_id FROM food")
+    for source, target in target_tables:
+        cursor.execute(f"DROP TABLE IF EXISTS {target}")
+        cursor.execute(f"CREATE TEMP TABLE {target} AS SELECT * FROM {source}")
+
+        for active_id in active_filters:
+            sql_path = filter_map.get(active_id)
+            with open(sql_path, 'r') as file:
+                query = file.read().replace("{table_name}", target)
+
+            cursor.execute(f"""
+                DELETE FROM {target}
+                WHERE fdc_id NOT IN (
+                    SELECT fdc_id FROM ({query})
+                )
+            """)
 
 def search_engine(user_input, connection, filter_id=0):
     
