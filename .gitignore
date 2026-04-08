@@ -1,2 +1,4 @@
 # Ignores the folder with the csv files for the master_food.db
 db/
+Website/static/images/user_avatars/
+__pycache__/
