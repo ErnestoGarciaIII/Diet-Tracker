@@ -88,11 +88,16 @@ SELECT
         AND (f.description NOT LIKE '%squid%')
         AND (f.description NOT LIKE '%caviar%')
         AND (f.description NOT LIKE '%roe%')
+	AND (f.description NOT LIKE '%gummy%')
+	AND (f.description NOT LIKE '%chocolate%' OR f.description LIKE '%dark%')
+	AND (f.description NOT LIKE '%creme%')
 	)
 	OR (f.food_category_id IN (11, 16, 39))
 	OR (f.description LIKE '%plant%based%')
 	OR (f.description LIKE '%meatless%')
 	OR (f.description LIKE '%vegan%'))
+	OR (f.description LIKE '%dairy%free%')
+	OR (f.description LIKE '%non-dairy%')
 	AND f.fdc_id NOT IN (
 		SELECT fdc_id
 		FROM food_nutrient
