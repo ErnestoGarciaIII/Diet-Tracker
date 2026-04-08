@@ -432,9 +432,9 @@ def apply_that_filter():
         """, (restriction,))
         
         restrictionId = cur.fetchone()
-        print(f"Applying filter: ${restriction} RestrictionId: ${restrictionId}")
+        print(f"Applying filter: ${restriction} RestrictionId: ${restrictionId[0]}")
 
-        apply_filter(restrictionId, conn)
+        apply_filter(restrictionId[0], conn)
 
         return jsonify({
             'message': 'Filter set successfully',
