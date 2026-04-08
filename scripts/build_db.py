@@ -133,6 +133,7 @@ def build_top_foods_table(conn, cursor):
         item_name, TEXT,
         nutrient_id INTEGER,
         amount_per_gram REAL,
+        food_category TEXT,
         PRIMARY KEY (fdc_id, nutrient_id)
     );
     """)
