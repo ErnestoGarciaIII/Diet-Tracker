@@ -1,9 +1,11 @@
-from flask import Flask, request, jsonify, send_from_directory, render_template
-from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import sys
 import os
+import secrets
 from uuid import uuid4
+from datetime import datetime, timedelta, timezone
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask import Flask, request, jsonify, send_from_directory, render_template
 
 # Add the directory containing PlatePilotUser.py to path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -13,6 +15,7 @@ sys.path.append(scripts_path)
 
 from PlatePilotUser import ppuser
 from food_search import connectDB, apply_filter, active_filters, search_engine
+from send_email import send_reset_email
 
 app = Flask(__name__)
 
@@ -97,6 +100,18 @@ def query_db_for_user_info(user_id, returnJSON=True):
     finally:
        if conn: conn.close()
 
+def generate_reset_token():
+    return secrets.token_urlsafe(32)
+
+def get_expiry(minutes=30):
+    return (getCurrentTimeUTC() + timedelta(minutes=minutes)).isoformat()
+
+def getCurrentTimeUTC():
+    return datetime.now(timezone.utc) 
+
+def hash_password(password):
+    return generate_password_hash(password)
+
 
 #Deliver HTML
 @app.route('/')
@@ -108,6 +123,12 @@ def html_urls(filename):
     if not filename.endswith('.html'):
         return "Not Found", 404
     return render_template(filename)
+
+@app.route('/reset-password', methods=['GET'])
+def reset_password():
+    if request.method == 'GET':
+        token = request.args.get('token')
+        return render_template('resetPassword.html', token=token)
 
 
 ######### API METHODS #########
@@ -127,7 +148,7 @@ def register_user():
             print("[ERROR]: Missing fields in POST request!")
             return jsonify({'error': 'Missing required fields'}), 400
 
-        hashed_password = generate_password_hash(password)
+        hashedPassword = hash_password(password)
 
         conn = connectDB()
         cur = conn.cursor()
@@ -135,7 +156,7 @@ def register_user():
         cur.execute("""
         INSERT INTO users (name, email, password)
         VALUES (?, ?, ?)
-        """, (name, email, hashed_password))
+        """, (name, email, hashedPassword))
 
         conn.commit()
         user_id = cur.lastrowid
@@ -153,6 +174,89 @@ def register_user():
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
     
+    finally:
+        if conn:
+            conn.close()
+
+# forgot password
+@app.route('/api/forgot-password', methods=['POST'])
+def forgot_password():
+    try:
+        data = request.json
+        email = data.get('email')
+
+        conn = connectDB()
+        cur = conn.cursor()
+        cur.execute("SELECT userId FROM users WHERE email = ?", (email,))
+        userId = cur.fetchone()
+
+        # Always return same message (security)
+        if not userId:
+            return jsonify({'message': 'If an account exists, a reset link has been sent'}), 200
+
+        resetToken = generate_reset_token()
+        expiry = get_expiry(30)  # expires in 30 min
+    
+        cur.execute("""
+            UPDATE users
+            SET reset_token = ?, reset_token_expiry = ?
+            WHERE email = ?
+        """, (resetToken, expiry, email))
+
+        conn.commit()
+        resetLink = f"http://localhost:5000/reset-password?token={resetToken}"
+        send_reset_email(email, resetLink)
+        print("RESET LINK:", resetLink)
+
+        return jsonify({'message': 'If an account exists, a reset link has been sent'}), 200
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+# Change password
+from datetime import datetime
+@app.route('/api/reset-password', methods=['POST'])
+def reset_password_api():
+    try:
+        data = request.json
+        resetToken = data.get('token')
+        newPassword = data.get('newPassword')
+        
+        conn = connectDB()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT userId, reset_token_expiry FROM Users
+            WHERE reset_token = ?
+        """, (resetToken,))
+    
+        user = cursor.fetchone()
+
+        if not user:
+            return jsonify({'message': 'Invalid token'}), 400
+
+        user_id, expiry = user
+
+        if not expiry: #or datetime.fromisoformat(expiry) < getCurrentTimeUTC():
+            return jsonify({'message': 'Token expired'}), 400
+
+        hashedPassword = hash_password(newPassword)
+
+        cursor.execute("""
+            UPDATE Users
+            SET password = ?, reset_token = NULL, reset_token_expiry = NULL
+            WHERE userId = ?
+        """, (hashedPassword, user_id))
+
+        conn.commit()
+
+        return jsonify({'message': 'Password reset successful'}), 200
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
     finally:
         if conn:
             conn.close()
