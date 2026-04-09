@@ -1,5 +1,5 @@
 import { reset_password } from '../api.js';
-import { getElement, getInputValue, showError, showMessage } from '../utils.js';
+import { getElement, getInputValue, showError, showMessage, checkPasswordCriteria } from '../utils.js';
 
 export function initResetPassword() {
     const form = getElement('resetForm');
@@ -14,8 +14,11 @@ export function initResetPassword() {
         if (!password || !confirm) {
             return showError("Please enter a password and confirm your password.");
         }
-        if (password != confirm) {
-            return showError("Passwords must match!");
+
+        const validationMsg = checkPasswordCriteria(password, confirm);
+        if (!validationMsg.includes("success")) {
+            showError(validationMsg);
+            return;
         }
 
         try {
