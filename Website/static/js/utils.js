@@ -73,6 +73,10 @@ export function showSuccess(message) {
     alert(message);
 }
 
+export function showMessage(message) {
+    alert(message)
+}
+
 // ==========================
 // LOCAL STORAGE (LIMITED USE)
 // ==========================
