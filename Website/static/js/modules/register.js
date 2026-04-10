@@ -1,5 +1,5 @@
 import { register } from '../api.js';
-import { getElement, getInputValue, showError } from '../utils.js';
+import { getElement, getInputValue, showError, checkPasswordCriteria } from '../utils.js';
 import * as State from '../state.js';
 
 export function initRegister() {
@@ -13,16 +13,15 @@ export function initRegister() {
         const email = getInputValue('email');
         const password = getInputValue('password');
         const confirm = getInputValue('confirmPassword');
+
         if (!name || !email || !password || !confirm) {
             return showError("Please fill in all fields.");
         }
 
-        if (password.length < 8) {
-            return showError("Password must be at least 8 characters.");
-        }
-
-        if (password !== confirm) {
-            return showError("Passwords do not match.");
+        const validationMsg = checkPasswordCriteria(password, confirm);
+        if (!validationMsg.includes("success")) {
+            showError(validationMsg);
+            return;
         }
 
         try {

@@ -5,18 +5,6 @@ import { getUserId, getElement, showError, showSuccess } from '../utils.js';
 
 let currentUser = null;
 
-function calculateAge(dateOfBirth) {
-    if (!dateOfBirth) return '';
-    const today = new Date();
-    const birth = new Date(dateOfBirth);
-    let age = today.getFullYear() - birth.getFullYear();
-    const m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-        age--;
-    }
-    return age;
-}
-
 export function initSettings() {
     loadUser();
     setupAvatarControls();
@@ -27,16 +15,15 @@ async function loadUser() {
         currentUser = await getUserInfo(getUserId());
         currentUser.user_id = getUserId();
 
-        // Display elements
+        // Populate display elements
         getElement('userNameDisplay').textContent = currentUser.name || '';
         getElement('userGenderDisplay').textContent = currentUser.sex || '';
-        getElement('userDobDisplay').textContent = currentUser.date_of_birth || '';
-        getElement('userAgeDisplay').textContent = calculateAge(currentUser.date_of_birth);
+        getElement('userAgeDisplay').textContent = currentUser.age || '';
         getElement('userWeightDisplay').textContent = currentUser.weight_lbs || '';
         getElement('userHeightDisplay').textContent = currentUser.height_in || '';
         getElement('userEmailDisplay').textContent = currentUser.email || '';
 
-        // Loads the profile picture
+        // Load profile picture
         if (currentUser.profile_picture) {
             const profileImages = document.querySelectorAll('#profilePreview');
             profileImages.forEach(img => {
@@ -63,13 +50,13 @@ function setupAvatarControls() {
             const file = e.target.files[0];
             if (!file) return;
 
-            // Validates the file type
+            // Validate file type
             if (!file.type.startsWith('image/')) {
                 showError("Please select an image file.");
                 return;
             }
 
-            // Validates the file size (max 5MB)
+            // Validate file size (max 5MB)
             if (file.size > 5 * 1024 * 1024) {
                 showError("File is too large. Maximum 5MB.");
                 return;
@@ -79,7 +66,7 @@ function setupAvatarControls() {
                 const result = await uploadAvatar(getUserId(), file);
                 currentUser.profile_picture = result.profile_picture;
                 
-                // Updates preview images
+                // Update preview images
                 const profileImages = document.querySelectorAll('#profilePreview');
                 profileImages.forEach(img => {
                     img.src = result.profile_picture;
@@ -103,11 +90,11 @@ function setupAvatarControls() {
             }
 
             try {
-                // Updates user with null profile_picture
+                // Update user with null profile_picture
                 currentUser.profile_picture = null;
                 await updateUser(currentUser);
 
-                // Resets to default avatar
+                // Reset to default avatar
                 const defaultAvatar = '/static/images/avatar.jpg';
                 const profileImages = document.querySelectorAll('#profilePreview');
                 profileImages.forEach(img => {
@@ -123,24 +110,24 @@ function setupAvatarControls() {
 }
 
 
-// Makes this function global
+// Make this function global so HTML can call it
 window.enterEditMode = function(displayId, fieldName) {
     const displayElement = getElement(displayId);
     if (!displayElement) return;
 
     const currentValue = displayElement.textContent;
     const input = document.createElement('input');
-    input.type = fieldName === 'date_of_birth' ? 'date' : 'text';
+    input.type = 'text';
     input.value = currentValue;
     input.className = 'editInput';
 
-    
+    // Replace the span with input
     displayElement.parentNode.replaceChild(input, displayElement);
 
-    
+    // Focus the input
     input.focus();
 
-    
+    // On blur or enter, save
     let isSaving = false;
     const revertToDisplay = () => {
         if (input.parentNode) {
@@ -181,20 +168,10 @@ window.enterEditMode = function(displayId, fieldName) {
         
         currentUser[apiField] = parsedValue;
 
-        // If the DOB was updated, recalculates age and includes it in the save
-        if (apiField === 'date_of_birth') {
-            currentUser.age = calculateAge(newValue);
-        }
-
         try {
             await updateUser(currentUser);
             displayElement.textContent = newValue;
             revertToDisplay();
-            // If DOB is changed, refreshes the age display
-            if (apiField === 'date_of_birth') {
-                const ageDisplay = getElement('userAgeDisplay');
-                if (ageDisplay) ageDisplay.textContent = currentUser.age;
-            }
             showSuccess("Updated successfully!");
         } catch (err) {
             showError("Failed to update: " + err.message);

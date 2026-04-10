@@ -12,6 +12,7 @@ async function request(url, options = {}) {
             ...options
         });
 
+        const status = res.status;
         const data = await res.json();
 
         if (!res.ok) {
@@ -40,6 +41,20 @@ export async function register(name, email, password) {
     return request('/api/register', {
         method: 'POST',
         body: JSON.stringify({ name: name, email: email, password: password })
+    });
+}
+
+export async function forgot_password(email) {
+    return request('/api/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({email: email})
+    });
+}
+
+export async function reset_password(token, newPassword) {
+    return request('/api/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({token: token, newPassword: newPassword})
     });
 }
 
@@ -124,6 +139,27 @@ export async function logFood(userId, food) {
             ...food
         })
     });
+}
+
+// ==========================
+// FOOD SEARCHING
+// ==========================
+export async function apply_Filter(userId, restriction) {
+    return request('/api/apply-filter', {
+        method: 'POST',
+        body: JSON.stringify({
+            user_id: userId,
+            restriction: restriction
+        })
+    });
+}
+
+export async function searchFood(userId, foodName) {
+    return request(`/api/search-engine?name=${encodeURIComponent(foodName)}&user_id=${userId}`);
+}
+
+export async function getNutrients(fdcId) {
+    return request(`/api/get-nutrients?fdc_id=${fdcId}`);
 }
 
 // ==========================

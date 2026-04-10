@@ -1,9 +1,11 @@
-from flask import Flask, request, jsonify, send_from_directory, render_template
-from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import sys
 import os
+import secrets
 from uuid import uuid4
+from datetime import datetime, timedelta, timezone
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask import Flask, request, jsonify, send_from_directory, render_template
 
 # Add the directory containing PlatePilotUser.py to path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -13,10 +15,29 @@ sys.path.append(scripts_path)
 
 from PlatePilotUser import ppuser
 from food_search import connectDB, apply_filter, active_filters, search_engine
+from send_email import send_reset_email
 
 app = Flask(__name__)
 
 active_user_conns = {}
+
+def migrate_db():
+    conn = None
+    try:
+        conn = connectDB()
+        cur = conn.cursor()
+        cur.execute("PRAGMA table_info(Users)")
+        columns = [row[1] for row in cur.fetchall()]
+        if 'date_of_birth' not in columns:
+            cur.execute("ALTER TABLE Users ADD COLUMN date_of_birth TEXT")
+            conn.commit()
+    except Exception as e:
+        print(f"[MIGRATION ERROR]: {e}")
+    finally: 
+        if conn:
+            conn.close()
+
+migrate_db()
 
 # Helpers
 def convert_lbs_to_kg(weight_lbs):
@@ -34,7 +55,7 @@ def query_db_for_user_info(user_id, returnJSON=True):
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT name, email, age, sex, height_inches, weight_lbs, goal, activity_level, profile_picture
+            SELECT name, email, age, sex, height_inches, weight_lbs, goal, activity_level, profile_picture, date_of_birth
             FROM Users
             WHERE userId = ?
         """, (user_id,))
@@ -44,7 +65,7 @@ def query_db_for_user_info(user_id, returnJSON=True):
         if not row:
             return jsonify({'error': 'User not found'}), 404
 
-        name, email, age, sex, height_in, weight_lbs, goal, activity_level, profile_picture = row
+        name, email, age, sex, height_in, weight_lbs, goal, activity_level, profile_picture, date_of_birth = row
 
         cur.execute("""
             SELECT r.name
@@ -66,10 +87,11 @@ def query_db_for_user_info(user_id, returnJSON=True):
                 'goal': goal,
                 'activity_level': activity_level,
                 'profile_picture': profile_picture,
+                'date_of_birth': date_of_birth,
                 'restrictions': restrictions
             })
         else:
-            return (name, email, age, sex, height_in, weight_lbs, goal, activity_level, profile_picture, restrictions)
+            return (name, email, age, sex, height_in, weight_lbs, goal, activity_level, profile_picture, date_of_birth, restrictions)
 
     except Exception as e:
         print("[ERROR]: ", e)
@@ -77,6 +99,18 @@ def query_db_for_user_info(user_id, returnJSON=True):
 
     finally:
        if conn: conn.close()
+
+def generate_reset_token():
+    return secrets.token_urlsafe(32)
+
+def get_expiry(minutes=30):
+    return (getCurrentTimeUTC() + timedelta(minutes=minutes)).isoformat()
+
+def getCurrentTimeUTC():
+    return datetime.now(timezone.utc) 
+
+def hash_password(password):
+    return generate_password_hash(password)
 
 
 #Deliver HTML
@@ -89,6 +123,12 @@ def html_urls(filename):
     if not filename.endswith('.html'):
         return "Not Found", 404
     return render_template(filename)
+
+@app.route('/reset-password', methods=['GET'])
+def reset_password():
+    if request.method == 'GET':
+        token = request.args.get('token')
+        return render_template('resetPassword.html', token=token)
 
 
 ######### API METHODS #########
@@ -108,7 +148,7 @@ def register_user():
             print("[ERROR]: Missing fields in POST request!")
             return jsonify({'error': 'Missing required fields'}), 400
 
-        hashed_password = generate_password_hash(password)
+        hashedPassword = hash_password(password)
 
         conn = connectDB()
         cur = conn.cursor()
@@ -116,7 +156,7 @@ def register_user():
         cur.execute("""
         INSERT INTO users (name, email, password)
         VALUES (?, ?, ?)
-        """, (name, email, hashed_password))
+        """, (name, email, hashedPassword))
 
         conn.commit()
         user_id = cur.lastrowid
@@ -138,6 +178,89 @@ def register_user():
         if conn:
             conn.close()
 
+# forgot password
+@app.route('/api/forgot-password', methods=['POST'])
+def forgot_password():
+    try:
+        data = request.json
+        email = data.get('email')
+
+        conn = connectDB()
+        cur = conn.cursor()
+        cur.execute("SELECT userId FROM users WHERE email = ?", (email,))
+        userId = cur.fetchone()
+
+        # Always return same message (security)
+        if not userId:
+            return jsonify({'message': 'If an account exists, a reset link has been sent'}), 200
+
+        resetToken = generate_reset_token()
+        expiry = get_expiry(30)  # expires in 30 min
+    
+        cur.execute("""
+            UPDATE users
+            SET reset_token = ?, reset_token_expiry = ?
+            WHERE email = ?
+        """, (resetToken, expiry, email))
+
+        conn.commit()
+        resetLink = f"http://localhost:5000/reset-password?token={resetToken}"
+        send_reset_email(email, resetLink)
+        print("RESET LINK:", resetLink)
+
+        return jsonify({'message': 'If an account exists, a reset link has been sent'}), 200
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+# Change password
+from datetime import datetime
+@app.route('/api/reset-password', methods=['POST'])
+def reset_password_api():
+    try:
+        data = request.json
+        resetToken = data.get('token')
+        newPassword = data.get('newPassword')
+        
+        conn = connectDB()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT userId, reset_token_expiry FROM Users
+            WHERE reset_token = ?
+        """, (resetToken,))
+    
+        user = cursor.fetchone()
+
+        if not user:
+            return jsonify({'message': 'Invalid token'}), 400
+
+        user_id, expiry = user
+
+        if not expiry: #or datetime.fromisoformat(expiry) < getCurrentTimeUTC():
+            return jsonify({'message': 'Token expired'}), 400
+
+        hashedPassword = hash_password(newPassword)
+
+        cursor.execute("""
+            UPDATE Users
+            SET password = ?, reset_token = NULL, reset_token_expiry = NULL
+            WHERE userId = ?
+        """, (hashedPassword, user_id))
+
+        conn.commit()
+
+        return jsonify({'message': 'Password reset successful'}), 200
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
 #update user info
 @app.route('/api/update_user', methods=['POST'])
 def update_user():
@@ -155,6 +278,7 @@ def update_user():
         height_inches = data.get('height_in')
         goal = data.get('goal')
         activity_level = data.get('activity_level')
+        date_of_birth = data.get('date_of_birth')
         if not user_id:
             return jsonify({'error': 'user_id is required'}), 400
 
@@ -167,16 +291,16 @@ def update_user():
             # User explicitly set to None, remove the picture
             cur.execute("""
                 UPDATE users
-                SET name = COALESCE(?, name), email = COALESCE(?, email), age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = NULL
+                SET name = COALESCE(?, name), email = COALESCE(?, email), age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = NULL, date_of_birth = COALESCE(?, date_of_birth)
                 WHERE userId = ?
-            """, (data.get('name'), data.get('email'), age, weight_lbs, sex, height_inches, goal, activity_level, user_id))
+            """, (data.get('name'), data.get('email'), age, weight_lbs, sex, height_inches, goal, activity_level, date_of_birth, user_id))
         else:
             # Normal update with or without profile_picture
             cur.execute("""
                 UPDATE users
-                SET name = COALESCE(?, name), email = COALESCE(?, email), age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = COALESCE(?, profile_picture)
+                SET name = COALESCE(?, name), email = COALESCE(?, email), age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = COALESCE(?, profile_picture), date_of_birth = COALESCE(?, date_of_birth)
                 WHERE userId = ?
-            """, (data.get('name'), data.get('email'), age, weight_lbs, sex, height_inches, goal, activity_level, data.get('profile_picture'), user_id))
+            """, (data.get('name'), data.get('email'), age, weight_lbs, sex, height_inches, goal, activity_level, data.get('profile_picture'), date_of_birth, user_id))
 
         conn.commit()
 
@@ -375,7 +499,7 @@ def calculate_dri():
     data = request.get_json()
     try:
         user_id = data.get('user_id')
-        (name, email, age, sex, height_in, weight_lbs, goal, activity_level, profile_picture, restrictions)=query_db_for_user_info(user_id=user_id, returnJSON=False)
+        (name, email, age, sex, height_in, weight_lbs, goal, activity_level, profile_picture, date_of_birth, restrictions)=query_db_for_user_info(user_id=user_id, returnJSON=False)
         # convert height and weight to the correct units
         weight_kg = convert_lbs_to_kg(weight_lbs)
         height_cm = convert_inches_to_cm(height_in)
@@ -438,7 +562,8 @@ def apply_that_filter():
 
         return jsonify({
             'message': 'Filter set successfully',
-            'filterId': restrictionId
+            'filterId': restrictionId,
+            'result': 'success'
         }), 201
     except Exception as e:
         print("[ERROR]: ", e)
