@@ -17,8 +17,8 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <header class="aboutHero">
+    <!-- for the people! Section -->
+    <header class="forWho">
         <h1 class="welTitle">Built for people who<span class="accent"> actually eat.</span></h1>
         <p class="welSubtitle">PlatePilot started as a simple idea: make eating well less complicated, more personal, and actually enjoyable.</p>
     </header>
@@ -28,17 +28,37 @@
         <div class="aboutMissionInner">
             <div class="aboutMissionText">
                 <h2 class="aboutSectionTitle">Our Mission</h2>
-                <p class="aboutSectionDesc">
-                    At PlatePilot, we strive to build a user-friendly experience that helps you track and plan your daily nutrient intake with precision. Our goal is to alleviate health issues caused by malnutrition by providing the tools you need to take total control of your nutrition.
-                </p>
-                <p class="aboutSectionDesc">
-                    By leveraging the USDA FoodData Central database, our platform identifies select food items that fill the nutritional gaps in your current diet. Whether you have specific dietary restrictions or unique flavor preferences, our team combines expertise in database management and web development to bring your body's "co-pilot" to life.
-                </p>
+                <p class="aboutSectionDesc"> At PlatePilot, we strive to build a user-friendly experience that helps you track and plan your daily nutrient intake with precision. Our goal is to alleviate health issues caused by malnutrition by providing the tools you need to take total control of your nutrition.</p>
+                <p class="aboutSectionDesc"> By leveraging the USDA FoodData Central database, our platform identifies select food items that fill the nutritional gaps in your current diet. Whether you have specific dietary restrictions or unique flavor preferences, our team combines expertise in database management and web development to bring your body's "co-pilot" to life.</p>
             </div>
             <div class="aboutMissionEmoji">
                 <img src="{{ url_for('static', filename='images/Mascot.png') }}" alt="Fresh healthy ingredients" class="aboutMissionImage">
             </div>
         </div>
+    </section>
+
+    <!-- How it works Section -->
+    <section class="howItWorks">
+        <h2 class="aboutCenteredTitle">How it Works</h2>
+        <p class="aboutTeamSubtitle">Precision on Every Plate</p>
+        <div class="homeContainer">
+            <div class="featureCard">
+                <span class="stepNumber">1</span>
+                <h3 class="featureTitle">Profile Sync</h3>
+                <p class="featureDesc"> We analyze your personal metrics and dietary goals to calculate your ideal micro and macro nutrient needs.</p>
+            </div>
+            <div class="featureCard">
+                <span class="stepNumber">2</span>
+                <h3 class="featureTitle">Data-Driven Analysis</h3>
+                <p class="featureDesc"> Our system cross-references your intake with the USDA FoodData Central database to identify specific nutritional gaps.</p>
+            </div>
+            <div class="featureCard">
+                <span class="stepNumber">3</span>
+                <h3 class="featureTitle">Smart Recommendations</h3>
+                <p class="featureDesc"> PlatePilot acts as your body’s co-pilot, suggesting select food items tailored to your allergies and flavor preferences.</p>
+            </div>
+        </div>
+        
     </section>
 
     <!-- Values Section -->
@@ -130,6 +150,6 @@
 <footer class="homeFooter">
     <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
     <p class="homeFooterTxt">Privacy Policy | Terms of Service</p>
-    <p class="homeFooterTxt">Contact Us:</p>
+    <p class="homeFooterTxt">Contact Us: <a href="mailto:berkscott998@outlook.com">Email</a></p>
 </footer>
 </html>
