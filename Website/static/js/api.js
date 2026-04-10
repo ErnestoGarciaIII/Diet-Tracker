@@ -44,6 +44,20 @@ export async function register(name, email, password) {
     });
 }
 
+export async function forgot_password(email) {
+	return request('/api/forgot-password', {
+		method: 'POST',
+		body: JSON.stringify({email: email})
+	});
+}
+
+export async function reset_password(token, newPassword) {
+	return request('/api/reset-password', {
+		method: 'POST',
+		body: JSON.stringify({token: token, newPassword: newPassword})
+	});
+}
+
 // ==========================
 // USER
 // ==========================

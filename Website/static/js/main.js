@@ -10,6 +10,8 @@ import { initUserInfo } from './modules/userInfo.js';
 import { initSettings } from './modules/settings.js';
 import { initLogin } from './modules/login.js';
 import { initRegister } from './modules/register.js';
+import { initForgotPassword } from './modules/forgotPassword.js';
+import { initResetPassword } from './modules/resetPassword.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const userId = State.getUserId();
@@ -27,6 +29,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (Util.getElement('homePage')); // Home page doesn't need init unless we add logic to it
     if (Util.getElement('registerPage')) initRegister();
     if (Util.getElement('loginPage')) initLogin();
+    if (Util.getElement('forgotPasswordPage')) initForgotPassword();
+    if (Util.getElement('resetPasswordPage')) initResetPassword();
     if (protectedPage && !userId) {
         window.location.href = 'home.html'
     }

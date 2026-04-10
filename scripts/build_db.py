@@ -58,6 +58,8 @@ def build_users_table(conn, cursor):
         name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
+        reset_token TEXT,
+        reset_token_expiry TEXT,
         date_of_birth TEXT,
         age INTEGER,
         sex TEXT,
