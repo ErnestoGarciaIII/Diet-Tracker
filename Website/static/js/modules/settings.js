@@ -39,6 +39,7 @@ async function loadUser() {
         getElement('userWeightDisplay').textContent = currentUser.weight_lbs || '';
         getElement('userHeightDisplay').textContent = currentUser.height_in || '';
         getElement('userEmailDisplay').textContent = currentUser.email || '';
+            getElement('userActivityDisplay').textContent = currentUser.activity_level || '';
 
         // Load profile picture
         if (currentUser.profile_picture) {
@@ -133,10 +134,28 @@ window.enterEditMode = function(displayId, fieldName) {
     if (!displayElement) return;
 
     const currentValue = displayElement.textContent;
-    const input = document.createElement('input');
-    input.type = fieldName === 'date_of_birth' ? 'date' : 'text';
-    input.value = currentValue;
-    input.className = 'editInput';
+    let input;
+    if (fieldName === 'activityLevel') {
+        input = document.createElement('select');
+        input.className = 'editInput';
+        [
+            { value: 'sedentary', label: 'Sedentary' },
+            { value: 'light', label: 'Lightly Active' },
+            { value: 'moderate', label: 'Moderately Active' },
+            { value: 'very', label: 'Very Active' }
+        ].forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = opt.label;
+            if (opt.value === currentValue) option.selected = true;
+            input.appendChild(option);
+        });
+    } else {
+        input = document.createElement('input');
+        input.type = fieldName === 'date_of_birth' ? 'date' : 'text';
+        input.value = currentValue;
+        input.className = 'editInput';
+    }
 
     // Replace the span with input
     displayElement.parentNode.replaceChild(input, displayElement);
@@ -168,7 +187,8 @@ window.enterEditMode = function(displayId, fieldName) {
             'fullName': 'name',
             'Weight': 'weight_lbs',
             'Height': 'height_in',
-            'email': 'email'
+            'email': 'email',
+            'activityLevel': 'activity_level'
         };
         const apiField = fieldMap[fieldName] || fieldName.toLowerCase();
         
