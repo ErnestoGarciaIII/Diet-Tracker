@@ -5,6 +5,7 @@ import { getUserId, getElement, showError, showSuccess } from '../utils.js';
 
 let currentUser = null;
 
+
 function calculateAge(dateOfBirth) {
     if (!dateOfBirth) return '';
 
@@ -183,22 +184,20 @@ window.enterEditMode = function(displayId, fieldName) {
         }
         
         currentUser[apiField] = parsedValue;
-
         if (apiField === 'date_of_birth') {
             currentUser.age = calculateAge(newValue);
         }
-
         try {
             await updateUser(currentUser);
             displayElement.textContent = newValue;
             revertToDisplay();
 
-            if (apiField === 'date_of_birth') {
+	     if (apiField === 'date_of_birth') {
                 const ageDisplay = getElement('userAgeDisplay');
                 if (ageDisplay) {
                     ageDisplay.textContent = currentUser.age;
                 }
-            }
+             }
 
             showSuccess("Updated successfully!");
         } catch (err) {
