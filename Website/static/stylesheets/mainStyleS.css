@@ -872,7 +872,16 @@ p.change{
     margin-left: 80px;
     padding: 40px;
     width: 100%;
-    max-width: 1200px;
+    max-width: 900px;
+}
+
+
+.settingsLayout{
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
+    gap: 24px;
+    max-width: 1320px;
+    align-items: start;
 }
 
 .statsPanel {
@@ -1088,7 +1097,7 @@ p.change{
     max-width: 900px;
 }
 
-.foodLogLayout {
+.foodLogLayout, .settingsLayout {
     display: grid;
     grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
     gap: 24px;
