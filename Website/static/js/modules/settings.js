@@ -5,6 +5,22 @@ import { getUserId, getElement, showError, showSuccess } from '../utils.js';
 
 let currentUser = null;
 
+
+function calculateAge(dateOfBirth) {
+    if (!dateOfBirth) return '';
+
+    const today = new Date();
+    const birth = new Date(dateOfBirth);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDelta = today.getMonth() - birth.getMonth();
+
+    if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+
+    return age;
+}
+
 export function initSettings() {
     loadUser();
     setupAvatarControls();
@@ -35,21 +51,6 @@ async function loadUser() {
     } catch (err) {
         showError("Failed to load user.");
     }
-}
-
-function calculateAge(dateOfBirth) {
-    if (!dateOfBirth) return '';
-
-    const today = new Date();
-    const birth = new Date(dateOfBirth);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDelta = today.getMonth() - birth.getMonth();
-
-    if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birth.getDate())) {
-        age--;
-    }
-
-    return age;
 }
 
 function setupAvatarControls() {
@@ -183,11 +184,9 @@ window.enterEditMode = function(displayId, fieldName) {
         }
         
         currentUser[apiField] = parsedValue;
-	
         if (apiField === 'date_of_birth') {
             currentUser.age = calculateAge(newValue);
         }
-	
         try {
             await updateUser(currentUser);
             displayElement.textContent = newValue;
