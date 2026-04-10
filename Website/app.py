@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory, render_template
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta, timezone
-from send_email import send_reset_email
 import sqlite3
 import secrets
 import sys
@@ -17,6 +16,7 @@ sys.path.append(scripts_path)
 from PlatePilotUser import ppuser
 from food_search import connectDB, apply_filter, active_filters, search_engine
 from the_holy_grail import recommend_foods, NUTRIENT_ID_TO_NAME
+from send_email import send_reset_email
 
 app = Flask(__name__)
 
