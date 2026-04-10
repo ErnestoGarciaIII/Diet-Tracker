@@ -192,12 +192,12 @@ window.enterEditMode = function(displayId, fieldName) {
             displayElement.textContent = newValue;
             revertToDisplay();
 
-	    if (apiField === 'date_of_birth') {
+	     if (apiField === 'date_of_birth') {
                 const ageDisplay = getElement('userAgeDisplay');
                 if (ageDisplay) {
                     ageDisplay.textContent = currentUser.age;
                 }
-            }
+             }
 
             showSuccess("Updated successfully!");
         } catch (err) {
