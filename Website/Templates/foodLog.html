@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Dashboard - PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="..\static\stylesheets\mainStyleS.css">
+	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
 <body class="bod1" id="foodLogPage">
     <!-- Navigation Bar -->
@@ -70,7 +70,7 @@
                     <button id="nutsFilBtn" class="filterBtn" data-value="No Nuts">No Nuts</button>
                     <button id="pescFilBtn" class="filterBtn" data-value="Pescatarian">Pescatarian</button>
                     <button id="shellFilBtn" class="filterBtn" data-value="Shellfish">Shellfish</button>
-                    <button id="soyFilBtn" class="filterBtn" data-value="Soy Free">Soy Free</button>
+                    <button id="soyFilBtn" class="filterBtn" data-value="Soy-Free">Soy-Free</button>
                     <button id="eggFilBtn" class="filterBtn" data-value="Egg-Free">Egg-Free</button>
                 </div>
                 <datalist id="foodSearch"></datalist>
@@ -80,6 +80,7 @@
                 <div id="resultsList"></div>
             </div>
         </section>
+
         <!-- Log Summary (cart) section -->
         <section class="summaryCard trackerCard foodSummaryCard">
             <h2> Log Summary</h2>
@@ -121,21 +122,6 @@
             <h2> Nutrient Breakdown</h2>
             <p class="formSubtitle">A visual breakdown of your logged nutrients.</p>
             <div id="nutrientBreakdown"></div>
-            <!-- calories progress bar-->
-            <div class="progressWrapper">
-                <div id="kcalProgressBar"></div>
-                <div id="planeIcon">🛩️</div>
-            </div>
-            <!-- macros progress bar-->
-            <div class ="progressWrapper">
-                <div id="gProgressBar"> </div>
-                <div id="planeIcon1">🛩️</div>
-            </div>
-            <!-- micros progress bar-->
-            <div class ="progressWrapper">
-                <div id="mgProgressBar"> </div>
-                <div id="planeIcon2">🛩️</div>
-            </div>
         </section>
     </main>
 
