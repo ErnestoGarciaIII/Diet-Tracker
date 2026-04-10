@@ -1,5 +1,4 @@
 import { register } from '../api.js';
-import { getElement, getInputValue, showError } from '../utils.js';
 import { getElement, getInputValue, showError, checkPasswordCriteria } from '../utils.js';
 import * as State from '../state.js';
 
@@ -14,16 +13,17 @@ export function initRegister() {
         const email = getInputValue('email');
         const password = getInputValue('password');
         const confirm = getInputValue('confirmPassword');
+
         if (!name || !email || !password || !confirm) {
             return showError("Please fill in all fields.");
         }
 
-
-	const validationMsg = checkPasswordCriteria(password, confirm);
+        const validationMsg = checkPasswordCriteria(password, confirm);
         if (!validationMsg.includes("success")) {
             showError(validationMsg);
             return;
-	}
+        }
+
         try {
             const data = await register(name, email, password);
             State.setUserId(data.user_id);
