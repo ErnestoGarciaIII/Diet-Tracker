@@ -73,6 +73,10 @@ export function showSuccess(message) {
     alert(message);
 }
 
+export function showMessage(message) {
+    alert(message)
+}
+
 // ==========================
 // LOCAL STORAGE (LIMITED USE)
 // ==========================
@@ -87,3 +91,55 @@ export function setUserId(id) {
 export function clearUser() {
     localStorage.removeItem('user_id');
 }
+
+// =========================
+// Password Rules
+// =========================
+export function checkPasswordCriteria(password, confirm) {
+    const rules = {
+        minLength: 8,
+        requireUppercase: true,
+        requireLowercase: true,
+        requireNumber: true,
+        requireSymbol: true
+    };
+
+    let errors = [];
+
+    // Length
+    if (password.length < rules.minLength) {
+        errors.push(`at least ${rules.minLength} characters`);
+    }
+
+    // Character checks
+    if (rules.requireLowercase && !/[a-z]/.test(password)) {
+        errors.push("one lowercase letter");
+    }
+
+    if (rules.requireUppercase && !/[A-Z]/.test(password)) {
+        errors.push("one uppercase letter");
+    }
+
+    if (rules.requireNumber && !/\d/.test(password)) {
+        errors.push("one number");
+    }
+
+    if (rules.requireSymbol && !/[^A-Za-z\d]/.test(password)) {
+        errors.push("one symbol");
+    }
+
+    // Show all password issues at once
+    if (errors.length > 0) {
+        return showError(
+            "Password must include: " + errors.join(", ") + "."
+        );
+    }
+
+    // Match check
+    if (password !== confirm) {
+        return showError("Passwords do not match.");
+    }
+
+    return ("success");
+}
+
