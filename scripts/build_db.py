@@ -32,7 +32,7 @@ def checkArgs():
                 """)
             sys.exit(1)
 
-
+ 
 def build_food_table(conn):
     files = ['food', 'nutrient', 'food_nutrient', 'food_portion', 'food_category']
     try:
@@ -55,7 +55,6 @@ def build_users_table(conn, cursor):
         name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
-        date_of_birth TEXT,
         age INTEGER,
         sex TEXT,
         height_inches INTEGER,
@@ -120,25 +119,10 @@ def build_food_history_table(conn, cursor):
         portion REAL DEFAULT 1,
         dateLogged DATE NOT NULL,
         timeLogged TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
+        FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE CASCADE
     )
     """)
     print("Finished building FoodHistory table\n")
-
-def build_top_foods_table(conn, cursor):
-    cursor.execute("DROP TABLE IF EXISTS TopFoods")
-    print(f"Attempting to build TopFoods table...")
-    cursor.execute("""
-    CREATE TABLE TopFoods (
-        fdc_id INTEGER,
-        description TEXT,
-        nutrient_id INTEGER,
-        amount_per_gram REAL,
-        food_category_id INTEGER,
-        PRIMARY KEY (fdc_id, nutrient_id)
-    );
-    """)
-    print(f"Finished building TopFoods table")
 
 def main():
 
@@ -153,7 +137,6 @@ def main():
     build_user_restrictions_table(conn, cursor)
     build_goals_table(conn, cursor)
     build_food_history_table(conn, cursor)
-    build_top_foods_table(conn, cursor)
 
     categoryQuery, foodQuery, restrictionsQuery = buildQuery()
     runQuery(categoryQuery, foodQuery, restrictionsQuery, conn, cursor)
