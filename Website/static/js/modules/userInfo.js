@@ -37,6 +37,8 @@ export function initUserInfo() {
     }
 
     btn.addEventListener('click', (e) => handleSubmit(e, selectedProfilePicture));
+
+    window.toggleSexDisclaimer = toggleSexDisclaimer;
 }
 
 async function handleSubmit(e, selectedProfilePicture) {
@@ -87,5 +89,15 @@ async function handleSubmit(e, selectedProfilePicture) {
 
     } catch (err) {
         showError(err.message);
+    }
+}
+
+function toggleSexDisclaimer(event) {
+    event.preventDefault();
+    const disclaimer = document.getElementById('sexDisclaimer');
+    if (disclaimer.style.display === 'none') {
+        disclaimer.style.display = 'block';
+    } else {
+        disclaimer.style.display = 'none';
     }
 }

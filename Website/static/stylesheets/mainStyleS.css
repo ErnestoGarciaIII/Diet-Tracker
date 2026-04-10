@@ -216,6 +216,12 @@ p.change{
     display: flex;
 }
 
+.infoBtn{
+    background: none;
+    border: none; 
+    padding: 0; 
+    cursor: pointer;
+}
 /* -------------------------------------- HOME PAGE -------------------------------------------*/
 .homePage{
     background-color: beige;
@@ -679,6 +685,29 @@ p.change{
     font-size: 0.9rem;
 }
 
+.disclaimer {
+    display: none; 
+    margin-top: 1rem; 
+    padding: 1rem; 
+    background: #f0f4ff; 
+    border-left: 3px solid #3ca3f5; 
+    border-radius: 4px; 
+    font-size: 0.9rem; 
+    color: #333; 
+    line-height: 1.6;
+}
+
+.disclaimer p{
+    margin-bottom: 0; 
+    font-size: 0.85rem; 
+    color: #666;
+}
+
+.infoText{
+    margin-left: 0.5rem; 
+    font-size: 0.85rem; 
+    color: #999;
+}
 
 /* Mobile Responsive: Stack the image and form */
 @media (max-width: 768px) {
