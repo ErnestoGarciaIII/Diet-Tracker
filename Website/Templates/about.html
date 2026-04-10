@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About PlatePilot</title>
+    <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
+</head>
+<body class="homePage">
+
+    <!-- Navigation Bar -->
+    <nav class="homeNavbar">
+        <a href="{{ url_for('html_urls', filename='Home.html') }}" class="mainLogo">PlatePilot</a>
+        <div>
+            <a href="{{ url_for('html_urls', filename='login.html') }}" class="loginLink">Login</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="aboutHero">
+        <h1 class="welTitle">Built for people who<span class="accent"> actually eat.</span></h1>
+        <p class="welSubtitle">PlatePilot started as a simple idea: make eating well less complicated, more personal, and actually enjoyable.</p>
+    </header>
+
+    <!-- Mission Section -->
+    <section class="aboutMission">
+        <div class="aboutMissionInner">
+            <div class="aboutMissionText">
+                <h2 class="aboutSectionTitle">Our Mission</h2>
+                <p class="aboutSectionDesc">
+                    At PlatePilot, we strive to build a user-friendly experience that helps you track and plan your daily nutrient intake with precision. Our goal is to alleviate health issues caused by malnutrition by providing the tools you need to take total control of your nutrition.
+                </p>
+                <p class="aboutSectionDesc">
+                    By leveraging the USDA FoodData Central database, our platform identifies select food items that fill the nutritional gaps in your current diet. Whether you have specific dietary restrictions or unique flavor preferences, our team combines expertise in database management and web development to bring your body's "co-pilot" to life.
+                </p>
+            </div>
+            <div class="aboutMissionEmoji">
+                <img src="{{ url_for('static', filename='images/Mascot.png') }}" alt="Fresh healthy ingredients" class="aboutMissionImage">
+            </div>
+        </div>
+    </section>
+
+    <!-- Values Section -->
+    <section class="features">
+        <h2 class="aboutCenteredTitle">What We Stand For</h2>
+        <div class="homeContainer">
+            <div class="featureCard">
+                <div class="homeIcon">🎯</div>
+                <h3 class="featureTitle">Personalization</h3>
+                <p class="featureDesc">No two people are the same. PlatePilot adapts to your body, goals, allergies, and preferences — not the other way around.</p>
+            </div>
+            <div class="featureCard">
+                <div class="homeIcon">🔬</div>
+                <h3 class="featureTitle">Data You Can Trust</h3>
+                <p class="featureDesc">Every nutritional value comes from the USDA FoodData Central database — one of the most comprehensive food databases in the world.</p>
+            </div>
+            <div class="featureCard">
+                <div class="homeIcon">🤝</div>
+                <h3 class="featureTitle">Built for Everyone</h3>
+                <p class="featureDesc">Vegan, keto, pescatarian, allergen-free — we support dozens of dietary lifestyles so no one gets left behind.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="aboutTeam">
+        <h2 class="aboutCenteredTitle">Meet the Team</h2>
+        <p class="aboutTeamSubtitle">A small team with a big appetite for building things that matter.</p>
+        <div class="homeContainer aboutTeamGrid">
+            <div class="aboutTeamCard">
+                <div class="aboutTeamAvatar">👨‍💻</div>
+                <h3 class="aboutTeamName">Berkeley</h3>
+                <p class="aboutTeamRole">Project Manager</p>
+                <p class="aboutTeamBio">
+                    Oversees the project roadmap and development milestones, ensuring the team remains productive and accountable through structured weekly agendas and discipline.
+                </p>
+            </div>
+            <div class="aboutTeamCard">
+                <div class="aboutTeamAvatar">👨‍💻</div>
+                <h3 class="aboutTeamName">Ingrid</h3>
+                <p class="aboutTeamRole">Coordinator & Graphics Designer</p>
+                <p class="aboutTeamBio">
+                    The creative force behind PlatePilot's visual identity, including the design of our mascot, Mr. Axel Innit, and the overall user interface aesthetics.
+                </p>
+            </div>
+            <div class="aboutTeamCard">
+                <div class="aboutTeamAvatar">👨‍💻</div>
+                <h3 class="aboutTeamName">Edgar</h3>
+                <p class="aboutTeamRole">Facilitator</p>
+                <p class="aboutTeamBio">Designed and built the PlatePilot platform from the ground up, from the database pipeline to the front-end experience.</p>
+            </div>
+            <div class="aboutTeamCard">
+                <div class="aboutTeamAvatar">👨‍💻</div>
+                <h3 class="aboutTeamName">Jayce</h3>
+                <p class="aboutTeamRole">Scribe</p>
+                <p class="aboutTeamBio">
+                    Ensures the accuracy of our system's data retrieval and storage, managing rigorous testing to confirm the platform meets all user requirements.
+                </p>
+            </div>
+            <div class="aboutTeamCard">
+                <div class="aboutTeamAvatar">👨‍💻</div>
+                <h3 class="aboutTeamName">Ernesto</h3>
+                <p class="aboutTeamRole">Validation Lead</p>
+                <p class="aboutTeamBio">Designed and built the PlatePilot platform from the ground up, from the database pipeline to the front-end experience.</p>
+            </div>
+            <div class="aboutTeamCard">
+                <div class="aboutTeamAvatar">👨‍💻</div>
+                <h3 class="aboutTeamName">Guadalupe</h3>
+                <p class="aboutTeamRole">Research Manager</p>
+                <p class="aboutTeamBio">Designed and built the PlatePilot platform from the ground up, from the database pipeline to the front-end experience.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="aboutCTA">
+        <h2 class="aboutCTATitle">Ready to take control of your plate?</h2>
+        <p class="welSubtitle">Join PlatePilot today and start eating with purpose.</p>
+        <a href="{{ url_for('html_urls', filename='register.html') }}" class="homeBtns HBtnLink">
+            <button class="homeBtns HBtn-primary">Get Started — It's Free</button>
+        </a>
+    </section>
+
+</body>
+<footer class="homeFooter">
+    <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
+    <p class="homeFooterTxt">Privacy Policy | Terms of Service</p>
+    <p class="homeFooterTxt">Contact Us:</p>
+</footer>
+</html>

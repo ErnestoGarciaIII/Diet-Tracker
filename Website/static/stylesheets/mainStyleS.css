@@ -301,6 +301,11 @@ p.change{
     border: 1px solid #d1d5db;
 }
 
+.HBtn-secondary:hover{
+    background-color: #8e8f92;
+    color: white;
+}
+
 .HBtnLink{
     text-decoration: none;/* remove underline */
     display: inline-block;
@@ -414,6 +419,175 @@ p.change{
 	font-size: 12px;
 	opacity: 0.6;
 	text-align: center;
+}
+.homeFooter {
+    background-color: #f9fafb;
+}
+
+/* -------------------------------------- ABOUT PAGE -------------------------------------------*/
+.aboutHero {
+    text-align: center;
+    padding: 5rem 5% 3rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.aboutMission {
+    background-color: #f9fafb;
+    padding: 4rem 5%;
+}
+
+.aboutMissionInner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+}
+
+.aboutMissionText {
+    flex: 1;
+}
+
+.aboutSectionTitle {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 1.25rem;
+}
+
+.aboutSectionDesc {
+    font-size: 1.05rem;
+    color: #4b5563;
+    line-height: 1.75;
+    margin-bottom: 1rem;
+}
+
+.aboutMissionEmoji {
+    font-size: 7rem;
+    flex-shrink: 0;
+}
+
+.aboutMissionImage {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    display: block;
+}
+
+.aboutCenteredTitle {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #111827;
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.aboutTeam {
+    padding: 4rem 5%;
+    background-color: beige;
+}
+
+.aboutTeamSubtitle {
+    text-align: center;
+    color: #6b7280;
+    font-size: 1.05rem;
+    margin-top: -1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.aboutTeamGrid {
+    justify-items: center;
+}
+
+.aboutTeamCard {
+    background: white;
+    padding: 40px;
+    border-radius: 32px;
+    border: 1px solid #e5e7eb;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 360px;
+    transition: transform 0.3s ease;
+}
+
+.aboutTeamCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+}
+
+.aboutTeamAvatar {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+}
+
+.aboutTeamName {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.25rem;
+}
+
+.aboutTeamRole {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #16a34a;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.aboutTeamBio {
+    font-size: 0.95rem;
+    color: #6b7280;
+    line-height: 1.6;
+}
+
+.aboutCTA {
+    background-color: #16a34a;
+    padding: 4rem 5%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.aboutCTATitle {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+}
+
+.aboutCTA .welSubtitle {
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 0;
+}
+
+.aboutCTA .HBtn-primary {
+    background: white;
+    color: #16a34a;
+    border: none;
+}
+
+.aboutCTA .HBtn-primary:hover {
+    background: #f0fdf4;
+}
+
+@media (max-width: 768px) {
+    .aboutMissionInner {
+        flex-direction: column;
+        text-align: center;
+    }
+    .aboutMissionEmoji {
+        font-size: 5rem;
+    }
+    .aboutMissionImage {
+        width: 140px;
+        height: 140px;
+    }
 }
 
 /* ------------------------------------login and registration page--------------------------------------- */
