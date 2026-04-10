@@ -5,7 +5,7 @@ export function initLogout() {
     const countdownEl = document.getElementById('logoutCountdown');
     if (!countdownEl) return;
 
-    // Clear frontend state as soon as logout page loads.
+    
     clearUser();
     resetState();
 
