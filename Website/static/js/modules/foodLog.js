@@ -64,34 +64,31 @@ async function loadProfilePicture() {
 }
 
 async function handleLogCart() {
-    if (foodCart.length === 0) {
-        showError("No foods selected to log.");
-        return;
-    }
+	const userId = getUserId();
+    	if (foodCart.length === 0) {
+        	showError("No foods selected to log.");
+        	return;
+    	}
 
-    try {
-        let totalCalories = 0;
-        for (const food of foodCart) {
-            const portion = Number(food.portion) > 0 ? Number(food.portion) : 1;
-            const kcal = Math.round(food.calories * portion);
-            const servingLabel = `${portion} ${food.unit || 'Serving'}${portion === 1 ? '' : 's'}`;
-            await logFood(getUserId(), {
-                name: `${food.name} (${servingLabel})`,
-                kcal: kcal,
-                portion: portion
-            });
-            totalCalories += kcal;
-        }
+    	try {
+        	const logPromises = foodCart.map(item => {
+            		return logFood({
+                		user_id: userId,
+                		fdc_id: item.fdc_id,
+                		name: item.name,
+                		portion: item.portion
+            		});
+        	});
 
-        updateProgress({ calories: totalCalories });
+        await Promise.all(logPromises);
 
-        // Clears the cart
         foodCart = [];
         displayCart();
+        updateProgress();
         showSuccess('Foods logged successfully.');
 
-
     } catch (err) {
+        console.error("Logging error:", err);
         showError(err.message);
     }
 }
@@ -188,7 +185,7 @@ async function selectFood(foodName, fdcId) {
             calories: calories,
             portion: 1,
             unit: 'Serving',
-            fdcId: fdcId
+            fdc_id: fdcId
         });
         displayCart();
     } catch (err) {
@@ -198,7 +195,7 @@ async function selectFood(foodName, fdcId) {
             calories: 0,
             portion: 1,
             unit: 'Serving',
-            fdcId: fdcId
+            fdc_id: fdcId
         });
         displayCart();
     }
@@ -228,17 +225,14 @@ function displayCart() {
         const cartItem = document.createElement('div');
         cartItem.className = 'cartItem';
         const portionValue = Number(food.portion) > 0 ? Number(food.portion) : 1;
-        const kcalTotal = Math.round((food.calories || 0) * portionValue);
 
         const unitOptions = SERVING_UNITS.map((unit) => {
             const selected = (food.unit || 'Serving') === unit ? 'selected' : '';
             return `<option value="${unit}" ${selected}>${unit}</option>`;
-        }).join('');
-
+	}).join('');
         cartItem.innerHTML = `
             <div class="cartItemContent">
                 <span class="cartItemName">${food.name}</span>
-                <span class="cartItemCalories">${kcalTotal} kcal</span>
                 <div class="servingControls">
                     <label class="servingLabel" for="portion-${index}">Serving size:</label>
                     <input

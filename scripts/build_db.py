@@ -118,9 +118,9 @@ def build_food_history_table(conn, cursor):
     CREATE TABLE FoodHistory (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         userId INTEGER NOT NULL,
+        fdc_id INTEGER NOT NULL,
         foodName TEXT NOT NULL,
-        calories INTEGER NOT NULL,
-        portion REAL DEFAULT 1,
+        portion REAL NOT NULL,
         dateLogged DATE NOT NULL,
         timeLogged TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
