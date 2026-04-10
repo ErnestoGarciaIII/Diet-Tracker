@@ -65,6 +65,7 @@ async function handleSubmit(e, selectedProfilePicture) {
     const user = {
         user_id,
         age,
+        date_of_birth: dob,
         weight_lbs: parseFloat(getInputValue('userWeightDisplay')),
         height_in: parseFloat(getInputValue('userHeightDisplay')),
         sex: getCheckedValue('sex'),
