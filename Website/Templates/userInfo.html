@@ -19,10 +19,10 @@
             <p class="formSubtitle">Step 1: Your Biometrics</p>
             
             <form id="dietary-form">
-                <!-- form elements i.e age-->
+                <!-- form elements i.e date of birth -->
                 <div class="inputGroup">
-                    <label for="age">How old are you?</label>
-                    <input type="number" id="userAgeDisplay" placeholder="e.g. 25" required>
+                    <label for="userDobDisplay">Date of Birth</label>
+                    <input type="date" id="userDobDisplay" required>
                 </div>
                 <!-- form elements i.e weight -->
                 <div class="inputGroup">
@@ -39,6 +39,18 @@
                             <input type="radio" id="female" name="sex" value="Female" required>
                             <label for="female">Female</label>
                         </div>
+                        <div>
+                            <button type="button" class="infoBtn" onclick="toggleSexDisclaimer(event)" style="background: none; border: none; padding: 0; cursor: pointer;">
+                                <i class="fa-solid fa-info fa-s" style="color: #16a34a;"></i>
+                            </button>
+                            <span class="infoText">Which one should I choose?</span>
+                        </div>
+                    </div>
+                    <!-- disclaimer section -->
+                    <div id="sexDisclaimer" class="disclaimer">
+                        <p><strong>Why we ask:</strong> We use sex to calculate your metabolic needs, as there are different equations for men and women.</p>
+                        <p><strong>For transgender or non-binary individuals:</strong> If your gender identity differs from your sex assigned at birth and you haven't started gender-affirming medications, select your sex assigned at birth for accuracy. If you're taking gender-affirming medications, consult your doctor for the best selection for you.</p>
+                        <p>For best results, always consult with your healthcare provider about your nutritional needs.</p>
                     </div>
                 </div>
                 <!-- form elements i.e height -->
@@ -51,14 +63,14 @@
                     <div class="radioButton">
                         <div for="activityLevel" style="font-weight: bold;">Activity Level</div>
                         <div>
-                            <input type="radio" id="sedentary" name="activityLevel" value="sedentary" required>
-                            <label for="sedentary">Sedentary</label>
-                            <input type="radio" id="light" name="activityLevel" value="light" required>
-                            <label for="light">Lightly Active</label>
-                            <input type="radio" id="moderate" name="activityLevel" value="moderate" required>
-                            <label for="moderate">Moderately Active</label>
-                            <input type="radio" id="very" name="activityLevel" value="very" required>
-                            <label for="very">Very Active</label>
+                            <input type="radio" id="sedentary" name="activityLevel" value="Sedentary" required>
+                            <label for="Sedentary">Sedentary</label>
+                            <input type="radio" id="light" name="activityLevel" value="Light" required>
+                            <label for="Light">Lightly Active</label>
+                            <input type="radio" id="moderate" name="activityLevel" value="Moderate" required>
+                            <label for="Moderate">Moderately Active</label>
+                            <input type="radio" id="very" name="activityLevel" value="Very" required>
+                            <label for="Very">Very Active</label>
                         </div>
                     </div>
                 </div>
@@ -81,4 +93,9 @@
     </div>
 	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
+<footer>
+    <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
+    <p class="homeFooterTxt">Privacy Policy | Terms of Service</p>
+    <p class="homeFooterTxt">Contact Us: <a href="mailto:berkscott998@outlook.com">Email</a></p>
+</footer>
 </html>
