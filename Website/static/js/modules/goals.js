@@ -12,7 +12,18 @@ export function initGoals() {
     });
 
     const btn = document.getElementById('continueBtn');
+    const backBtn = document.getElementById('backBtn');
     if (btn) btn.addEventListener('click', handleSubmit);
+    if (backBtn) {
+        backBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (window.history.length > 1) {
+                window.history.back();
+                return;
+            }
+            window.location.href = 'userInfo.html';
+        });
+    }
 }
 
 function selectGoal(card) {
