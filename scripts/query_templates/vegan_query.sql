@@ -92,7 +92,7 @@ SELECT
 	AND (f.description NOT LIKE '%chocolate%' OR f.description LIKE '%dark%')
 	AND (f.description NOT LIKE '%creme%')
 	)
-	OR (f.food_category_id IN (11, 16, 39))
+	OR (f.food_category_id IN (11, 39))
 	OR (f.description LIKE '%plant%based%')
 	OR (f.description LIKE '%meatless%')
 	OR (f.description LIKE '%vegan%'))
