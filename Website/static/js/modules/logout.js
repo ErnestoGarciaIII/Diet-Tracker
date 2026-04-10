@@ -18,7 +18,7 @@ export function initLogout() {
 
         if (secondsRemaining <= 0) {
             clearInterval(intervalId);
-            window.location.href = '/';
+            window.location.href = 'home.html';
         }
     }, 1000);
 }

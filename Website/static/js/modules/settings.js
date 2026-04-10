@@ -18,7 +18,8 @@ async function loadUser() {
         // Populate display elements
         getElement('userNameDisplay').textContent = currentUser.name || '';
         getElement('userGenderDisplay').textContent = currentUser.sex || '';
-        getElement('userAgeDisplay').textContent = currentUser.age || '';
+        getElement('userDobDisplay').textContent = currentUser.date_of_birth || '';
+        getElement('userAgeDisplay').textContent = calculateAge(currentUser.date_of_birth);
         getElement('userWeightDisplay').textContent = currentUser.weight_lbs || '';
         getElement('userHeightDisplay').textContent = currentUser.height_in || '';
         getElement('userEmailDisplay').textContent = currentUser.email || '';
@@ -34,6 +35,21 @@ async function loadUser() {
     } catch (err) {
         showError("Failed to load user.");
     }
+}
+
+function calculateAge(dateOfBirth) {
+    if (!dateOfBirth) return '';
+
+    const today = new Date();
+    const birth = new Date(dateOfBirth);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDelta = today.getMonth() - birth.getMonth();
+
+    if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+
+    return age;
 }
 
 function setupAvatarControls() {
@@ -117,7 +133,7 @@ window.enterEditMode = function(displayId, fieldName) {
 
     const currentValue = displayElement.textContent;
     const input = document.createElement('input');
-    input.type = 'text';
+    input.type = fieldName === 'date_of_birth' ? 'date' : 'text';
     input.value = currentValue;
     input.className = 'editInput';
 
@@ -167,11 +183,23 @@ window.enterEditMode = function(displayId, fieldName) {
         }
         
         currentUser[apiField] = parsedValue;
-
+	
+        if (apiField === 'date_of_birth') {
+            currentUser.age = calculateAge(newValue);
+        }
+	
         try {
             await updateUser(currentUser);
             displayElement.textContent = newValue;
             revertToDisplay();
+
+	    if (apiField === 'date_of_birth') {
+                const ageDisplay = getElement('userAgeDisplay');
+                if (ageDisplay) {
+                    ageDisplay.textContent = currentUser.age;
+                }
+            }
+
             showSuccess("Updated successfully!");
         } catch (err) {
             showError("Failed to update: " + err.message);
