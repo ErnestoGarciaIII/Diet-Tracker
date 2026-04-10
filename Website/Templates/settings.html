@@ -77,7 +77,12 @@
                     <span class="value" id="userGenderDisplay"></span>
                     <span class="arrow">></span>
                 </div>
-                <div class="infoItem" onclick="enterEditMode('userAgeDisplay', 'age')">
+                <div class="infoItem" onclick="enterEditMode('userDobDisplay', 'date_of_birth')">
+                    <span class="label">Date of Birth:</span>
+                    <span class="value" id="userDobDisplay"></span>
+                    <span class="arrow">></span>
+                </div>
+                <div class="infoItem">
                     <span class="label">Age:</span>
                     <span class="value" id="userAgeDisplay"></span>
                     <span class="arrow">></span>
@@ -123,15 +128,15 @@
             <h2 class="resHeader">Changes to restrictions (if any)?</h2>
             <p class="formSubtitle">Tell Us what to exclude.</p>
             <div class="tagsGrid">
-                <div class="tag" data-value="Vegan" onclick="toggleTag(this, 'vegan')">Vegan</div>
-                <div class="tag" data-value="Vegetarian" onclick="toggleTag(this, 'vegetarian')">Vegetarian</div>
-                <div class="tag" data-value="Dairy-Free" onclick="toggleTag(this, 'dairy-free')">Dairy-Free</div>
-                <div class="tag" data-value="Keto" onclick="toggleTag(this, 'keto')">Keto</div>
-                <div class="tag" data-value="No Nuts" onclick="toggleTag(this, 'nut-allergy')">No Nuts</div>
-                <div class="tag" data-value="Pescatarian" onclick="toggleTag(this, 'pescatarian')">Pescatarian</div>
-                <div class="tag" data-value="Soy-Free" onclick="toggleTag(this, 'Soy-Free')">Soy-Free</div>
-                <div class="tag" data-value="Egg-Free" onclick="toggleTag(this, 'Egg-Free')">Egg-Free</div>
-                <div class="tag" data-value="None" onclick="toggleTag(this, 'None')">None</div>
+                <div class="tag" onclick="toggleTag(this, 'vegan')">Vegan</div>
+                <div class="tag" onclick="toggleTag(this, 'vegetarian')">Vegetarian</div>
+                <div class="tag" onclick="toggleTag(this, 'gluten-free')">Gluten-Free</div>
+                <div class="tag" onclick="toggleTag(this, 'dairy-free')">Dairy-Free</div>
+                <div class="tag" onclick="toggleTag(this, 'keto')">Keto</div>
+                <div class="tag" onclick="toggleTag(this, 'nut-allergy')">No Nuts</div>
+                <div class="tag" onclick="toggleTag(this, 'pescatarian')">Pescatarian</div>
+                <div class="tag" onclick="toggleTag(this, 'Lactose Intolerant')">Lactose Intolerant</div>
+                <div class="tag" onclick="toggleTag(this, 'None')">None</div>
             </div>
             <button class="RUGRbtn pagesBtn-primary full-width mt-20" onclick="finishOnboarding()">Save & Recalculate Plan</button>
             <button class="RUGRbtn pagesBtn-secondary full-width mt-10" onclick="history.back()">Back</button>

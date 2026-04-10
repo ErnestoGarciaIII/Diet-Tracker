@@ -1,12 +1,9 @@
 import pandas as pd
 import sqlite3
 import sys
-import os 
-
 from pathlib import Path
 from food_search import connectDB
 from updateTables import buildQuery, runQuery
-
 help_flags = {"h", "-h", "--h", "help", "-help", "--help"}
 
 def checkArgs():
@@ -35,7 +32,7 @@ def checkArgs():
                 """)
             sys.exit(1)
 
-
+ 
 def build_food_table(conn):
     files = ['food', 'nutrient', 'food_nutrient', 'food_portion', 'food_category']
     try:
@@ -58,8 +55,6 @@ def build_users_table(conn, cursor):
         name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
-        reset_token TEXT,
-        reset_token_expiry TEXT,
         date_of_birth TEXT,
         age INTEGER,
         sex TEXT,
@@ -120,93 +115,15 @@ def build_food_history_table(conn, cursor):
     CREATE TABLE FoodHistory (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         userId INTEGER NOT NULL,
-        fdc_id INTEGER NOT NULL,
         foodName TEXT NOT NULL,
-        portion REAL NOT NULL,
+        calories INTEGER NOT NULL,
+        portion REAL DEFAULT 1,
         dateLogged DATE NOT NULL,
         timeLogged TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
     )
     """)
     print("Finished building FoodHistory table\n")
-
-def build_top_foods_table(conn, cursor):
-    cursor.execute("DROP TABLE IF EXISTS TopFoods")
-    print(f"Attempting to build TopFoods table...")
-    cursor.execute("""
-    CREATE TABLE TopFoods (
-        fdc_id INTEGER,
-        description TEXT,
-        nutrient_id INTEGER,
-        amount_per_gram REAL,
-        food_category_id INTEGER,
-        PRIMARY KEY (fdc_id, nutrient_id)
-    );
-    """)
-    print(f"Finished building TopFoods table")
-
-def build_food_restrictions_table(conn, cursor):
-    cursor.execute("DROP TABLE IF EXISTS FoodRestrictions")
-    cursor.execute("""
-    CREATE TABLE FoodRestrictions (
-        fdc_id INTEGER,
-        restrictionId INTEGER,
-        PRIMARY KEY (fdc_id, restrictionId),
-        FOREIGN KEY (fdc_id) REFERENCES food(fdc_id),
-        FOREIGN KEY (restrictionId) REFERENCES Restrictions(restrictionId) ON DELETE CASCADE
-    )
-    """)
-    cursor.execute("CREATE INDEX idx_res_lookup ON FoodRestrictions(restrictionId)")
-    print("Finished building FoodRestrictions junction table\n")
-
-def populate_food_tags(conn, cursor):
-    print("Labeling foods based on query templates...")
-    
-    tag_map = {
-        1: "vegetarian_query.sql",
-        2: "vegan_query.sql",
-        3: "nut_allergy_query.sql",
-        4: "egg_allergy_query.sql",
-        5: "shellfish_allergy_query.sql",
-        6: "soy_allergy_query.sql",
-        7: "dairy_allergy_query.sql",
-        8: "pescatarian_query.sql",
-        9: "keto_query.sql"
-    }
-
-    query_dir = "../scripts/query_templates" 
-
-    for res_id, file_name in tag_map.items():
-        path = os.path.join(query_dir, file_name)
-        if os.path.exists(path):
-            with open(path, 'r') as f:
-                filter_sql = f.read().replace("{table_name}", "food")
-                
-            cursor.execute(f"""
-                INSERT OR IGNORE INTO FoodRestrictions (fdc_id, restrictionId)
-                SELECT fdc_id, {res_id} FROM ({filter_sql})
-            """)
-    print("Food labeling complete.\n")
-
-def populate_top_foods(conn, cursor):
-    sql_path = os.path.join("../scripts/query_templates", "insert_top_foods.sql")
-    
-    if not os.path.exists(sql_path):
-        print(f"Error: Could not find {sql_path}. Skipping TopFoods insertion.")
-        return
-
-    print(f"Reading {sql_path} and inserting data into TopFoods...")
-    
-    try:
-        with open(sql_path, 'r') as file:
-            insert_query = file.read()
-        
-        cursor.execute(insert_query)
-        conn.commit()
-        print("Finished populating TopFoods table.\n")
-        
-    except sqlite3.Error as e:
-        print(f"Error inserting into TopFoods: {e}")
 
 def main():
 
@@ -224,12 +141,6 @@ def main():
 
     categoryQuery, foodQuery, restrictionsQuery = buildQuery()
     runQuery(categoryQuery, foodQuery, restrictionsQuery, conn, cursor)
-    
-    build_food_restrictions_table(conn, cursor)
-    populate_food_tags(conn, cursor)
-    
-    build_top_foods_table(conn, cursor)
-    populate_top_foods(conn, cursor)
 
     conn.commit()
     conn.close()

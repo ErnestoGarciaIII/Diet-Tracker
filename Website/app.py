@@ -1,8 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory, render_template
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timedelta, timezone
 import sqlite3
-import secrets
 import sys
 import os
 from uuid import uuid4
@@ -15,14 +13,13 @@ sys.path.append(scripts_path)
 
 from PlatePilotUser import ppuser
 from food_search import connectDB, apply_filter, active_filters, search_engine
-from the_holy_grail import recommend_foods, NUTRIENT_ID_TO_NAME
-from send_email import send_reset_email
 
 app = Flask(__name__)
 
 active_user_conns = {}
 
-def migrate_db():
+# Run DB migration to add date_of_birth if it doesn't exist yet.
+def _migrate_db():
     conn = None
     try:
         conn = connectDB()
@@ -34,71 +31,13 @@ def migrate_db():
             conn.commit()
     except Exception as e:
         print(f"[MIGRATION ERROR]: {e}")
-    finally: 
+    finally:
         if conn:
             conn.close()
 
-migrate_db()
-
-def calculate_daily_progress(user_id, conn):
-    cursor = conn.cursor()
-    from datetime import datetime
-    today = datetime.now().strftime('%a %b %d %Y')
-
-    cursor.execute("""
-        SELECT fdc_id, portion
-        FROM FoodHistory
-        WHERE userId = ? AND dateLogged = ?
-    """, (user_id, today))
-
-    history_rows = cursor.fetchall()
-
-    if not history_rows:
-        return {}
-
-    fdc_ids = [row[0] for row in history_rows]
-    portions = {row[0]: row[1] for row in history_rows}
-
-    placeholders = ",".join("?" * len(fdc_ids))
-    cursor.execute(f"""
-        SELECT fn.fdc_id, fn.nutrient_id, fn.amount
-        FROM food_nutrient fn
-        WHERE fn.fdc_id IN ({placeholders})
-        AND fn.nutrient_id IN (
-            1003,1004,1005,1079,1087,1089,1090,1091,1092,1093,
-            1095,1098,1101,1103,1106,1109,1114,1162,1165,1175,
-            1176,1177,1178,1180,1183,1185,1170
-        )
-        ORDER BY fn.fdc_id
-    """, fdc_ids)
-
-    nutrient_rows = cursor.fetchall()
-
-    progress = {name: 0.0 for name in NUTRIENT_ID_TO_NAME.values()}
-
-    for fdc_id, nutrient_id, amount_per_100g in nutrient_rows:
-        nutrient_name = NUTRIENT_ID_TO_NAME.get(nutrient_id)
-        if not nutrient_name:
-            continue
-        portion_multiplier = portions.get(fdc_id, 1.0)
-        progress[nutrient_name] += (amount_per_100g / 100) * portion_multiplier
-
-    return progress
-
+_migrate_db()
 
 # Helpers
-def generate_reset_token():
-    return secrets.token_urlsafe(32)
-
-def get_expiry(minutes=30):
-    return (getCurrentTimeUTC() + timedelta(minutes=minutes)).isoformat()
-
-def getCurrentTimeUTC():
-    return datetime.now(timezone.utc)
-
-def hash_password(password):
-    return generate_password_hash(password)
-
 def convert_lbs_to_kg(weight_lbs):
     weightKg = round(weight_lbs * 0.453592, 2)
     return weightKg
@@ -157,7 +96,7 @@ def query_db_for_user_info(user_id, returnJSON=True):
         return jsonify({'error': str(e)}), 500
 
     finally:
-       if conn: conn.close()
+        if conn: conn.close()
 
 
 #Deliver HTML
@@ -189,7 +128,7 @@ def register_user():
             print("[ERROR]: Missing fields in POST request!")
             return jsonify({'error': 'Missing required fields'}), 400
 
-        hashedPassword = hash_password(password)
+        hashed_password = generate_password_hash(password)
 
         conn = connectDB()
         cur = conn.cursor()
@@ -197,7 +136,7 @@ def register_user():
         cur.execute("""
         INSERT INTO users (name, email, password)
         VALUES (?, ?, ?)
-        """, (name, email, hashedPassword))
+        """, (name, email, hashed_password))
 
         conn.commit()
         user_id = cur.lastrowid
@@ -218,12 +157,6 @@ def register_user():
     finally:
         if conn:
             conn.close()
-
-
-@app.route('/reset-password', methods=['GET'])
-def reset_password():
-    token = request.args.get('token')
-    return render_template('resetPassword.html', token=token)
 
 #update user info
 @app.route('/api/update_user', methods=['POST'])
@@ -346,92 +279,6 @@ def upload_avatar():
     except Exception as e:
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/forgot-password', methods=['POST'])
-def forgot_password():
-    conn = None
-    try:
-        data = request.json
-        email = data.get('email')
-
-        conn = connectDB()
-        cur = conn.cursor()
-        cur.execute("SELECT userId FROM users WHERE email = ?", (email,))
-        userId = cur.fetchone()
-
-        # Always return same message (security best practice)
-        if not userId:
-            return jsonify({'message': 'If an account exists, a reset link has been sent'}), 200
-
-        resetToken = generate_reset_token()
-        expiry = get_expiry(30)
-
-        cur.execute("""
-            UPDATE users
-            SET reset_token = ?, reset_token_expiry = ?
-            WHERE email = ?
-        """, (resetToken, expiry, email))
-
-        conn.commit()
-
-        resetLink = f"http://localhost:5000/reset-password?token={resetToken}"
-        send_reset_email(email, resetLink)
-        print("RESET LINK:", resetLink)
-
-        return jsonify({'message': 'If an account exists, a reset link has been sent'}), 200
-
-    except Exception as e:
-        print("[ERROR]: ", e)
-        return jsonify({'error': str(e)}), 500
-
-    finally:
-        if conn: conn.close()
-
-@app.route('/api/reset-password', methods=['POST'])
-def reset_password_api():
-    conn = None
-    try:
-        data = request.json
-        resetToken = data.get('token')
-        newPassword = data.get('newPassword')
-
-        conn = connectDB()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT userId, reset_token_expiry FROM Users
-            WHERE reset_token = ?
-        """, (resetToken,))
-
-        user = cursor.fetchone()
-
-        if not user:
-            return jsonify({'message': 'Invalid token'}), 400
-
-        user_id, expiry = user
-
-        if not expiry:
-            return jsonify({'message': 'Token expired'}), 400
-
-        hashedPassword = hash_password(newPassword)
-
-        cursor.execute("""
-            UPDATE Users
-            SET password = ?, reset_token = NULL, reset_token_expiry = NULL
-            WHERE userId = ?
-        """, (hashedPassword, user_id))
-
-        conn.commit()
-
-        return jsonify({'message': 'Password reset successful'}), 200
-
-    except Exception as e:
-        print("[ERROR]: ", e)
-        return jsonify({'error': str(e)}), 500
-
-    finally:
-        if conn: conn.close()
 
 #update user restrictions
 @app.route("/set-restrictions", methods=["POST"])
@@ -580,45 +427,9 @@ NUTRIENT_IDS = [
     1099, 1100, 1238, 1090, 1101, 1102, 1091, 1092, 1103, 1093, 1095
 ]
 
-@app.route('/api/apply-filter', methods=['POST'])
+@app.route('/api/apply-filter', methods=['GET'])
 def apply_that_filter():
-    data = request.get_json()
-    try:
-        user_id = data.get('user_id')
-        restriction = data.get('restriction')
-        
-        if not restriction:
-            return jsonify({'error': 'Restriction is required to set a filter'}), 400
-
-        if not user_id:
-            return jsonify({'error': 'User ID required to maintain session'}), 400
-
-        if user_id not in active_user_conns:
-            active_user_conns[user_id] = connectDB()
-
-        conn = active_user_conns[user_id]
-        cur = conn.cursor()
-
-        cur.execute("""
-            SELECT restrictionId
-            FROM Restrictions
-            WHERE name = ?
-        """, (restriction,))
-        
-        restrictionId = cur.fetchone()
-
-        print(f"Applying filter: ${restriction} RestrictionId: ${restrictionId[0]}")
-
-        apply_filter(restrictionId[0], conn)
-
-        return jsonify({
-            'message': 'Filter set successfully',
-            'filterId': restrictionId,
-            'result': 'success'
-        }), 201
-    except Exception as e:
-        print("[ERROR]: ", e)
-        return jsonify({'error': str(e)}), 400
+    return 0;
 
 
 @app.route('/api/search-engine', methods=['GET'])
@@ -626,7 +437,7 @@ def execute_search_engine():
     user_id = request.args.get('user_id')
     food_name = request.args.get('name')
     filters_str = request.args.get('filters', '')
-
+    
     if not user_id:
         return jsonify({'error': 'User ID required to maintain session'}), 400
 
@@ -657,6 +468,7 @@ def get_nutrients():
         conn = connectDB()
         cur = conn.cursor()
         
+        # Get calories
         cur.execute("""
             SELECT fn.amount, n.name
             FROM food_nutrient fn
@@ -665,8 +477,10 @@ def get_nutrients():
         """, (fdc_id,))
         
         result = cur.fetchone()
+        calories = result[0] if result else None
         
         return jsonify({
+            'calories': calories,
             'fdc_id': fdc_id
         }), 200
         
@@ -684,11 +498,12 @@ def log_food_entry():
     data = request.get_json()
     user_id = data.get('user_id')
     food_name = data.get('name')
-    fdc_id = data.get('fdc_id')
+    calories = data.get('kcal')
     portion = data.get('portion', 1)
 
-    if not user_id or not food_name or not fdc_id: 
-        return jsonify({'error': 'User ID, Food Name, or FDC_ID was not passed'}), 400
+
+    if not user_id or not food_name or calories is None:
+        return jsonify({'error': 'user_id, name, and kcal are required'}), 400
 
     conn = None
     try:
@@ -696,20 +511,30 @@ def log_food_entry():
         cur = conn.cursor()
 
         # Get today's date in the same format as frontend (toDateString)
+        from datetime import datetime
         today = datetime.now().strftime('%a %b %d %Y')  # Format like "Wed Apr 02 2026"
 
         # Insert into FoodHistory
         cur.execute("""
-            INSERT INTO FoodHistory (userId, fdc_id, foodName, dateLogged, portion)
+            INSERT INTO FoodHistory (userId, foodName, calories, dateLogged, portion)
             VALUES (?, ?, ?, ?, ?)
-        """, (user_id, fdc_id, food_name, today, portion))
+        """, (user_id, food_name, calories, today, portion))
 
         conn.commit()
 
+        # Get total calories for today
+        cur.execute("""
+            SELECT SUM(calories) as total
+            FROM FoodHistory
+            WHERE userId = ? AND dateLogged = ?
+        """, (user_id, today))
+
+        result = cur.fetchone()
+        total_calories = result[0] if result[0] else 0
 
         return jsonify({
             'message': 'Food logged successfully',
-            'result': 'success'
+            'totalCalories': total_calories
         }), 201
 
     except Exception as e:
@@ -728,7 +553,7 @@ def get_food_history(user_id):
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT id, dateLogged, foodName, portion
+            SELECT id, dateLogged, foodName, calories, portion
             FROM FoodHistory
             WHERE userId = ?
             ORDER BY dateLogged DESC, timeLogged DESC
@@ -742,6 +567,7 @@ def get_food_history(user_id):
                 'id': row[0],
                 'date': row[1],
                 'name': row[2],
+                'kcal': row[3],
                 'portion': row[4] if row[4] is not None else 1  # Default portion to 1 if null
             })
 
@@ -759,11 +585,21 @@ def get_food_history(user_id):
 def get_progress(user_id):
     conn = None
     try:
+        from datetime import datetime
         conn = connectDB()
         cur = conn.cursor()
         today = datetime.now().strftime('%a %b %d %Y')
 
+        cur.execute("""
+            SELECT SUM(calories) as total
+            FROM FoodHistory
+            WHERE userId = ? AND dateLogged = ?
+        """, (user_id, today))
+
         result = cur.fetchone()
+        total_calories = result[0] if result and result[0] else 0
+
+        return jsonify({'calories': total_calories}), 200
 
     except Exception as e:
         print("[ERROR]: ", e)
@@ -777,11 +613,12 @@ def get_progress(user_id):
 def update_food_entry(entry_id):
     data = request.get_json()
     food_name = data.get('name')
+    calories = data.get('kcal')
     user_id = data.get('user_id')
     portion = data.get('portion', 1)
 
-    if not food_name or not user_id:
-        return jsonify({'error': 'name and user_id are required'}), 400
+    if not food_name or calories is None or not user_id:
+        return jsonify({'error': 'name, kcal, and user_id are required'}), 400
 
     conn = None
     try:
@@ -791,26 +628,36 @@ def update_food_entry(entry_id):
         # Update the food entry
         cur.execute("""
             UPDATE FoodHistory
-            SET foodName = ?, portion = ?
+            SET foodName = ?, calories = ?, portion = ?
             WHERE id = ? AND userId = ?
-        """, (food_name, portion, entry_id, user_id))
+        """, (food_name, calories, portion, entry_id, user_id))
 
         if cur.rowcount == 0:
             return jsonify({'error': 'Food entry not found or not authorized'}), 404
 
         conn.commit()
 
+        # Get updated total calories for the day
         cur.execute("""
             SELECT dateLogged FROM FoodHistory WHERE id = ?
         """, (entry_id,))
         
         date_row = cur.fetchone()
         if date_row:
+            cur.execute("""
+                SELECT SUM(calories) as total
+                FROM FoodHistory
+                WHERE userId = ? AND dateLogged = ?
+            """, (user_id, date_row[0]))
             
             result = cur.fetchone()
+            total_calories = result[0] if result[0] else 0
+        else:
+            total_calories = 0
 
         return jsonify({
             'message': 'Food entry updated successfully',
+            'totalCalories': total_calories
         }), 200
 
     except Exception as e:
@@ -856,10 +703,19 @@ def delete_food_entry(entry_id):
 
         conn.commit()
 
+        # Get updated total calories for the day
+        cur.execute("""
+            SELECT SUM(calories) as total
+            FROM FoodHistory
+            WHERE userId = ? AND dateLogged = ?
+        """, (user_id, date_logged))
 
         result = cur.fetchone()
+        total_calories = result[0] if result[0] else 0
+
         return jsonify({
             'message': 'Food entry deleted successfully',
+            'totalCalories': total_calories
         }), 200
 
     except Exception as e:
@@ -897,46 +753,8 @@ def clear_food_history(user_id):
     finally:
         if conn: conn.close()
 
-@app.route('/api/recommendation', methods=['POST'])
-def recommendation_algorithm():
-    data = request.get_json()
-    user_id = data.get('user_id')
 
-    conn = None
-    try:
-        conn = connectDB()
-
-        (name, email, age, sex, height_in, weight_lbs,
-         goal, activity_level, profile_picture, date_of_birth, restrictions) = query_db_for_user_info(
-            user_id=user_id, returnJSON=False
-        )
-
-        user = ppuser(
-            w=convert_lbs_to_kg(weight_lbs),
-            h=convert_inches_to_cm(height_in),
-            a=int(age),
-            s=str(sex),
-            al=int(activity_level),
-            g=int(goal)
-        )
-        user.setDRI()
-
-        consumed = calculate_daily_progress(user_id, conn)
-
-        all_nutrients = {**user.macros, **user.micros}
-        consumed = {k: consumed.get(k, 0.0) for k in all_nutrients}
-
-        results = recommend_foods(user, conn, consumed)
-        return jsonify({'recommendations': results}), 200
-
-    except Exception as e:
-        print("[ERROR]: ", e)
-        return jsonify({'error': str(e)}), 500
-
-    finally:
-        if conn: conn.close()
-
-
+#Run server
 if __name__ == '__main__':
     print("PlatePilot server running at http://localhost:5000")
     app.run(debug=True, port=5000)
