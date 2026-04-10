@@ -53,9 +53,18 @@ async function handleSubmit(e, selectedProfilePicture) {
         return showError('Waiting for profile picture upload. Please try again in a moment.');
     }
 
+    const dob = getInputValue('userDobDisplay');
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+
     const user = {
         user_id,
-        age: parseInt(getInputValue('userAgeDisplay')),
+        age,
         weight_lbs: parseFloat(getInputValue('userWeightDisplay')),
         height_in: parseFloat(getInputValue('userHeightDisplay')),
         sex: getCheckedValue('sex'),
@@ -64,7 +73,7 @@ async function handleSubmit(e, selectedProfilePicture) {
         profile_picture: selectedProfilePicture
     };
 
-    if (!user.age || !user.weight_lbs || !user.height_in || !user.sex || !user.activity_level) {
+    if (!dob || isNaN(age) || age <= 0 || !user.weight_lbs || !user.height_in || !user.sex || !user.activity_level) {
         return showError("Please fill in all fields.");
     }
 
