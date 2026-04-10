@@ -83,6 +83,9 @@ async function handleLogCart() {
         await Promise.all(logPromises);
 
         foodCart = [];
+        document.querySelectorAll('.resultItem.selected').forEach(item => {
+            item.classList.remove('selected');
+        });
         displayCart();
         updateProgress();
         showSuccess('Foods logged successfully.');
@@ -137,8 +140,15 @@ function displaySearchResults(results) {
         
         const resultItem = document.createElement('div');
         resultItem.className = 'resultItem';
+        resultItem.dataset.fdcId = String(fdcId);
+        if (foodCart.some(item => String(item.fdc_id) === String(fdcId))) {
+            resultItem.classList.add('selected');
+        }
         resultItem.innerHTML = `
-            <div class="resultName">${productName}</div>
+            <div class="resultTopRow">
+                <div class="resultName">${productName}</div>
+                <span class="selectedBadge">Selected</span>
+            </div>
             <div class="resultCategory">${categoryName}</div>
         `;
         
@@ -176,6 +186,12 @@ function displayRecommendations(recResults) {
 }
 
 async function selectFood(foodName, fdcId) {
+    const existingIndex = foodCart.findIndex(item => String(item.fdc_id) === String(fdcId));
+    if (existingIndex !== -1) {
+        removeFromCart(existingIndex);
+        return;
+    }
+
     try {
         const data = await getNutrients(fdcId);
         const calories = data.calories ? Math.round(data.calories) : 0;
@@ -187,6 +203,7 @@ async function selectFood(foodName, fdcId) {
             unit: 'Serving',
             fdc_id: fdcId
         });
+        setSearchResultSelectedState(fdcId, true);
         displayCart();
     } catch (err) {
         // Add to cart with 0 calories
@@ -197,8 +214,14 @@ async function selectFood(foodName, fdcId) {
             unit: 'Serving',
             fdc_id: fdcId
         });
+        setSearchResultSelectedState(fdcId, true);
         displayCart();
     }
+}
+
+function setSearchResultSelectedState(fdcId, isSelected) {
+    const matches = document.querySelectorAll(`.resultItem[data-fdc-id="${String(fdcId)}"]`);
+    matches.forEach(item => item.classList.toggle('selected', isSelected));
 }
 
 function removeFromCart(index) {
@@ -206,7 +229,11 @@ function removeFromCart(index) {
         return;
     }
 
+    const removed = foodCart[index];
     foodCart.splice(index, 1);
+    if (removed && removed.fdc_id !== undefined) {
+        setSearchResultSelectedState(removed.fdc_id, false);
+    }
     displayCart();
 }
 
