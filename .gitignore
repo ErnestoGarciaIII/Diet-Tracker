@@ -1,8 +1,8 @@
 db/
-Website\static\js\test.js
-Website\static\js\secondMain(R).js
-Website\static\images\user_avatars\
+Website/static/js/test.js
+Website/static/js/secondMain(R).js
+Website/static/images/user_avatars/
 .vs/
-scripts\__pycache__\
-__pycache__\
+scripts/__pycache__/
+__pycache__/
 
