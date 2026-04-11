@@ -3,6 +3,7 @@ import { getUserId, getInputValue, getCheckedValue, showError, showSuccess } fro
 
 export function initUserInfo() {
     const btn = document.getElementById('continueBtn');
+    const backBtn = document.getElementById('backBtn');
     const uploadTrigger = document.getElementById('uploadTrigger');
     const avatarInput = document.getElementById('userAvatarInput');
     const preview = document.getElementById('registrationPreview');
@@ -37,6 +38,19 @@ export function initUserInfo() {
     }
 
     btn.addEventListener('click', (e) => handleSubmit(e, selectedProfilePicture));
+
+    if (backBtn) {
+        backBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (window.history.length > 1) {
+                window.history.back();
+                return;
+            }
+            window.location.href = 'register.html';
+        });
+    }
+
+    window.toggleSexDisclaimer = toggleSexDisclaimer;
 }
 
 async function handleSubmit(e, selectedProfilePicture) {
@@ -53,9 +67,19 @@ async function handleSubmit(e, selectedProfilePicture) {
         return showError('Waiting for profile picture upload. Please try again in a moment.');
     }
 
+    const dob = getInputValue('userDobDisplay');
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+
     const user = {
         user_id,
-        age: parseInt(getInputValue('userAgeDisplay')),
+        age,
+        date_of_birth: dob,
         weight_lbs: parseFloat(getInputValue('userWeightDisplay')),
         height_in: parseFloat(getInputValue('userHeightDisplay')),
         sex: getCheckedValue('sex'),
@@ -64,7 +88,7 @@ async function handleSubmit(e, selectedProfilePicture) {
         profile_picture: selectedProfilePicture
     };
 
-    if (!user.age || !user.weight_lbs || !user.height_in || !user.sex || !user.activity_level) {
+    if (!dob || isNaN(age) || age <= 0 || !user.weight_lbs || !user.height_in || !user.sex || !user.activity_level) {
         return showError("Please fill in all fields.");
     }
 
@@ -77,5 +101,15 @@ async function handleSubmit(e, selectedProfilePicture) {
 
     } catch (err) {
         showError(err.message);
+    }
+}
+
+function toggleSexDisclaimer(event) {
+    event.preventDefault();
+    const disclaimer = document.getElementById('sexDisclaimer');
+    if (disclaimer.style.display === 'none') {
+        disclaimer.style.display = 'block';
+    } else {
+        disclaimer.style.display = 'none';
     }
 }

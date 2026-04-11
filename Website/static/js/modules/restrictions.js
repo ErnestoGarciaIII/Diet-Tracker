@@ -9,7 +9,18 @@ export function initRestrictions() {
     });
 
     const finishBtn = getElement('finishBtn');
+    const backBtn = getElement('backBtn');
     if (finishBtn) finishBtn.addEventListener('click', saveRestrictions);
+    if (backBtn) {
+        backBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (window.history.length > 1) {
+                window.history.back();
+                return;
+            }
+            window.location.href = 'goals.html';
+        });
+    }
 }
 
 function toggleTag(tag) {
