@@ -18,7 +18,6 @@ export function initSettings() {
 async function loadUser() {
     try {
         currentUser = await getUserInfo(getUserId());
-        currentUser.user_id = getUserId();
         currentUser.restrictions.forEach(loadUserRestrictions)
         // Populate display elements
         getElement('userNameDisplay').textContent = currentUser.name || '';
