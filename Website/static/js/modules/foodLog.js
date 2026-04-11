@@ -1,6 +1,6 @@
 import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients } from '../api.js';
 import { getUserId, getElement, getInputValue, showError, showSuccess } from '../utils.js';
-import { updateProgress } from '../state.js';
+import { getUser, updateProgress } from '../state.js';
 
 let foodCart = []; 
 const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
@@ -8,6 +8,7 @@ const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
 export function initFoodLog() {
     console.log("Hello there!");
     loadProfilePicture();
+    loadUserRestrictions();
 
     const btn = getElement('logButton');
     if (btn) {
@@ -63,35 +64,87 @@ async function loadProfilePicture() {
     }
 }
 
-async function handleLogCart() {
-    if (foodCart.length === 0) {
-        showError("No foods selected to log.");
-        return;
+async function loadUserRestrictions() {
+    try {
+        const currentUser = await getUserInfo(getUserId());
+        currentUser.restrictions.forEach(setUserRestrictions);
+        console.message("[INFO] User predefined filters successfully applied for food search.");
+    } catch (err) {
+        console.warn("Failed to load user filters: ", err);
+    }
+}
+
+async function setUserRestrictions(restriction) {
+    try {
+        await applyFilter(restriction);
+    } catch (err) {
+        console.error("[ERROR] Could not load user restrictions");
+        return showError("Could not load user restrictions.");
     }
 
-    try {
-        let totalCalories = 0;
-        for (const food of foodCart) {
-            const portion = Number(food.portion) > 0 ? Number(food.portion) : 1;
-            const kcal = Math.round(food.calories * portion);
-            const servingLabel = `${portion} ${food.unit || 'Serving'}${portion === 1 ? '' : 's'}`;
-            await logFood(getUserId(), {
-                name: `${food.name} (${servingLabel})`,
-                kcal: kcal,
-                portion: portion
-            });
-            totalCalories += kcal;
-        }
+    switch (restriction) {
+        case "None":
+            console.message("[INFO] User selected 'None' as their restriction.");
+            break;
+        case "Vegetarian":
+            getElement('VeganFilBtn').classList.toggle('active');
+            break;
+        case "Vegan":
+            getElement('vegFilBtn').classList.toggle('active');
+            break;
+        case "Nut-Allergy":
+            getElement('nutsFilBtn').classList.toggle('active');
+            break;
+        case "Egg-Allergy":
+            getElement('eggFilBtn').classList.toggle('active');
+            break;
+        case "Shellfish-Allergy":
+            getElement('shellFilBtn').classList.toggle('active');
+            break;
+        case "Soy-Allergy":
+            getElement('soyFilBtn').classList.toggle('active');
+            break;
+        case "Dairy-Free":
+            getElement('dairyFilBtn').classList.toggle('active');
+            break;
+        case "Pescatarian":
+            getElement('pescFilBtn').classList.toggle('active');
+            break;
+        case "Keto":
+            getElement('ketoFilBtn').classList.toggle('active');
+            break;
 
-        updateProgress({ calories: totalCalories });
+        default:
+            return showError("Failed to load user restrictions.")
+    }
+}
 
-        // Clears the cart
+async function handleLogCart() {
+	const userId = getUserId();
+    	if (foodCart.length === 0) {
+        	showError("No foods selected to log.");
+        	return;
+    	}
+
+    	try {
+        	const logPromises = foodCart.map(item => {
+            		return logFood({
+                		user_id: userId,
+                		fdc_id: item.fdc_id,
+                		name: item.name,
+                		portion: item.portion
+            		});
+        	});
+
+        await Promise.all(logPromises);
+
         foodCart = [];
         displayCart();
+        updateProgress();
         showSuccess('Foods logged successfully.');
 
-
     } catch (err) {
+        console.error("Logging error:", err);
         showError(err.message);
     }
 }
@@ -188,7 +241,7 @@ async function selectFood(foodName, fdcId) {
             calories: calories,
             portion: 1,
             unit: 'Serving',
-            fdcId: fdcId
+            fdc_id: fdcId
         });
         displayCart();
     } catch (err) {
@@ -198,7 +251,7 @@ async function selectFood(foodName, fdcId) {
             calories: 0,
             portion: 1,
             unit: 'Serving',
-            fdcId: fdcId
+            fdc_id: fdcId
         });
         displayCart();
     }
@@ -228,17 +281,14 @@ function displayCart() {
         const cartItem = document.createElement('div');
         cartItem.className = 'cartItem';
         const portionValue = Number(food.portion) > 0 ? Number(food.portion) : 1;
-        const kcalTotal = Math.round((food.calories || 0) * portionValue);
 
         const unitOptions = SERVING_UNITS.map((unit) => {
             const selected = (food.unit || 'Serving') === unit ? 'selected' : '';
             return `<option value="${unit}" ${selected}>${unit}</option>`;
-        }).join('');
-
+	}).join('');
         cartItem.innerHTML = `
             <div class="cartItemContent">
                 <span class="cartItemName">${food.name}</span>
-                <span class="cartItemCalories">${kcalTotal} kcal</span>
                 <div class="servingControls">
                     <label class="servingLabel" for="portion-${index}">Serving size:</label>
                     <input

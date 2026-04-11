@@ -2,7 +2,7 @@ SELECT
         f.fdc_id,
         f.description,
         f.food_category_id
-    FROM food f
+    FROM {table_name} f
     WHERE (f.food_category_id NOT IN (3, 7, 18, 21, 22, 25, 31, 38)
 		AND (f.description NOT LIKE '%egg%' OR f.description LIKE '%veggie%' OR f.description LIKE '%substitute%' OR f.food_category_id IN (11, 36))
 		AND f.description NOT LIKE '%mayonnaise%'

@@ -4,6 +4,8 @@ import sys
 import time
 import numpy
 
+from food_search import connectDB
+
 def printUsage():
     print(f"""
     ----------------------------------------------------------------------
@@ -40,17 +42,24 @@ def checkArgs():
         print("Exiting...")
         sys.exit(0)
 
-def connectDB():
-    try: 
-        connection = sqlite3.connect("../db/PlatePilot.db")
-    except sqlite3.OperationalError as e:
-        print(f"Unable to connect to the database...")
-        print(e)
-        sys.exit(1)
-    return connection
-
 def buildQuery():
-    insertQuery = f"""
+
+    restrictionsQuery = f"""
+    INSERT INTO Restrictions (restrictionId, name)
+    VALUES 
+        (0, 'None'),
+        (1, 'Vegetarian'),
+        (2, 'Vegan'),
+        (3, 'Nut-Allergy'),
+        (4, 'Egg-Allergy'),
+        (5, 'Shellfish-Allergy'),
+        (6, 'Soy-Allergy'),
+        (7, 'Dairy-Free'),
+        (8, 'Pescatarian'),
+        (9, 'Keto');
+    """
+
+    categoryQuery = f"""
     INSERT INTO food_category (id, code, description)
     VALUES 
         (29, NULL, 'Candy'),
@@ -66,30 +75,28 @@ def buildQuery():
         (39, NULL, 'Vegetarian Frozen Meats'),
         (40, NULL, 'Frozen Appetizers & Hors D''oeuvres');
     """
-    updateQuery = f"""
+    foodQuery = f"""
     UPDATE food
     SET food_category_id = c.id
     FROM food_category c
     WHERE food_category_id = c.description;
     """
     
-    return insertQuery, updateQuery
+    return categoryQuery, foodQuery, restrictionsQuery
 
-def runQuery(insertQuery, updateQuery):
+def runQuery(categoryQuery, foodQuery, restrictionsQuery, conn, cursor):
     
-    connection = connectDB()
-
-    cursor = connection.cursor()
-
     try:
+        cursor.execute("DELETE FROM Restrictions")
+        cursor.execute("DELETE FROM food_category WHERE id BETWEEN 29 AND 40")
         print(f"Attempting to Insert new values into food_category...\n")
-        cursor.execute(insertQuery)
+        cursor.execute(categoryQuery)
         print(f"Finished inserting values...")
         print(f"Attempting to update food table category_id column...\n")
-        cursor.execute(updateQuery)
+        cursor.execute(foodQuery)
         print(f"Finished updating category_id column...\n")
-
-        connection.commit()
+        print(f"Im gonna fugg up that Restrictions table muahahahahahhaa >:) ")
+        cursor.execute(restrictionsQuery)
 
     except sqlite3.OperationalError as e:
 
@@ -103,9 +110,10 @@ def main():
     print(len(sys.argv))
     checkArgs()
     
-    insertQuery, updateQuery = buildQuery()
-
-    runQuery(insertQuery, updateQuery)
+    categoryQuery, foodQuery, restrictionsQuery = buildQuery()
+    conn = connectDB()
+    cursor = conn.cursor()
+    runQuery(categoryQuery, foodQuery, restrictionsQuery, conn, cursor)
 
 
 

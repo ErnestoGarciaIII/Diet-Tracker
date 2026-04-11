@@ -45,17 +45,17 @@ export async function register(name, email, password) {
 }
 
 export async function forgot_password(email) {
-    return request('/api/forgot-password', {
-        method: 'POST',
-        body: JSON.stringify({email: email})
-    });
+	return request('/api/forgot-password', {
+		method: 'POST',
+		body: JSON.stringify({email: email})
+	});
 }
 
 export async function reset_password(token, newPassword) {
-    return request('/api/reset-password', {
-        method: 'POST',
-        body: JSON.stringify({token: token, newPassword: newPassword})
-    });
+	return request('/api/reset-password', {
+		method: 'POST',
+		body: JSON.stringify({token: token, newPassword: newPassword})
+	});
 }
 
 // ==========================
@@ -131,13 +131,10 @@ export async function calculateDRI(userId) {
 // ==========================
 // FOOD LOGGING
 // ==========================
-export async function logFood(userId, food) {
+export async function logFood(foodData) {
     return request('/api/log-food', {
         method: 'POST',
-        body: JSON.stringify({
-            user_id: userId,
-            ...food
-        })
+        body: JSON.stringify(foodData)
     });
 }
 

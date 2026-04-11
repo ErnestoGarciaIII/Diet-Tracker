@@ -47,8 +47,9 @@
             </a>
         </div>
     </nav>
-
-    <div class="dashContent">
+    <!-- Row 1: Account Settings + Restrictions -->
+    <main class="dashContent settingsLayout">
+        <!-- first card-->
         <div class="card settingsCard">
             <h1 class="trackerCard">Account Settings</h1>
             <p class="formSubtitle">Manage your account information.</p>
@@ -67,40 +68,70 @@
                 </div>
             </div>
             <div class="infoList" id="biometricsList">
+                <!-- Name -->
                 <div class="infoItem" onclick="enterEditMode('userNameDisplay', 'fullName')">
                     <span class="label">Name:</span>
                     <span class="value" id="userNameDisplay"></span>
                     <span class="arrow">></span>
                 </div>
+                <!-- Gender -->
                 <div class="infoItem" onclick="enterEditMode('userGenderDisplay', 'sex')">
-                    <span class="label">Gender:</span>
+                    <span class="label">Sex:</span>
                     <span class="value" id="userGenderDisplay"></span>
                     <span class="arrow">></span>
                 </div>
-                <div class="infoItem" onclick="enterEditMode('userAgeDisplay', 'age')">
+                <!-- DOB -->
+                <div class="infoItem" onclick="enterEditMode('userDobDisplay', 'date_of_birth')">
+                    <span class="label">Date of Birth:</span>
+                    <span class="value" id="userDobDisplay"></span>
+                    <span class="arrow">></span>
+                </div>
+                <!-- Age -->
+                <div class="infoItem">
                     <span class="label">Age:</span>
                     <span class="value" id="userAgeDisplay"></span>
                     <span class="arrow">></span>
                 </div>
-                    <div class="infoItem" onclick="enterEditMode('userWeightDisplay', 'Weight')">
+                <!-- Weight -->
+                <div class="infoItem" onclick="enterEditMode('userWeightDisplay', 'Weight')">
                     <span class="label">Weight (Lbs):</span>
                     <span class="value" id="userWeightDisplay"></span>
                     <span class="arrow">></span>
                 </div>
-                    <div class="infoItem" onclick="enterEditMode('userHeightDisplay', 'Height')">
+                <!-- Height -->
+                <div class="infoItem" onclick="enterEditMode('userHeightDisplay', 'Height')">
                     <span class="label">Height (In):</span>
                     <span class="value" id="userHeightDisplay"></span>
                     <span class="arrow">></span>
                 </div>
+                <!-- Activity Level -->
+                <div class="infoItem" onclick="enterEditMode('userActivityDisplay', 'activityLevel')">
+                        <span class="label">Activity Level:</span>
+                        <span class="value" id="userActivityDisplay"></span>
+                        <span class="arrow">></span>
+                </div>
+                <!-- Goal -->
+                <div class="infoItem" onclick="enterEditMode('userGoalDisplay', 'goal')">
+                        <span class="label">Goal:</span>
+                        <span class="value" id="userGoalDisplay"></span>
+                        <span class="arrow">></span>
+                </div>
             </div>
             <h3 class="accountTxt">Account Info</h3>
             <div class="infoList">
+                <!-- Account Created -->
+                <div class="infoItem">
+                    <span class="label">Account Created:</span>
+                    <span class="value" id="userAccCreatedDisplay"></span>
+                    <span class="arrow">></span>
+                </div>
+                <!-- Email -->
                 <div class="infoItem" onclick="enterEditMode('userEmailDisplay', 'email')">
                     <span class="label">Email:</span>
                     <span class="value" id="userEmailDisplay"></span>
                     <span ><a class="arrow">></a></span>
                 </div>
-                
+                <!-- Password -->
                 <div class="infoItem" onclick="enterEditMode('userPassword', 'password')">
                     <span class="label">Password:</span>
                     <span class="value" id="userPassword">••••••••</span>
@@ -108,7 +139,7 @@
                 </div>
             </div>
             
-            
+            <!-- card footer -->
             <footer class="settingsFooter">
                 <div id="editControls" class="edControls">
                     <button class="RUGRbtn cancelBtn" onclick="exitEditMode(false)">Cancel</button>
@@ -117,26 +148,55 @@
                 <button class="RUGRbtn deleteBtn" id="deleteAccountBtn" onclick="deleteAccount()">Delete Account</button>
             </footer>
         </div>
-    </div>
-    <div class="dashContent">
+
+        <!-- second card-->
         <div class="card settingsCard">
             <h2 class="resHeader">Changes to restrictions (if any)?</h2>
-            <p class="formSubtitle">Tell Us what to exclude.</p>
+            <p class="formSubtitle">Tell us what to exclude.</p>
             <div class="tagsGrid">
-                <div class="tag" data-value="Vegan" onclick="toggleTag(this, 'vegan')">Vegan</div>
-                <div class="tag" data-value="Vegetarian" onclick="toggleTag(this, 'vegetarian')">Vegetarian</div>
-                <div class="tag" data-value="Dairy-Free" onclick="toggleTag(this, 'dairy-free')">Dairy-Free</div>
-                <div class="tag" data-value="Keto" onclick="toggleTag(this, 'keto')">Keto</div>
-                <div class="tag" data-value="No Nuts" onclick="toggleTag(this, 'nut-allergy')">No Nuts</div>
-                <div class="tag" data-value="Pescatarian" onclick="toggleTag(this, 'pescatarian')">Pescatarian</div>
-                <div class="tag" data-value="Soy-Free" onclick="toggleTag(this, 'Soy-Free')">Soy-Free</div>
-                <div class="tag" data-value="Egg-Free" onclick="toggleTag(this, 'Egg-Free')">Egg-Free</div>
-                <div class="tag" data-value="None" onclick="toggleTag(this, 'None')">None</div>
+                <div class="tag" id="Vegan" data-value="Vegan">Vegan</div>
+                <div class="tag" id="Vegetarian" data-value="Vegetarian">Vegetarian</div>
+                <div class="tag" id="Soy-Allergy" data-value="Soy-Allergy">Soy-Allergy</div>
+                <div class="tag" id="Dairy-Free" data-value="Dairy-Free">Dairy-Free</div>
+                <div class="tag" id="Keto" data-value="Keto">Keto</div>
+                <div class="tag" id="Nut-Allergy" data-value="Nut-Allergy">No Nuts</div>
+                <div class="tag" id="Pescatarian" data-value="Pescatarian">Pescatarian</div>
+                <div class="tag" id="Egg-Allergy" data-value="Egg-Allergy">Egg-Free</div>
+                <div class="tag" id="Shellfish-Allergy" data-value="Shellfish-Allergy">Shellfish-Allergy</div>
+                <div class="tag" id="None" data-value="None">None</div>
             </div>
-            <button class="RUGRbtn pagesBtn-primary full-width mt-20" onclick="finishOnboarding()">Save & Recalculate Plan</button>
+            <button id="submitBtn" class="RUGRbtn pagesBtn-primary full-width mt-20">Save & Recalculate Plan</button>
             <button class="RUGRbtn pagesBtn-secondary full-width mt-10" onclick="history.back()">Back</button>
         </div>
-    </div>
+    </main>
+
+    <!-- More Information -->
+    <main class="dashContent settingsLayout">
+        <!-- third card-->
+        <div class="card settingsCard">
+            <h2 class="resHeader">More Information</h2>
+            <p class="formSubtitle">Learn more about PlatePilot and your health data.</p>
+            <div class="infoList">
+                <div class="infoItem">
+                    <span class="label">Privacy Policy</span>
+                    <span class="arrow">></span>
+                </div>
+                <div class="infoItem">
+                    <span class="label">How we calculate macros/micros</span>
+                    <span class="arrow">></span>
+                </div>
+                <div class="infoItem">
+                    <span class="label">Support / Contact Us</span>
+                    <span class="arrow">></span>
+                </div>
+            </div>
+        </div>
+    </main>
 	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
+<footer>
+    <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
+    <p class="homeFooterTxt">Privacy Policy | Terms of Service</p>
+    <p class="homeFooterTxt">Contact Us: <a href="mailto:berkscott998@outlook.com">Email</a></p>
+</footer>
 </html>
