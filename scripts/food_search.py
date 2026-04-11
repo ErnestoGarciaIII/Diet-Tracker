@@ -88,3 +88,30 @@ def search_engine(user_input, connection, filter_id=0):
     cursor.execute(search_engine_query, parameters)
     
     return cursor.fetchall()
+
+def grab_nutrients(user_input, connection):
+
+    '''
+        Input: List of fdc_ids
+        Output: grab_nutrients query results
+    '''
+    cursor = connection.cursor()
+
+    cwd = os.getcwd()
+    parent = os.path.normpath(os.path.join(cwd, f".."))
+    query_dir = os.path.abspath(os.path.join(parent, "scripts/query_templates"))
+
+    with open(os.path.join(query_dir, "grab_nutrients.sql"), "r") as f:
+        grab_nutrients_query = f.read()
+
+    # User input is a list of fdc_ids
+    fdc_ids = user_input
+    fdc_ids_for_query = ",".join(["?"] * len(fdc_ids))
+
+    # Getting nutrient per 1g portion
+    grab_nutrients_query = grab_nutrients_query.replace("{FDC_IDS}", fdc_ids_for_query)
+
+    cursor.execute(grab_nutrients_query, fdc_ids)
+    grab_nutrients_query_result = cursor.fetchall()
+
+    return grab_nutrients_query_result
