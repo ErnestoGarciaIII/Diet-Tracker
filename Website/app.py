@@ -760,10 +760,8 @@ def get_progress(user_id):
     conn = None
     try:
         conn = connectDB()
-        cur = conn.cursor()
-        today = datetime.now().strftime('%a %b %d %Y')
-
-        result = cur.fetchone()
+        progress = calculate_daily_progress(user_id, conn)
+        return jsonify(progress), 200
 
     except Exception as e:
         print("[ERROR]: ", e)
