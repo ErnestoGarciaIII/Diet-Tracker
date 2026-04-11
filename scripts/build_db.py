@@ -61,6 +61,7 @@ def build_users_table(conn, cursor):
         reset_token TEXT,
         reset_token_expiry TEXT,
         date_of_birth TEXT,
+        account_creation_date TEXT,
         age INTEGER,
         sex TEXT,
         height_inches INTEGER,
