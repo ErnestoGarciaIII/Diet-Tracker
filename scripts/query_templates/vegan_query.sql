@@ -2,7 +2,7 @@ SELECT
         f.fdc_id,
         f.description,
         f.food_category_id
-    FROM food f
+    FROM {table_name} f
     WHERE (f.food_category_id NOT IN (1, 3, 5, 7, 10, 13, 15, 17, 21, 22, 24, 25, 27)
         AND ((f.description NOT LIKE '%chicken%')
         AND (f.description NOT LIKE '%beef%')
@@ -88,11 +88,16 @@ SELECT
         AND (f.description NOT LIKE '%squid%')
         AND (f.description NOT LIKE '%caviar%')
         AND (f.description NOT LIKE '%roe%')
+	AND (f.description NOT LIKE '%gummy%')
+	AND (f.description NOT LIKE '%chocolate%' OR f.description LIKE '%dark%')
+	AND (f.description NOT LIKE '%creme%')
 	)
-	OR (f.food_category_id IN (11, 16, 39))
+	OR (f.food_category_id IN (11, 39))
 	OR (f.description LIKE '%plant%based%')
 	OR (f.description LIKE '%meatless%')
 	OR (f.description LIKE '%vegan%'))
+	OR (f.description LIKE '%dairy%free%')
+	OR (f.description LIKE '%non-dairy%')
 	AND f.fdc_id NOT IN (
 		SELECT fdc_id
 		FROM food_nutrient

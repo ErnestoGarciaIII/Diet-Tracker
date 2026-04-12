@@ -2,7 +2,7 @@ SELECT
 	f.fdc_id,
         f.description,
         f.food_category_id
-FROM food f
+FROM {table_name} f
 WHERE (f.food_category_id NOT IN (3, 5, 7, 10, 13, 15, 17, 21, 22, 24, 25, 27)
 	AND ((f.description NOT LIKE '%chicken%')
         AND (f.description NOT LIKE '%beef%')
@@ -20,5 +20,5 @@ WHERE (f.food_category_id NOT IN (3, 5, 7, 10, 13, 15, 17, 21, 22, 24, 25, 27)
         AND (f.description NOT LIKE '%goose%')
         AND (f.description NOT LIKE '%quail%')
         AND (f.description NOT LIKE '%giblet%'))
-	OR f.food_category_id IN (1, 11, 16, 39, 15)
+	OR f.food_category_id IN (1, 11, 39, 15)
 	)

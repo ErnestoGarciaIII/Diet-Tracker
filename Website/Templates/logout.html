@@ -7,13 +7,19 @@
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
 	<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
-<body onload="redirectToHome()" id="logoutPage">
+<body id="logoutPage">
     <main>
         <div class="logCard trackerCard">
             <h1>You have been <span class="accent">successfully logged out.</span> </h1>
             <p class="formSubtitle"> See you tomorrow! 👋</p>
+            <p class="formSubtitle">Redirecting to home in <span id="logoutCountdown">5</span> seconds...</p>
         </div>
     </main>
     <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
+<footer>
+    <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
+    <p class="homeFooterTxt">Privacy Policy | Terms of Service</p>
+    <p class="homeFooterTxt">Contact Us: <a href="mailto:berkscott998@outlook.com">Email</a></p>
+</footer>
 </html>

@@ -12,6 +12,7 @@ async function request(url, options = {}) {
             ...options
         });
 
+        const status = res.status;
         const data = await res.json();
 
         if (!res.ok) {
@@ -43,6 +44,20 @@ export async function register(name, email, password) {
     });
 }
 
+export async function forgot_password(email) {
+	return request('/api/forgot-password', {
+		method: 'POST',
+		body: JSON.stringify({email: email})
+	});
+}
+
+export async function reset_password(token, newPassword) {
+	return request('/api/reset-password', {
+		method: 'POST',
+		body: JSON.stringify({token: token, newPassword: newPassword})
+	});
+}
+
 // ==========================
 // USER
 // ==========================
@@ -58,6 +73,23 @@ export async function updateUser(user) {
         method: 'POST',
         body: JSON.stringify(user)
     });
+}
+
+export async function uploadAvatar(userId, file) {
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('avatar', file);
+
+    const res = await fetch('/api/upload-avatar', {
+        method: 'POST',
+        body: formData
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.error || 'Image upload failed');
+    }
+    return data;
 }
 
 // ==========================
@@ -99,14 +131,36 @@ export async function calculateDRI(userId) {
 // ==========================
 // FOOD LOGGING
 // ==========================
-export async function logFood(userId, food) {
+export async function logFood(foodData) {
     return request('/api/log-food', {
+        method: 'POST',
+        body: JSON.stringify(foodData)
+    });
+}
+
+// ==========================
+// FOOD SEARCHING
+// ==========================
+export async function apply_Filter(userId, restriction) {
+    return request('/api/apply-filter', {
         method: 'POST',
         body: JSON.stringify({
             user_id: userId,
-            ...food
+            restriction: restriction
         })
     });
+}
+
+export async function searchFood(userId, foodName) {
+    return request(`/api/search-engine?name=${encodeURIComponent(foodName)}&user_id=${userId}`);
+}
+
+export async function getNutrients(fdcId) {
+    return request(`/api/get-nutrients?fdc_id=${fdcId}`);
+}
+
+export async function getModifiers(fdcId) {
+    return request(`/api/get-modifiers?fdc_id=${fdcId}`);
 }
 
 // ==========================
@@ -121,4 +175,32 @@ export async function getProgress(userId) {
 // ==========================
 export async function getFoodHistory(userId) {
     return request(`/api/food-history/${userId}`);
+}
+
+// Update Food Entry
+export async function updateFoodEntry(entryId, userId, foodData) {
+    return request(`/api/food-history/${entryId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            user_id: userId,
+            ...foodData
+        })
+    });
+}
+
+// Delete Food Entry
+export async function deleteFoodEntry(entryId, userId) {
+    return request(`/api/food-history/${entryId}`, {
+        method: 'DELETE',
+        body: JSON.stringify({
+            user_id: userId
+        })
+    });
+}
+
+// Clear All Food History
+export async function clearFoodHistory(userId) {
+    return request(`/api/food-history/clear/${userId}`, {
+        method: 'DELETE'
+    });
 }

@@ -10,8 +10,8 @@
 </head>
 <body id="dashboardPage">
     <!-- Navigation Bar -->
-    <nav class="navbar"> "
-        <img src="{{ url_for('static', filename='images/defaultAvatar.jpg') }}" id="profilePreview" class="navAvatar">
+    <nav class="navbar">
+        <img id="profilePreview" class="navAvatar">
         <div>
             <a href="{{ url_for('html_urls', filename='dashboard.html') }}">
                 <div class="navIcon active">
@@ -90,6 +90,7 @@
                 </div>
             </div> 
         </div>
+        <!-- activity chart-->
         <div class="chartContainer">
             <div class="card chartCard">
                 <h3>7-Day Activity Level</h3>
@@ -109,4 +110,9 @@
     </main>
 	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
+<footer>
+    <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
+    <p class="homeFooterTxt">Privacy Policy | Terms of Service</p>
+    <p class="homeFooterTxt">Contact Us: <a href="mailto:berkscott998@outlook.com">Email</a></p>
+</footer>
 </html>

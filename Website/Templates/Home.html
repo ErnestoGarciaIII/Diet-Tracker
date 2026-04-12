@@ -23,7 +23,9 @@
             <a href="{{ url_for('html_urls', filename='register.html') }}" class="homeBtns HBtnLink">
                 <button class="homeBtns HBtn-primary">Start your Free Plan</button>
             </a>
-            <button class="homeBtns HBtn-secondary">How it works</button>
+            <a href="{{ url_for('html_urls', filename='about.html') }}" class="homeBtns HBtnLink">
+                <button class="homeBtns HBtn-secondary">About PlatePilot</button>
+            </a>
         </div>
     </header>
 
@@ -38,17 +40,17 @@
     <section class="features">
         <div class="homeContainer">
             <div class="featureCard">
-                <div class="homeIcon"><!-- input icon or if image add class featureIcon--></div>
+                <div class="homeIcon">🥗<!-- input icon or if image add class featureIcon--></div>
                 <h2 class="featureTitle">Tailored Recipes</h2>
                 <p class="featureDesc">Recipes adjusted for your allergies and macro needs.</p>
             </div>
             <div class="featureCard">
-                <div class="homeIcon"><!-- input icon or if image add class featureIcon--></div>
+                <div class="homeIcon">🤖<!-- input icon or if image add class featureIcon--></div>
                 <h2 class="featureTitle">AI coaching</h2>
                 <p class="featureDesc">Chat with your AI nutritionist anytime for food swaps.</p>
             </div>
             <div class="featureCard">
-                <div class="homeIcon"><!-- input icon or if image add class featureIcon--></div>
+                <div class="homeIcon">📉<!-- input icon or if image add class featureIcon--></div>
                 <h2 class="featureTitle">Progress Tracking</h2>
                 <p class="featureDesc">Visual charts that update based on your logged meals.</p>
             </div>
@@ -58,7 +60,6 @@
 <footer class="homeFooter">
     <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
     <p class="homeFooterTxt">Privacy Policy | Terms of Service</p>
-    <p class="homeFooterTxt">Contact Us: </p>
-    
+    <p class="homeFooterTxt">Contact Us: <a href="mailto:berkscott998@outlook.com">Email</a></p>
 </footer>
 </html>

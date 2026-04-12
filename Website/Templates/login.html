@@ -20,7 +20,7 @@
                         <!-- form elements i.e email   -->
                         <div class="inputGroup">
                             <label>Email Address</label>
-                            <input type="text" id="loginEmail" placeholder="Username/Email" required autofocus>
+                            <input type="text" id="loginEmail" placeholder="Email" required autofocus>
                         </div>
                         <!-- form elements i.e password -->
                         <div class="inputGroup">
@@ -34,7 +34,7 @@
                     </form>
                     <!-- form elements i.e different links -->
                     <p class="account" id="account">Don't have an account? <a href="{{ url_for('html_urls', filename='register.html') }}">Register here</a></p>
-                    <p class="account" id="forgotPassword">Forgot password? <a href="#">Reset here</a></p>
+                <p class="account" id="forgotPassword">Forgot password? <a href="{{ url_for('html_urls', filename='forgotPassword.html') }}">Reset here</a></p>
                 </div>
                 <!-- form elements i.e mascot/motto-->
                 <div class="imageSide" id="imageSide">
@@ -45,4 +45,9 @@
     </div>
 	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
+<footer>
+    <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
+    <p class="homeFooterTxt">Privacy Policy | Terms of Service</p>
+    <p class="homeFooterTxt">Contact Us: <a href="mailto:berkscott998@outlook.com">Email</a></p>
+</footer>
 </html>
