@@ -162,7 +162,7 @@ def query_db_for_user_info(user_id, returnJSON=True):
         if not row:
             return jsonify({'error': 'User not found'}), 404
 
-        name, email, sex, height_in, weight_lbs, goal, activity_level, profile_picture, DOB, account_creation_date = row
+        name, email, sex, height_in, weight_lbs, goal, activity_level, profile_picture, DOB, account_creation_date_utc = row
 
         cur.execute("""
             SELECT r.name
