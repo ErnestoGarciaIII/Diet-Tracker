@@ -66,7 +66,7 @@ async function loadUserRestrictions() {
     try {
         const currentUser = await getUserInfo(getUserId());
         currentUser.restrictions.forEach(setUserRestrictions);
-        console.message("[INFO] User predefined filters successfully applied for food search.");
+        console.log("[INFO] User predefined filters successfully applied for food search.");
     } catch (err) {
         console.warn("Failed to load user filters: ", err);
     }
@@ -82,7 +82,7 @@ async function setUserRestrictions(restriction) {
 
     switch (restriction) {
         case "None":
-            console.message("[INFO] User selected 'None' as their restriction.");
+            console.log("[INFO] User selected 'None' as their restriction.");
             break;
         case "Vegetarian":
             getElement('VeganFilBtn').classList.toggle('active');

@@ -66,7 +66,7 @@ def calculate_daily_progress(user_id, conn):
         FROM nutrient
         WHERE id IN (1003, 1005, 1004, 1106, 1162, 1114, 1175, 1109, 1185, 1165, 
                     1178, 1166, 1177, 1167, 1180, 1089, 1170, 1087, 1098, 1090, 
-                    1101, 1091, 1092, 1103, 1093, 1095)
+                    1101, 1091, 1092, 1103, 1093, 1079, 1095)
     ),
     selected_foods AS (
         SELECT DISTINCT fdc_id FROM food_nutrient WHERE fdc_id IN ({fdc_placeholders})
@@ -101,6 +101,7 @@ def calculate_daily_progress(user_id, conn):
 
     progress = {"Energy": 0.0}
     for row in nutrient_rows:
+        # debug print(row)
         nutrient_name = row[1]
         if nutrient_name not in progress:
             progress[nutrient_name] = 0.0
@@ -108,7 +109,6 @@ def calculate_daily_progress(user_id, conn):
     for fdc_id, nutrient_name, adjusted_amount in nutrient_rows:
         total_grams = total_grams_map.get(fdc_id, 0.0)
         progress[nutrient_name] += adjusted_amount * total_grams
-
     return progress
 
 
@@ -134,6 +134,9 @@ def convert_inches_to_cm(height_in):
     return height_cm
 
 def calculate_age(dob_str: str) -> int:
+    if not dob_str:
+        return 0
+
     dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
     today = date.today()
 
@@ -787,7 +790,8 @@ def log_food_entry():
         """, (user_id, fdc_id, food_name, today, portion, unit, gram_weight))
 
         conn.commit()
-
+        print("Entering recommendation algorithm...") 
+        recommendations = recommendation_algorithm(user_id) 
         return jsonify({
             'message': 'Food logged successfully',
             'result': 'success'
@@ -966,40 +970,82 @@ def clear_food_history(user_id):
     finally:
         if conn: conn.close()
 
-@app.route('/api/recommendation', methods=['POST'])
-def recommendation_algorithm():
-    data = request.get_json()
-    user_id = data.get('user_id')
-
+def recommendation_algorithm(user_id):
+    
     conn = None
+    
     try:
         conn = connectDB()
-        (_, _, age, sex, height_in, weight_lbs,
-         goal, activity_level, _, _) = query_db_for_user_info(
-            user_id=user_id, returnJSON=False
+
+        user_info = query_db_for_user_info(user_id=user_id, returnJSON=False)
+        print(user_info)
+        user_object = ppuser(
+            w=convert_lbs_to_kg(user_info[5]),
+            h=convert_inches_to_cm(user_info[4]),
+            a=int(user_info[2]),
+            s=str(user_info[3]),
+            al=int(user_info[7]),
+            g=int(user_info[6])
         )
+        user_object.setDRI()
+        
+        translation_map = {
+            "Protein": "Protein",
+            "Total lipid (fat)": "Fats",
+            "Carbohydrate, by difference": "Carbs",
+            "Fiber, total dietary": "Fiber",
+            "Calcium, Ca": "Calcium",
+            "Iron, Fe": "Iron",
+            "Magnesium, Mg": "Magnesium",
+            "Phosphorus, P": "Phosphorus",
+            "Potassium, K": "Potassium",
+            "Sodium, Na": "Sodium",
+            "Zinc, Zn": "Zinc",
+            "Copper, Cu": "Copper",
+            "Manganese, Mn": "Manganese",
+            "Selenium, Se": "Selenium",
+            "Vitamin A, RAE": "Vitamin A",
+            "Vitamin E (alpha-tocopherol)": "Vitamin E",
+            "Vitamin D (D2 + D3)": "Vitamin D",
+            "Vitamin C, total ascorbic acid": "Vitamin C",
+            "Thiamin": "Thiamin",
+            "Riboflavin": "Riboflavin",
+            "Niacin": "Niacin",
+            "Pantothenic acid": "Pantothenic acid",
+            "Vitamin B-6": "Vitamin B-6",
+            "Folate, total": "Folate",
+            "Vitamin B-12": "Vitamin B-12",
+            "Choline, total": "Choline",
+            "Vitamin K (phylloquinone)": "Vitamin K"
+        }
+        standardized_consumed = {}
+        
+        consumed_data = calculate_daily_progress(user_id, conn)
 
-        user = ppuser(
-            w=convert_lbs_to_kg(weight_lbs),
-            h=convert_inches_to_cm(height_in),
-            a=int(age),
-            s=str(sex),
-            al=int(activity_level),
-            g=int(goal)
-        )
-        user.setDRI()
+        for fdc_name, value in consumed_data.items():
+            # Use the map to get the short name; default to fdc_name if not found
+            clean_name = translation_map.get(fdc_name, fdc_name)
+            standardized_consumed[clean_name] = value
+        
+        for index in standardized_consumed:
+            user_object.getNutrientInfo(index)
+            print(f"{index}: {standardized_consumed[index]}")
 
-        consumed = calculate_daily_progress(user_id, conn)
-
-        all_nutrients = {**user.macros, **user.micros}
-        consumed = {k: consumed.get(k, 0.0) for k in all_nutrients}
-
-        results = recommend_foods(user, conn, consumed)
-        return jsonify({'recommendations': results}), 200
+        recommendations = recommend_foods(user_object, conn, standardized_consumed)
+        print("\nDebug Recommendation \n------------------------------")
+        for item in recommendations:
+            # iteration: 1 -> "1."
+            # name: 'Garlic, raw' -> "Garlic, raw"
+            print(f"{item['iteration']}. {item['name']} (Match Score: {item['score']})")
+            print("--------------------------------\n")
+        
+        print(standardized_consumed)
+        
+        return recommendations
 
     except Exception as e:
-        print("[ERROR]: ", e)
-        return jsonify({'error': str(e)}), 500
+        print(f"Error: {e}")
+        return 0
 
     finally:
         if conn: conn.close()
