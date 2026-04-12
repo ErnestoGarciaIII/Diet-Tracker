@@ -88,38 +88,37 @@ function renderCalendar() {
 }
 
 // SHows specific day details i.e. logged food, curent intake
-function showDayDetails(dateStr, logs) {
-    document.getElementById('selectedDateHeader').innerText = dateStr || 'Select a day';
-    const list = document.getElementById('historyList');
-    list.innerHTML = '';
+function showDayDetails(dateString) {
+    const detailsContainer = document.getElementById('dayDetails');
+    const header = document.getElementById('selectedDateHeader');
+    if (!detailsContainer || !header) return;
 
-    if (!logs) {
-        logs = foodHistoryData.filter(item => item.date === dateStr);
-    }
+    header.innerText = dateString;
+    detailsContainer.innerHTML = '';
 
-    if (logs.length === 0) {
-        list.innerHTML = '<li>No logs for this day</li>';
+    const dayEntries = foodHistoryData.filter(item => item.date === dateString);
+
+    if (dayEntries.length === 0) {
+        detailsContainer.innerHTML = '<p class="text-muted">No food logged for this day.</p>';
         return;
     }
-
-    logs.reverse().forEach(log => {
-        const item = document.createElement('div');
-        item.className = "historyItem";
-        item.innerHTML = `
-            <div class="food-info">
-                <span class="label"><strong>${log.name}</strong></span>
-                <span class="value">Portion: ${log.portion || 1}</span>
-            </div>
-            <div class="food-actions">
-                <button class="edit-btn" onclick="editFoodEntry(${log.id}, '${log.name}', ${log.kcal}, ${log.portion || 1})">
-                    <i class="fa-solid fa-edit"></i>
-                </button>
-                <button class="delete-btn" onclick="deleteFoodEntry(${log.id}, '${log.name}')">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </div>
-        `;
-        list.appendChild(item);
+    dayEntries.forEach(item => {
+	const entryDiv = document.createElement('div');
+	entryDiv.className = "history-item d-flex justify-content-between align-items-center mb-2 p-2 border rounded";
+	const escapedName = item.name.replace(/'/g, "\\'");
+	entryDiv.innerHTML = `
+	    <div class="d-flex flex-column">
+	    	<span class="fw-bold">${item.name}</span>
+		<small class="text-muted">${item.portion} ${item.unit || 'Serving' }</small>
+	    </div>
+	    <div class="history-actions">
+	    	<button class="btn btn-sm btn-outline-danger"
+		    onclick="deleteFoodEntry(${item.id}, '${escapedName}')">
+		    Delete
+		</button>
+	    </div>
+	`;
+	detailsContainer.appendChild(entryDiv);
     });
 }
 
@@ -214,4 +213,18 @@ window.deleteFoodEntry = function(entryId, foodName) {
             console.error('Failed to delete food entry:', err);
             alert('Failed to delete food entry. Please try again.');
         });
+};
+
+window.deleteFoodEntry = function(entryId, foodName) {
+    if (!confirm(`Are you sure you want to delete "${foodName}"?`)) return;
+
+    // Call API delete function
+    import('../api.js').then(api => {
+        api.deleteFoodEntry(entryId, getUserId()).then(() => {
+            // Refresh local data and UI
+            foodHistoryData = foodHistoryData.filter(i => i.id !== entryId);
+            showDayDetails(document.getElementById('selectedDateHeader').innerText);
+            renderCalendar(); 
+        });
+    });
 };
