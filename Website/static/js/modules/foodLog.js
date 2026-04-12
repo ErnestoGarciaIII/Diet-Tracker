@@ -1,12 +1,12 @@
 import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers } from '../api.js';
 import { getUserId, getElement, getInputValue, showError, showSuccess } from '../utils.js';
-import { updateProgress } from '../state.js';
-
+import { getUser, updateProgress } from '../state.js';
 let foodCart = []; 
 
 export function initFoodLog() {
     console.log("Hello there!");
     loadProfilePicture();
+    loadUserRestrictions();
 
     const btn = getElement('logButton');
     if (btn) {
@@ -59,6 +59,61 @@ async function loadProfilePicture() {
         }
     } catch (err) {
         console.warn("Failed to load profile picture:", err);
+    }
+}
+
+async function loadUserRestrictions() {
+    try {
+        const currentUser = await getUserInfo(getUserId());
+        currentUser.restrictions.forEach(setUserRestrictions);
+        console.message("[INFO] User predefined filters successfully applied for food search.");
+    } catch (err) {
+        console.warn("Failed to load user filters: ", err);
+    }
+}
+
+async function setUserRestrictions(restriction) {
+    try {
+        await applyFilter(restriction);
+    } catch (err) {
+        console.error("[ERROR] Could not load user restrictions");
+        return showError("Could not load user restrictions.");
+    }
+
+    switch (restriction) {
+        case "None":
+            console.message("[INFO] User selected 'None' as their restriction.");
+            break;
+        case "Vegetarian":
+            getElement('VeganFilBtn').classList.toggle('active');
+            break;
+        case "Vegan":
+            getElement('vegFilBtn').classList.toggle('active');
+            break;
+        case "Nut-Allergy":
+            getElement('nutsFilBtn').classList.toggle('active');
+            break;
+        case "Egg-Allergy":
+            getElement('eggFilBtn').classList.toggle('active');
+            break;
+        case "Shellfish-Allergy":
+            getElement('shellFilBtn').classList.toggle('active');
+            break;
+        case "Soy-Allergy":
+            getElement('soyFilBtn').classList.toggle('active');
+            break;
+        case "Dairy-Free":
+            getElement('dairyFilBtn').classList.toggle('active');
+            break;
+        case "Pescatarian":
+            getElement('pescFilBtn').classList.toggle('active');
+            break;
+        case "Keto":
+            getElement('ketoFilBtn').classList.toggle('active');
+            break;
+
+        default:
+            return showError("Failed to load user restrictions.")
     }
 }
 
