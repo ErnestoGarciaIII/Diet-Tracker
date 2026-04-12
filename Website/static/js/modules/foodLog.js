@@ -1,9 +1,8 @@
-import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients } from '../api.js';
+import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers } from '../api.js';
 import { getUserId, getElement, getInputValue, showError, showSuccess } from '../utils.js';
 import { updateProgress } from '../state.js';
 
 let foodCart = []; 
-const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
 
 export function initFoodLog() {
     console.log("Hello there!");
@@ -76,7 +75,9 @@ async function handleLogCart() {
                 		user_id: userId,
                 		fdc_id: item.fdc_id,
                 		name: item.name,
-                		portion: item.portion
+                		portion: item.portion,
+				unit: item.unit,
+				gram_weight: item.gram_weight
             		});
         	});
 
@@ -90,10 +91,10 @@ async function handleLogCart() {
         updateProgress();
         showSuccess('Foods logged successfully.');
 
-    } catch (err) {
-        console.error("Logging error:", err);
-        showError(err.message);
-    }
+    	} catch (err) {
+        	console.error("Logging error:", err);
+        	showError(err.message);
+    	}
 }
 
 async function foodSearch() {
@@ -184,7 +185,6 @@ function displayRecommendations(recResults) {
         recommendList.appendChild(recItem);
     });
 }
-
 async function selectFood(foodName, fdcId) {
     const existingIndex = foodCart.findIndex(item => String(item.fdc_id) === String(fdcId));
     if (existingIndex !== -1) {
@@ -193,26 +193,49 @@ async function selectFood(foodName, fdcId) {
     }
 
     try {
-        const data = await getNutrients(fdcId);
-        const calories = data.calories ? Math.round(data.calories) : 0;
-        // Add to cart
+        const data = await getModifiers(fdcId);
+	console.log(data);
+        const defaultModifiers = [
+            { modifier: 'g', gram_weight: 1.0 },
+            { modifier: 'oz', gram_weight: 28.35 }
+        ];
+        const dbModifiers = (data.modifiers || []).map(m => ({
+	    gram_weight: m[0],
+	    modifier: m[1]
+	}));
+        const modifierList = [...dbModifiers];
+	console.log("Made it passed dbModifiers and modifierList instantiation...");
+        defaultModifiers.forEach(def => {
+            if (!modifierList.some(m => m.modifier === def.modifier)) {
+                modifierList.push(def);
+            }
+        });
+	console.log("dbModifiers after map:", dbModifiers);
+	console.log("modifiers raw:", data.modifiers);
         foodCart.push({
             name: foodName,
-            calories: calories,
+            fdc_id: fdcId,
             portion: 1,
-            unit: 'Serving',
-            fdc_id: fdcId
+            unit: modifierList[0].modifier,
+            gram_weight: modifierList[0].gram_weight,
+            modifier_map: modifierList
         });
+	console.log("Just successfully pushed foodCart");
         setSearchResultSelectedState(fdcId, true);
         displayCart();
+
     } catch (err) {
-        // Add to cart with 0 calories
+        console.error("Failed to fetch modifiers:", err);
         foodCart.push({
             name: foodName,
-            calories: 0,
+            fdc_id: fdcId,
             portion: 1,
-            unit: 'Serving',
-            fdc_id: fdcId
+            unit: 'g',
+            gram_weight: 1.0,
+            modifier_map: [
+                { modifier: 'g', gram_weight: 1.0 },
+                { modifier: 'oz', gram_weight: 28.35 }
+            ]
         });
         setSearchResultSelectedState(fdcId, true);
         displayCart();
@@ -253,6 +276,8 @@ function displayCart() {
         cartItem.className = 'cartItem';
         const portionValue = Number(food.portion) > 0 ? Number(food.portion) : 1;
 
+
+	const SERVING_UNITS = (food.modifier_map && food.modifier_map.length > 0) ? food.modifier_map.map(m => m.modifier) : ['Serving'];
         const unitOptions = SERVING_UNITS.map((unit) => {
             const selected = (food.unit || 'Serving') === unit ? 'selected' : '';
             return `<option value="${unit}" ${selected}>${unit}</option>`;
@@ -298,8 +323,17 @@ function displayCart() {
     unitSelects.forEach(select => {
         select.addEventListener('change', () => {
             const idx = parseInt(select.dataset.index);
-            if (!foodCart[idx]) return;
-            foodCart[idx].unit = select.value;
+	    const selectedUnit = select.value;
+	    const item = foodCart[idx];
+
+	    item.unit = selectedUnit;
+
+	    const lookup = item.modifier_map.find(m => m.modifier === selectedUnit);
+	    if (lookup) {
+	    	item.gram_weight = lookup.gram_weight;
+	    }
+
+	    console.log(`Updated ${item.name} to ${selectedUnit}. Background weight is now: ${item.gram_weight}`);
         });
     });
 

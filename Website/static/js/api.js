@@ -159,6 +159,10 @@ export async function getNutrients(fdcId) {
     return request(`/api/get-nutrients?fdc_id=${fdcId}`);
 }
 
+export async function getModifiers(fdcId) {
+    return request(`/api/get-modifiers?fdc_id=${fdcId}`);
+}
+
 // ==========================
 // PROGRESS
 // ==========================

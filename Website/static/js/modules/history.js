@@ -88,7 +88,41 @@ function renderCalendar() {
 }
 
 // SHows specific day details i.e. logged food, curent intake
-function showDayDetails(dateStr, logs) {
+function showDayDetails(dateString) {
+    const detailsContainer = document.getElementById('dayDetails');
+    const header = document.getElementById('selectedDateHeader');
+    if (!detailsContainer || !header) return;
+
+    header.innerText = dateString;
+    detailsContainer.innerHTML = '';
+
+    const dayEntries = foodHistoryData.filter(item => item.date === dateString);
+
+    if (dayEntries.length === 0) {
+        detailsContainer.innerHTML = '<p class="text-muted">No food logged for this day.</p>';
+        return;
+    }
+    dayEntries.forEach(item => {
+	const entryDiv = document.createElement('div');
+	entryDiv.className = "history-item d-flex justify-content-between align-items-center mb-2 p-2 border rounded";
+	const escapedName = item.name.replace(/'/g, "\\'");
+	entryDiv.innerHTML = `
+	    <div class="d-flex flex-column">
+	    	<span class="fw-bold">${item.name}</span>
+		<small class="text-muted">${item.portion} ${item.unit || 'Serving' }</small>
+	    </div>
+	    <div class="history-actions">
+	    	<button class="btn btn-sm btn-outline-danger"
+		    onclick="deleteFoodEntry(${item.id}, '${escapedName}')">
+		    Delete
+		</button>
+	    </div>
+	`;
+	detailsContainer.appendChild(entryDiv);
+    });
+}
+
+function showDayDetails2(dateStr, logs) {
     document.getElementById('selectedDateHeader').innerText = dateStr || 'Select a day';
     const list = document.getElementById('historyList');
     list.innerHTML = '';
@@ -214,4 +248,18 @@ window.deleteFoodEntry = function(entryId, foodName) {
             console.error('Failed to delete food entry:', err);
             alert('Failed to delete food entry. Please try again.');
         });
+};
+
+window.deleteFoodEntry = function(entryId, foodName) {
+    if (!confirm(`Are you sure you want to delete "${foodName}"?`)) return;
+
+    // Call API delete function
+    import('../api.js').then(api => {
+        api.deleteFoodEntry(entryId, getUserId()).then(() => {
+            // Refresh local data and UI
+            foodHistoryData = foodHistoryData.filter(i => i.id !== entryId);
+            showDayDetails(document.getElementById('selectedDateHeader').innerText);
+            renderCalendar(); 
+        });
+    });
 };
