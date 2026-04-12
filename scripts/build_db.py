@@ -50,6 +50,28 @@ def build_food_table(conn):
         conn.close()
         sys.exit(1)
 
+
+def nuke_food_table(conn):
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute(f"""
+        CREATE INDEX IF NOT EXISTS idx_food_nutrient_fdc_id ON food_nutrient(fdc_id);
+        """)
+        cursor.execute(f"""
+        DELETE FROM food
+        WHERE fdc_id IN (
+            SELECT f.fdc_id
+            FROM food f
+            LEFT JOIN food_nutrient fn ON f.fdc_id = fn.fdc_id
+            WHERE fn.fdc_id IS NULL
+        );
+        """)
+    except sqlite3.OperationalError as e:
+        print(f"Error: {e}\nExiting...")
+        conn.close()
+        sys.exit(1)
+
 def build_users_table(conn, cursor):
     cursor.execute("DROP TABLE IF EXISTS Users")
     cursor.execute("""
@@ -123,6 +145,8 @@ def build_food_history_table(conn, cursor):
         fdc_id INTEGER NOT NULL,
         foodName TEXT NOT NULL,
         portion REAL NOT NULL,
+        unit TEXT NOT NULL,
+        gram_weight REAL NOT NULL,
         dateLogged DATE NOT NULL,
         timeLogged TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
@@ -216,6 +240,8 @@ def main():
     cursor = conn.cursor()
 
     build_food_table(conn)
+    nuke_food_table(conn)
+
     build_users_table(conn, cursor)
     build_restrictions_table(conn, cursor)
     build_user_restrictions_table(conn, cursor)
@@ -224,7 +250,7 @@ def main():
 
     categoryQuery, foodQuery, restrictionsQuery = buildQuery()
     runQuery(categoryQuery, foodQuery, restrictionsQuery, conn, cursor)
-    
+
     build_food_restrictions_table(conn, cursor)
     populate_food_tags(conn, cursor)
     

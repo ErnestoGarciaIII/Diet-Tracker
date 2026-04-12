@@ -58,7 +58,7 @@ def search_engine(user_input, connection, filter_id=0):
         {restriction_join}
         WHERE fc.id NOT IN (3, 21, 22, 25, 27)
           AND f.description LIKE ?
-          AND (f.description NOT LIKE '%vitamin%' AND f.description NOT LIKE '%Fat,%' AND f.description NOT LIKE '%Cholesterol%' AND f.description NOT LIKE '%Thiamin%' AND f.description NOT LIKE '%Riboflavin%' AND f.description NOT LIKE '%Carotenoids%' AND f.description NOT LIKE '%Selenium%' AND f.description NOT LIKE '%Minerals%' AND f.description NOT LIKE '%Proximates%' AND f.description NOT LIKE '%Niacin%' AND f.description NOT LIKE '%Pantothenic%' AND f.description NOT LIKE '%Choline%' AND f.description NOT LIKE '%Retinol%' AND f.description NOT LIKE '%Amino Acid%' AND f.description NOT LIKE '%FA,%' AND f.description NOT LIKE '%rep %' AND f.description NOT LIKE '%Fatty Acid%' AND f.description NOT LIKE '%Pass %' AND f.description NOT LIKE '%Region %' AND f.description NOT LIKE '%bunch%' AND f.description NOT LIKE '% Ct%' AND f.description NOT LIKE '%Moisture%' AND f.description NOT LIKE '%, NF%' AND f.description NOT LIKE '%, C9%' AND f.description NOT LIKE '%restaurant%')
+          AND (f.description NOT LIKE '%vitamin%' AND f.description NOT LIKE '%Fat,%' AND f.description NOT LIKE '%Cholesterol%' AND f.description NOT LIKE '%Thiamin%' AND f.description NOT LIKE '%Riboflavin%' AND f.description NOT LIKE '%Carotenoids%' AND f.description NOT LIKE '%Selenium%' AND f.description NOT LIKE '%Minerals%' AND f.description NOT LIKE '%Proximates%' AND f.description NOT LIKE '%Niacin%' AND f.description NOT LIKE '%Pantothenic%' AND f.description NOT LIKE '%Choline%' AND f.description NOT LIKE '%Retinol%' AND f.description NOT LIKE '%Amino Acid%' AND f.description NOT LIKE '%FA,%' AND f.description NOT LIKE '%rep %' AND f.description NOT LIKE '%Fatty Acid%' AND f.description NOT LIKE '%Pass %' AND f.description NOT LIKE '%Region %' AND f.description NOT LIKE '%bunch%' AND f.description NOT LIKE '% Ct%' AND f.description NOT LIKE '%Moisture%' AND f.description NOT LIKE '%, NF%' AND f.description NOT LIKE '%, C9%' AND f.description NOT LIKE '%restaurant%' AND f.description NOT LIKE '%lbs,%')
           {restriction_where}
         GROUP BY f.fdc_id
         {restriction_having}
@@ -88,3 +88,30 @@ def search_engine(user_input, connection, filter_id=0):
     cursor.execute(search_engine_query, parameters)
     
     return cursor.fetchall()
+
+def grab_nutrients(user_input, connection):
+
+    '''
+        Input: List of fdc_ids
+        Output: grab_nutrients query results
+    '''
+    cursor = connection.cursor()
+
+    cwd = os.getcwd()
+    parent = os.path.normpath(os.path.join(cwd, f".."))
+    query_dir = os.path.abspath(os.path.join(parent, "scripts/query_templates"))
+
+    with open(os.path.join(query_dir, "grab_nutrients.sql"), "r") as f:
+        grab_nutrients_query = f.read()
+
+    # User input is a list of fdc_ids
+    fdc_ids = user_input
+    fdc_ids_for_query = ",".join(["?"] * len(fdc_ids))
+
+    # Getting nutrient per 1g portion
+    grab_nutrients_query = grab_nutrients_query.replace("{FDC_IDS}", fdc_ids_for_query)
+
+    cursor.execute(grab_nutrients_query, fdc_ids)
+    grab_nutrients_query_result = cursor.fetchall()
+
+    return grab_nutrients_query_result
