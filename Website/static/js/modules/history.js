@@ -122,41 +122,6 @@ function showDayDetails(dateString) {
     });
 }
 
-function showDayDetails2(dateStr, logs) {
-    document.getElementById('selectedDateHeader').innerText = dateStr || 'Select a day';
-    const list = document.getElementById('historyList');
-    list.innerHTML = '';
-
-    if (!logs) {
-        logs = foodHistoryData.filter(item => item.date === dateStr);
-    }
-
-    if (logs.length === 0) {
-        list.innerHTML = '<li>No logs for this day</li>';
-        return;
-    }
-
-    logs.reverse().forEach(log => {
-        const item = document.createElement('div');
-        item.className = "historyItem";
-        item.innerHTML = `
-            <div class="food-info">
-                <span class="label"><strong>${log.name}</strong></span>
-                <span class="value">Portion: ${log.portion || 1}</span>
-            </div>
-            <div class="food-actions">
-                <button class="edit-btn" onclick="editFoodEntry(${log.id}, '${log.name}', ${log.kcal}, ${log.portion || 1})">
-                    <i class="fa-solid fa-edit"></i>
-                </button>
-                <button class="delete-btn" onclick="deleteFoodEntry(${log.id}, '${log.name}')">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </div>
-        `;
-        list.appendChild(item);
-    });
-}
-
 // Change month navigation
 window.changeMonth = function(direction) {
     window.viewDate.setMonth(window.viewDate.getMonth() + direction);

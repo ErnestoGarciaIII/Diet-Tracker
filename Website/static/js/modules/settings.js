@@ -1,16 +1,20 @@
-﻿﻿// modules/settings.js
-
-import { getUserInfo, updateUser, uploadAvatar, updateGoal, calculateDRI } from '../api.js';
-import { getUserId, getElement, showError, showSuccess } from '../utils.js';
+import { getUserInfo, updateUser, uploadAvatar, setRestrictions } from '../api.js';
+import { getUserId, getElement, showError, showSuccess, showMessage } from '../utils.js';
 
 let currentUser = null;
-
+let selected = [];
 export function initSettings() {
     loadUser();
     setupAvatarControls();
-}
 
-//grabs goal value
+    document.querySelectorAll('.tag').forEach(tag => {
+        tag.addEventListener('click', () => toggleTag(tag));
+    });
+
+    const submitBtn = getElement('submitBtn');
+    if (submitBtn) submitBtn.addEventListener('click', saveRestrictions);
+}
+      //grabs goal value
 function goalIdToLabel(goalId) {
     const map = {
         1: 'Weight Loss',
@@ -20,40 +24,24 @@ function goalIdToLabel(goalId) {
     return map[Number(goalId)] || '';
 }
 
-//Auto calculates age
-function calculateAge(dateOfBirth) {
-    if (!dateOfBirth) return '';
-
-    const today = new Date();
-    const birth = new Date(dateOfBirth);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDelta = today.getMonth() - birth.getMonth();
-
-    if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birth.getDate())) {
-        age--;
-    }
-
-    return age;
-}
-
-//loads the user
 async function loadUser() {
     try {
         currentUser = await getUserInfo(getUserId());
-        currentUser.user_id = getUserId();
-
-        // display elements
+        currentUser.restrictions.forEach(loadUserRestrictions)
+        // Converts from UTC to users local time
+        const accountDate = new Date(currentUser.account_creation_date_utc).toLocaleDateString();
+        // Populate display elements
         getElement('userNameDisplay').textContent = currentUser.name || '';
         getElement('userGenderDisplay').textContent = currentUser.sex || '';
         getElement('userDobDisplay').textContent = currentUser.date_of_birth || '';
-        getElement('userAgeDisplay').textContent = calculateAge(currentUser.date_of_birth);
+        getElement('userAgeDisplay').textContent = currentUser.age || '';
         getElement('userWeightDisplay').textContent = currentUser.weight_lbs || '';
         getElement('userHeightDisplay').textContent = currentUser.height_in || '';
         getElement('userEmailDisplay').textContent = currentUser.email || '';
         getElement('userActivityDisplay').textContent = currentUser.activity_level || '';
         getElement('userGoalDisplay').textContent = goalIdToLabel(currentUser.goal);
-
-        // Loads profile picture
+        getElement('userAccCreatedDisplay').textContent = accountDate || '';
+        // Load profile picture
         if (currentUser.profile_picture) {
             const profileImages = document.querySelectorAll('#profilePreview');
             profileImages.forEach(img => {
@@ -66,7 +54,54 @@ async function loadUser() {
     }
 }
 
-//Avatar controls
+function loadUserRestrictions(restriction) {
+    switch (restriction) {
+        case "None":
+            selected.push(restriction);
+            getElement('None').classList.add('tag-active');
+            break;
+        case "Vegetarian":
+            selected.push(restriction);
+            getElement('Vegetarian').classList.add('tag-active');
+            break;
+        case "Vegan":
+            selected.push(restriction);
+            getElement('Vegan').classList.add('tag-active');
+            break;
+        case "Nut-Allergy":
+            selected.push(restriction);
+            getElement('Nut-Allergy').classList.add('tag-active');
+            break;
+        case "Egg-Allergy":
+            selected.push(restriction);
+            getElement('Egg-Allergy').classList.add('tag-active');
+            break;
+        case "Shellfish-Allergy":
+            selected.push(restriction);
+            getElement('Shellfish-Allergy').classList.add('tag-active');
+            break;
+        case "Soy-Allergy":
+            selected.push(restriction);
+            getElement('Soy-Allergy').classList.add('tag-active');
+            break;
+        case "Dairy-Free":
+            selected.push(restriction);
+            getElement('Dairy-Free').classList.add('tag-active');
+            break;
+        case "Pescatarian":
+            selected.push(restriction);
+            getElement('Pescatarian').classList.add('tag-active');
+            break;
+        case "Keto":
+            selected.push(restriction);
+            getElement('Keto').classList.add('tag-active');
+            break;
+
+        default:
+            return showError("Failed to load user restrictions.")
+    }
+}
+
 function setupAvatarControls() {
     const uploadTrigger = getElement('uploadTrigger');
     const fileInput = getElement('hiddenFileInput');
@@ -140,7 +175,60 @@ function setupAvatarControls() {
     }
 }
 
-// Enables editing of user profile fields
+function toggleTag(tag) {
+    const value = tag.dataset.value;
+
+    if (value === 'None') {
+        // If "None" is selected, clear all other selections
+        if (!selected.includes(value)) {
+            // Clear all other tags
+            document.querySelectorAll('.tag').forEach(t => {
+                if (t !== tag) {
+                    t.classList.remove('tag-active');
+                }
+            });
+            selected = ['None'];
+            tag.classList.add('tag-active');
+        } else {
+            // Deselecting "None"
+            selected = selected.filter(v => v !== value);
+            tag.classList.remove('tag-active');
+        }
+    } else {
+        // For other restrictions, if "None" is selected, deselect it first
+        if (selected.includes('None')) {
+            const noneTag = document.querySelector('.tag[data-value="None"]');
+            if (noneTag) {
+                noneTag.classList.remove('tag-active');
+            }
+            selected = selected.filter(v => v !== 'None');
+        }
+
+        // Toggle the current tag
+        if (selected.includes(value)) {
+            selected = selected.filter(v => v !== value);
+            tag.classList.remove('tag-active');
+        } else {
+            selected.push(value);
+            tag.classList.add('tag-active');
+        }
+    }
+}
+
+async function saveRestrictions() {
+    const user_id = getUserId();
+    if (!user_id) return showError("User not found.");
+    if (!selected) return showError("If you do not want any restrictions, please select 'none'.");
+    try {
+        await setRestrictions(user_id, selected);
+        showSuccess("Restrictions saved!");
+        const submitBtnData = getElement("submitBtn").dataset;
+    } catch (err) {
+        showError(err.message);
+    }
+}
+
+// Make this function global so HTML can call it
 window.enterEditMode = function(displayId, fieldName) {
     const displayElement = getElement(displayId);
     if (!displayElement) return;

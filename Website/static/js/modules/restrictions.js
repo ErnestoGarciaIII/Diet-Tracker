@@ -1,5 +1,5 @@
 import { setRestrictions } from '../api.js';
-import { getElement, getUserId, showError, showSuccess } from '../utils.js';
+import { getElement, getUserId, showError, showMessage, showSuccess } from '../utils.js';
 
 let selected = [];
 
@@ -66,7 +66,7 @@ function toggleTag(tag) {
 async function saveRestrictions() {
     const user_id = getUserId();
     if (!user_id) return showError("User not found.");
-
+    if (!selected) return showError("If you do not want any restrictions, please select 'none'.");
     try {
         await setRestrictions(user_id, selected);
         showSuccess("Restrictions saved!");
