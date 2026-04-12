@@ -152,7 +152,7 @@ def query_db_for_user_info(user_id, returnJSON=True):
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT name, email, age, sex, height_inches, weight_lbs, goal, activity_level, profile_picture, date_of_birth, account_creation_date
+            SELECT name, email, sex, height_inches, weight_lbs, goal, activity_level, profile_picture, date_of_birth, account_creation_date
             FROM Users
             WHERE userId = ?
         """, (user_id,))
@@ -162,7 +162,7 @@ def query_db_for_user_info(user_id, returnJSON=True):
         if not row:
             return jsonify({'error': 'User not found'}), 404
 
-        name, email, age, sex, height_in, weight_lbs, goal, activity_level, profile_picture, DOB, account_creation_date = row
+        name, email, sex, height_in, weight_lbs, goal, activity_level, profile_picture, DOB, account_creation_date = row
 
         cur.execute("""
             SELECT r.name
