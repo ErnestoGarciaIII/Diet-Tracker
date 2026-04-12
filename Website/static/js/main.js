@@ -12,6 +12,7 @@ import { initLogin } from './modules/login.js';
 import { initRegister } from './modules/register.js';
 import { initForgotPassword } from './modules/forgotPassword.js';
 import { initResetPassword } from './modules/resetPassword.js';
+import { initLogout } from './modules/logout.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const userId = State.getUserId();
@@ -31,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (Util.getElement('loginPage')) initLogin();
     if (Util.getElement('forgotPasswordPage')) initForgotPassword();
     if (Util.getElement('resetPasswordPage')) initResetPassword();
+    if (Util.getElement('logoutPage')) initLogout();
     if (protectedPage && !userId) {
         window.location.href = 'home.html'
     }

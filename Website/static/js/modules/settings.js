@@ -1,4 +1,4 @@
-﻿import { getUserInfo, updateUser, uploadAvatar, setRestrictions } from '../api.js';
+import { getUserInfo, updateUser, uploadAvatar, setRestrictions } from '../api.js';
 import { getUserId, getElement, showError, showSuccess, showMessage } from '../utils.js';
 
 let currentUser = null;
@@ -14,6 +14,15 @@ export function initSettings() {
     const submitBtn = getElement('submitBtn');
     if (submitBtn) submitBtn.addEventListener('click', saveRestrictions);
 }
+      //grabs goal value
+function goalIdToLabel(goalId) {
+    const map = {
+        1: 'Weight Loss',
+        2: 'Maintain',
+        3: 'Muscle Build'
+    };
+    return map[Number(goalId)] || '';
+}
 
 async function loadUser() {
     try {
@@ -26,6 +35,8 @@ async function loadUser() {
         getElement('userWeightDisplay').textContent = currentUser.weight_lbs || '';
         getElement('userHeightDisplay').textContent = currentUser.height_in || '';
         getElement('userEmailDisplay').textContent = currentUser.email || '';
+        getElement('userActivityDisplay').textContent = currentUser.activity_level || '';
+        getElement('userGoalDisplay').textContent = goalIdToLabel(currentUser.goal);
         
         // Load profile picture
         if (currentUser.profile_picture) {
@@ -220,15 +231,47 @@ window.enterEditMode = function(displayId, fieldName) {
     if (!displayElement) return;
 
     const currentValue = displayElement.textContent;
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.value = currentValue;
-    input.className = 'editInput';
+    let input;
+    if (fieldName === 'activityLevel') {
+        input = document.createElement('select');
+        input.className = 'editInput';
+        [
+            { value: 'Sedentary', label: 'Sedentary' },
+            { value: 'Light', label: 'Lightly Active' },
+            { value: 'Moderate', label: 'Moderately Active' },
+            { value: 'Very', label: 'Very Active' }
+        ].forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = opt.label;
+            if (opt.value === currentValue) option.selected = true;
+            input.appendChild(option);
+        });
+    } else if (fieldName === 'goal') {
+        input = document.createElement('select');
+        input.className = 'editInput';
+        [
+            { value: '1', label: 'Weight Loss' },
+            { value: '2', label: 'Maintain' },
+            { value: '3', label: 'Muscle Build' }
+        ].forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = opt.label;
+            if (String(currentUser.goal || '') === opt.value) option.selected = true;
+            input.appendChild(option);
+        });
+    } else {
+        input = document.createElement('input');
+        input.type = fieldName === 'date_of_birth' ? 'date' : 'text';
+        input.value = currentValue;
+        input.className = 'editInput';
+    }
 
-    // Replace the span with input
+    // Replaces the span with an input
     displayElement.parentNode.replaceChild(input, displayElement);
 
-    // Focus the input
+    // Focuses the input
     input.focus();
 
     // On blur or enter, save
@@ -244,18 +287,21 @@ window.enterEditMode = function(displayId, fieldName) {
         isSaving = true;
 
         const newValue = input.value.trim();
-        if (newValue === currentValue) {
+        const originalComparableValue = fieldName === 'goal' ? String(currentUser.goal || '') : currentValue;
+        if (newValue === originalComparableValue) {
             revertToDisplay();
             isSaving = false;
             return;
         }
 
-        // Update currentUser
+        // Updates the currentUser
         const fieldMap = {
             'fullName': 'name',
             'Weight': 'weight_lbs',
             'Height': 'height_in',
-            'email': 'email'
+            'email': 'email',
+            'activityLevel': 'activity_level',
+            'goal': 'goal'
         };
         const apiField = fieldMap[fieldName] || fieldName.toLowerCase();
         
@@ -270,12 +316,39 @@ window.enterEditMode = function(displayId, fieldName) {
             }
         }
         
-        currentUser[apiField] = parsedValue;
-
         try {
-            await updateUser(currentUser);
-            displayElement.textContent = newValue;
+            if (apiField === 'goal') {
+                const goalId = parseInt(newValue, 10);
+                if (![1, 2, 3].includes(goalId)) {
+                    showError('Invalid goal selected');
+                    revertToDisplay();
+                    isSaving = false;
+                    return;
+                }
+
+                await updateGoal(getUserId(), goalId);
+                await calculateDRI(getUserId());
+                currentUser.goal = goalId;
+                displayElement.textContent = goalIdToLabel(goalId);
+            } else {
+                currentUser[apiField] = parsedValue;
+                if (apiField === 'date_of_birth') {
+                    currentUser.age = calculateAge(newValue);
+                }
+
+                await updateUser(currentUser);
+                displayElement.textContent = newValue;
+            }
+
             revertToDisplay();
+
+        if (apiField === 'date_of_birth') {
+                const ageDisplay = getElement('userAgeDisplay');
+                if (ageDisplay) {
+                    ageDisplay.textContent = currentUser.age;
+                }
+            }
+
             showSuccess("Updated successfully!");
         } catch (err) {
             showError("Failed to update: " + err.message);

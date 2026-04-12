@@ -216,6 +216,12 @@ p.change{
     display: flex;
 }
 
+.infoBtn{
+    background: none;
+    border: none; 
+    padding: 0; 
+    cursor: pointer;
+}
 /* -------------------------------------- HOME PAGE -------------------------------------------*/
 .homePage{
     background-color: beige;
@@ -299,6 +305,11 @@ p.change{
 .HBtn-secondary{
     background: white;
     border: 1px solid #d1d5db;
+}
+
+.HBtn-secondary:hover{
+    background-color: #8e8f92;
+    color: white;
 }
 
 .HBtnLink{
@@ -415,6 +426,190 @@ p.change{
 	opacity: 0.6;
 	text-align: center;
 }
+.homeFooter {
+    background-color: #f9fafb;
+}
+
+/* -------------------------------------- ABOUT PAGE -------------------------------------------*/
+.forWho {
+    text-align: center;
+    padding: 5rem 5% 3rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.aboutMission {
+    background-color: #f9fafb;
+    padding: 4rem 5%;
+}
+
+.aboutMissionInner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+}
+
+.aboutMissionText {
+    flex: 1;
+}
+
+.aboutSectionTitle {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 1.25rem;
+}
+
+.aboutSectionDesc {
+    font-size: 1.05rem;
+    color: #4b5563;
+    line-height: 1.75;
+    margin-bottom: 1rem;
+}
+
+.aboutMissionEmoji {
+    font-size: 7rem;
+    flex-shrink: 0;
+}
+
+.aboutMissionImage {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    display: block;
+}
+
+.aboutCenteredTitle {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #111827;
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.aboutTeam {
+    padding: 4rem 5%;
+    background-color: beige;
+}
+
+.aboutTeamSubtitle {
+    text-align: center;
+    color: #6b7280;
+    font-size: 1.05rem;
+    margin-top: -1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.aboutTeamGrid {
+    justify-items: center;
+}
+
+.aboutTeamCard {
+    background: white;
+    padding: 40px;
+    border-radius: 32px;
+    border: 1px solid #e5e7eb;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 360px;
+    transition: transform 0.3s ease;
+}
+
+.aboutTeamCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+}
+
+.aboutTeamAvatar {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+}
+
+.aboutTeamName {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.25rem;
+}
+
+.aboutTeamRole {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #16a34a;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.aboutTeamBio {
+    font-size: 0.95rem;
+    color: #6b7280;
+    line-height: 1.6;
+}
+
+.aboutCTA {
+    background-color: #16a34a;
+    padding: 4rem 5%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.aboutCTATitle {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+}
+
+.aboutCTA .welSubtitle {
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 0;
+}
+
+.aboutCTA .HBtn-primary {
+    background: white;
+    color: #16a34a;
+    border: none;
+}
+
+.aboutCTA .HBtn-primary:hover {
+    background: #f0fdf4;
+}
+
+@media (max-width: 768px) {
+    .aboutMissionInner {
+        flex-direction: column;
+        text-align: center;
+    }
+    .aboutMissionEmoji {
+        font-size: 5rem;
+    }
+    .aboutMissionImage {
+        width: 140px;
+        height: 140px;
+    }
+}
+/* ------------------------------------how it works page------------------------------------------- */
+.howItWorks {
+    padding: 80px 0;
+    background: rgba(255, 255, 255, 0.03); /* Subtle contrast from main bg */
+}
+
+.stepNumber {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--accent-color, #4CAF50); /* Uses your accent color */
+    margin-bottom: 15px;
+    opacity: 0.8;
+}
+
 
 /* ------------------------------------login and registration page--------------------------------------- */
 .loginForm{
@@ -490,6 +685,29 @@ p.change{
     font-size: 0.9rem;
 }
 
+.disclaimer {
+    display: none; 
+    margin-top: 1rem; 
+    padding: 1rem; 
+    background: #f0f4ff; 
+    border-left: 3px solid #3ca3f5; 
+    border-radius: 4px; 
+    font-size: 0.9rem; 
+    color: #333; 
+    line-height: 1.6;
+}
+
+.disclaimer p{
+    margin-bottom: 0; 
+    font-size: 0.85rem; 
+    color: #666;
+}
+
+.infoText{
+    margin-left: 0.5rem; 
+    font-size: 0.85rem; 
+    color: #999;
+}
 
 /* Mobile Responsive: Stack the image and form */
 @media (max-width: 768px) {
@@ -654,7 +872,16 @@ p.change{
     margin-left: 80px;
     padding: 40px;
     width: 100%;
-    max-width: 1200px;
+    max-width: 900px;
+}
+
+
+.settingsLayout{
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
+    gap: 24px;
+    max-width: 1320px;
+    align-items: start;
 }
 
 .statsPanel {
@@ -870,7 +1097,7 @@ p.change{
     max-width: 900px;
 }
 
-.foodLogLayout {
+.foodLogLayout, .settingsLayout {
     display: grid;
     grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
     gap: 24px;
@@ -1367,6 +1594,35 @@ li {
     font-weight: 600;
     color: #333;
     margin-bottom: 4px;
+}
+
+.resultTopRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.selectedBadge {
+    display: none;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #166534;
+    background: #dcfce7;
+    border: 1px solid #86efac;
+    border-radius: 999px;
+    padding: 2px 8px;
+    white-space: nowrap;
+}
+
+.resultItem.selected {
+    background-color: #f0fdf4;
+    border-left: 3px solid #16a34a;
+    padding-left: 13px;
+}
+
+.resultItem.selected .selectedBadge {
+    display: inline-block;
 }
 
 .resultCategory {
