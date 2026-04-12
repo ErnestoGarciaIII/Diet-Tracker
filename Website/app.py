@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory, render_template
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, date, timedelta, timezone 
 import sqlite3
 import secrets
 import sys
@@ -107,6 +107,18 @@ def convert_inches_to_cm(height_in):
     height_cm = round(height_in * 2.54, 2)
     return height_cm
 
+def calculate_age(dob_str: str) -> int:
+    dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
+    today = date.today()
+
+    age = today.year - dob.year
+
+    # subtract 1 if birthday hasn't happened yet this year
+    if (today.month, today.day) < (dob.month, dob.day):
+        age -= 1
+
+    return age
+
 def query_db_for_user_info(user_id, returnJSON=True):
     conn = None
     try:
@@ -114,7 +126,7 @@ def query_db_for_user_info(user_id, returnJSON=True):
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT name, email, age, sex, height_inches, weight_lbs, goal, activity_level, profile_picture, date_of_birth
+            SELECT name, email, sex, height_inches, weight_lbs, goal, activity_level, profile_picture, date_of_birth, account_creation_date
             FROM Users
             WHERE userId = ?
         """, (user_id,))
@@ -123,9 +135,9 @@ def query_db_for_user_info(user_id, returnJSON=True):
 
         if not row:
             return jsonify({'error': 'User not found'}), 404
-
-        name, email, age, sex, height_in, weight_lbs, goal, activity_level, profile_picture, date_of_birth = row
-
+        
+        name, email, sex, height_in, weight_lbs, goal, activity_level, profile_picture, DOB, account_creation_date_utc = row
+        
         cur.execute("""
             SELECT r.name
             FROM UserRestrictions ur
@@ -135,6 +147,8 @@ def query_db_for_user_info(user_id, returnJSON=True):
         """, (user_id,))
 
         restrictions = [r[0] for r in cur.fetchall()]
+        age = calculate_age(DOB)
+
         if(returnJSON):
             return jsonify({
                 'name': name,
@@ -146,11 +160,12 @@ def query_db_for_user_info(user_id, returnJSON=True):
                 'goal': goal,
                 'activity_level': activity_level,
                 'profile_picture': profile_picture,
-                'date_of_birth': date_of_birth,
+                'date_of_birth': DOB,
+                'account_creation_date_utc': account_creation_date_utc,
                 'restrictions': restrictions
             })
         else:
-            return (name, email, age, sex, height_in, weight_lbs, goal, activity_level, profile_picture, date_of_birth, restrictions)
+            return (name, email, age, sex, height_in, weight_lbs, goal, activity_level, profile_picture, restrictions, account_creation_date_utc)
 
     except Exception as e:
         print("[ERROR]: ", e)
@@ -184,7 +199,8 @@ def register_user():
         name = data.get('name')
         email = data.get('email')
         password = data.get('password')
-
+        currentDateTime = getCurrentTimeUTC()
+        
         if not name or not email or not password:
             print("[ERROR]: Missing fields in POST request!")
             return jsonify({'error': 'Missing required fields'}), 400
@@ -195,9 +211,9 @@ def register_user():
         cur = conn.cursor()
 
         cur.execute("""
-        INSERT INTO users (name, email, password)
-        VALUES (?, ?, ?)
-        """, (name, email, hashedPassword))
+        INSERT INTO users (name, email, password, account_creation_date)
+        VALUES (?, ?, ?, ?)
+        """, (name, email, hashedPassword, currentDateTime))
 
         conn.commit()
         user_id = cur.lastrowid
@@ -236,13 +252,12 @@ def update_user():
 
     try:
         user_id = data.get('user_id')
-        age = data.get('age')
+        date_of_birth = data.get('DOB')
         weight_lbs = data.get('weight_lbs')
         sex = data.get('sex')
         height_inches = data.get('height_in')
         goal = data.get('goal')
         activity_level = data.get('activity_level')
-        date_of_birth = data.get('date_of_birth')
         if not user_id:
             return jsonify({'error': 'user_id is required'}), 400
 
@@ -255,16 +270,16 @@ def update_user():
             # User explicitly set to None, remove the picture
             cur.execute("""
                 UPDATE users
-                SET name = COALESCE(?, name), email = COALESCE(?, email), age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = NULL, date_of_birth = COALESCE(?, date_of_birth)
+                SET name = COALESCE(?, name), email = COALESCE(?, email), weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = NULL, date_of_birth = COALESCE(?, date_of_birth)
                 WHERE userId = ?
-            """, (data.get('name'), data.get('email'), age, weight_lbs, sex, height_inches, goal, activity_level, date_of_birth, user_id))
+            """, (data.get('name'), data.get('email'),  weight_lbs, sex, height_inches, goal, activity_level, date_of_birth, user_id))
         else:
             # Normal update with or without profile_picture
             cur.execute("""
                 UPDATE users
-                SET name = COALESCE(?, name), email = COALESCE(?, email), age = ?, weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = COALESCE(?, profile_picture), date_of_birth = COALESCE(?, date_of_birth)
+                SET name = COALESCE(?, name), email = COALESCE(?, email),  weight_lbs = ?, sex = ?, height_inches = ?, goal = ?, activity_level = ?, profile_picture = COALESCE(?, profile_picture), date_of_birth = COALESCE(?, date_of_birth)
                 WHERE userId = ?
-            """, (data.get('name'), data.get('email'), age, weight_lbs, sex, height_inches, goal, activity_level, data.get('profile_picture'), date_of_birth, user_id))
+            """, (data.get('name'), data.get('email'), weight_lbs, sex, height_inches, goal, activity_level, data.get('profile_picture'), date_of_birth, user_id))
 
         conn.commit()
 
@@ -549,7 +564,7 @@ def calculate_dri():
     data = request.get_json()
     try:
         user_id = data.get('user_id')
-        (name, email, age, sex, height_in, weight_lbs, goal, activity_level, profile_picture, date_of_birth, restrictions)=query_db_for_user_info(user_id=user_id, returnJSON=False)
+        (_, _, age, sex, height_in, weight_lbs, goal, _, _, _, _)=query_db_for_user_info(user_id=user_id, returnJSON=False)
         # convert height and weight to the correct units
         weight_kg = convert_lbs_to_kg(weight_lbs)
         height_cm = convert_inches_to_cm(height_in)
@@ -764,7 +779,7 @@ def get_progress(user_id):
         today = datetime.now().strftime('%a %b %d %Y')
 
         result = cur.fetchone()
-
+        
     except Exception as e:
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
@@ -906,11 +921,11 @@ def recommendation_algorithm():
     try:
         conn = connectDB()
 
-        (name, email, age, sex, height_in, weight_lbs,
-         goal, activity_level, profile_picture, date_of_birth, restrictions) = query_db_for_user_info(
+        (_, _, age, sex, height_in, weight_lbs,
+         goal, activity_level, _, _) = query_db_for_user_info(
             user_id=user_id, returnJSON=False
         )
-
+        
         user = ppuser(
             w=convert_lbs_to_kg(weight_lbs),
             h=convert_inches_to_cm(height_in),

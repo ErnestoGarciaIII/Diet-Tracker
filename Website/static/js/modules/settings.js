@@ -28,16 +28,19 @@ async function loadUser() {
     try {
         currentUser = await getUserInfo(getUserId());
         currentUser.restrictions.forEach(loadUserRestrictions)
+        // Converts from UTC to users local time
+        const accountDate = new Date(currentUser.account_creation_date_utc).toLocaleDateString();
         // Populate display elements
         getElement('userNameDisplay').textContent = currentUser.name || '';
         getElement('userGenderDisplay').textContent = currentUser.sex || '';
+        getElement('userDobDisplay').textContent = currentUser.date_of_birth || '';
         getElement('userAgeDisplay').textContent = currentUser.age || '';
         getElement('userWeightDisplay').textContent = currentUser.weight_lbs || '';
         getElement('userHeightDisplay').textContent = currentUser.height_in || '';
         getElement('userEmailDisplay').textContent = currentUser.email || '';
         getElement('userActivityDisplay').textContent = currentUser.activity_level || '';
         getElement('userGoalDisplay').textContent = goalIdToLabel(currentUser.goal);
-        
+        getElement('userAccCreatedDisplay').textContent = accountDate || '';
         // Load profile picture
         if (currentUser.profile_picture) {
             const profileImages = document.querySelectorAll('#profilePreview');
