@@ -2,3 +2,4 @@ db/
 .vs/
 __pycache__/
 user_avatars/
+scripts/
