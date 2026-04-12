@@ -149,6 +149,7 @@ def build_food_history_table(conn, cursor):
         gram_weight REAL NOT NULL,
         dateLogged DATE NOT NULL,
         timeLogged TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        mealTag TEXT NOT NULL,
         FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
     )
     """)

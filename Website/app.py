@@ -134,6 +134,8 @@ def convert_inches_to_cm(height_in):
     return height_cm
 
 def calculate_age(dob_str: str) -> int:
+    if not dob_str: return 0
+
     dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
     today = date.today()
 
@@ -353,33 +355,6 @@ def update_goal():
         return jsonify({'error': str(e)}), 500
     
     finally:
-        conn.close()
-
-# Upload profile avatar
-@app.route('/api/upload-avatar', methods=['POST'])
-def upload_avatar():
-    try:
-        user_id = request.form.get('user_id')
-        avatar_file = request.files.get('avatar')
-
-        if not user_id or not avatar_file:
-            return jsonify({'error': 'Missing user_id or avatar file'}), 400
-
-        # Save file to static folder
-        upload_dir = os.path.join(os.path.dirname(__file__), 'static', 'images', 'user_avatars')
-        os.makedirs(upload_dir, exist_ok=True)
-
-        ext = os.path.splitext(avatar_file.filename)[1]
-        filename = f"user_{user_id}_{uuid4().hex}{ext}"
-        filepath = os.path.join(upload_dir, filename)
-        avatar_file.save(filepath)
-
-        profile_picture_url = f"/static/images/user_avatars/{filename}"
-
-        conn = connectDB()
-        cur = conn.cursor()
-        cur.execute("UPDATE Users SET profile_picture = ? WHERE userId = ?", (profile_picture_url, user_id))
-        conn.commit()
         conn.close()
 
 # Upload profile avatar
@@ -795,9 +770,10 @@ def log_food_entry():
     portion = data.get('portion', 1)
     unit = data.get('unit', 'g')
     gram_weight = data.get('gram_weight', 1)
+    mealTag = data.get('meal_tag')
 
-    if not user_id or not food_name or not fdc_id: 
-        return jsonify({'error': 'User ID, Food Name, or FDC_ID was not passed'}), 400
+    if not user_id or not food_name or not fdc_id or not mealTag: 
+        return jsonify({'error': 'User ID, Food Name, meal tag,or FDC_ID was not passed'}), 400
 
     conn = None
     try:
@@ -809,9 +785,9 @@ def log_food_entry():
 
         # Insert into FoodHistory
         cur.execute("""
-            INSERT INTO FoodHistory (userId, fdc_id, foodName, dateLogged, portion, unit, gram_weight)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (user_id, fdc_id, food_name, today, portion, unit, gram_weight))
+            INSERT INTO FoodHistory (userId, fdc_id, foodName, dateLogged, portion, unit, gram_weight, mealTag)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (user_id, fdc_id, food_name, today, portion, unit, gram_weight, mealTag))
 
         conn.commit()
 
@@ -837,7 +813,7 @@ def get_food_history(user_id):
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT id, fdc_id, foodName as name, dateLogged as date, portion, unit, gram_weight
+            SELECT id, fdc_id, foodName as name, dateLogged as date, portion, unit, gram_weight, mealTag
             FROM FoodHistory
             WHERE userId = ?
             ORDER BY id DESC
