@@ -152,19 +152,20 @@
         <!-- second card-->
         <div class="card settingsCard">
             <h2 class="resHeader">Changes to restrictions (if any)?</h2>
-            <p class="formSubtitle">Tell Us what to exclude.</p>
+            <p class="formSubtitle">Tell us what to exclude.</p>
             <div class="tagsGrid">
-                <div class="tag" onclick="toggleTag(this, 'vegan')">Vegan</div>
-                <div class="tag" onclick="toggleTag(this, 'vegetarian')">Vegetarian</div>
-                <div class="tag" onclick="toggleTag(this, 'gluten-free')">Gluten-Free</div>
-                <div class="tag" onclick="toggleTag(this, 'dairy-free')">Dairy-Free</div>
-                <div class="tag" onclick="toggleTag(this, 'keto')">Keto</div>
-                <div class="tag" onclick="toggleTag(this, 'nut-allergy')">No Nuts</div>
-                <div class="tag" onclick="toggleTag(this, 'pescatarian')">Pescatarian</div>
-                <div class="tag" onclick="toggleTag(this, 'Lactose Intolerant')">Lactose Intolerant</div>
-                <div class="tag" onclick="toggleTag(this, 'None')">None</div>
+                <div class="tag" id="Vegan" data-value="Vegan">Vegan</div>
+                <div class="tag" id="Vegetarian" data-value="Vegetarian">Vegetarian</div>
+                <div class="tag" id="Soy-Allergy" data-value="Soy-Allergy">Soy-Allergy</div>
+                <div class="tag" id="Dairy-Free" data-value="Dairy-Free">Dairy-Free</div>
+                <div class="tag" id="Keto" data-value="Keto">Keto</div>
+                <div class="tag" id="Nut-Allergy" data-value="Nut-Allergy">No Nuts</div>
+                <div class="tag" id="Pescatarian" data-value="Pescatarian">Pescatarian</div>
+                <div class="tag" id="Egg-Allergy" data-value="Egg-Allergy">Egg-Free</div>
+                <div class="tag" id="Shellfish-Allergy" data-value="Shellfish-Allergy">Shellfish-Allergy</div>
+                <div class="tag" id="None" data-value="None">None</div>
             </div>
-            <button class="RUGRbtn pagesBtn-primary full-width mt-20" onclick="finishOnboarding()">Save & Recalculate Plan</button>
+            <button id="submitBtn" class="RUGRbtn pagesBtn-primary full-width mt-20">Save & Recalculate Plan</button>
             <button class="RUGRbtn pagesBtn-secondary full-width mt-10" onclick="history.back()">Back</button>
         </div>
     </main>
