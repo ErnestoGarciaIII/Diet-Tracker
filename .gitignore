@@ -1,4 +1,6 @@
 db/
 .vs/
+Tests/
 __pycache__/
-user_avatars/
+scripts/__pycache__/
+Website/static/images/user_avatars/
