@@ -12,24 +12,19 @@ def connectDB():
     return connection
 
 db_connection = connectDB()
-active_filters = set()
 
-def apply_filter(filter_id, connection):
-    
-    global active_filters
+def apply_filter(filter_id, connection, active_user_filters):
 
-    if filter_id in active_filters:
-        active_filters.remove(filter_id)
+    if filter_id in active_user_filters:
+        active_user_filters.remove(filter_id)
     else:
-        active_filters.add(filter_id)
+        active_user_filters.add(filter_id)
     
-    print(f"Added Filter of Number ${filter_id} to active_filters {active_filters}")
+    print(f"Added Filter of Number ${filter_id} to active_user_filters {active_user_filters}")
 
-def search_engine(user_input, connection, filter_id=0):
-    
-    global active_filters
-    
-    filter_list = list(active_filters)
+def search_engine(user_input, connection, active_user_filters):
+   
+    filter_list = list(active_user_filters)
     cursor = connection.cursor()
     
     if len(filter_list) == 0:

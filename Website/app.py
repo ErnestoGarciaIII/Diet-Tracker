@@ -14,13 +14,13 @@ scripts_path = os.path.join(parent_dir, 'scripts')
 sys.path.append(scripts_path)
 
 from PlatePilotUser import ppuser
-from food_search import connectDB, apply_filter, active_filters, search_engine
+from food_search import connectDB, apply_filter, search_engine
 from the_holy_grail import recommend_foods, NUTRIENT_ID_TO_NAME
 from send_email import send_reset_email
 
 app = Flask(__name__)
 
-active_user_conns = {}
+active_user_filters = {}
 
 def migrate_db():
     conn = None
@@ -638,10 +638,8 @@ def apply_that_filter():
         if not user_id:
             return jsonify({'error': 'User ID required to maintain session'}), 400
 
-        if user_id not in active_user_conns:
-            active_user_conns[user_id] = connectDB()
+        conn = connectDB()
 
-        conn = active_user_conns[user_id]
         cur = conn.cursor()
 
         cur.execute("""
@@ -654,11 +652,13 @@ def apply_that_filter():
 
         print(f"Applying filter: ${restriction} RestrictionId: ${restrictionId[0]}")
 
-        apply_filter(restrictionId[0], conn)
+        active_user_filters[user_id] = set()
+
+        apply_filter(restrictionId[0], conn, active_user_filters[user_id])
 
         return jsonify({
             'message': 'Filter set successfully',
-            'filterId': restrictionId,
+            'filterId': restrictionId connectDB(),
             'result': 'success'
         }), 201
     except Exception as e:
@@ -670,21 +670,18 @@ def apply_that_filter():
 def execute_search_engine():
     user_id = request.args.get('user_id')
     food_name = request.args.get('name')
-    filters_str = request.args.get('filters', '')
 
     if not user_id:
         return jsonify({'error': 'User ID required to maintain session'}), 400
 
-    if user_id not in active_user_conns:
-        active_user_conns[user_id] = connectDB()
 
-    conn = active_user_conns[user_id]
+    conn = connectDB() 
 
     if not food_name:
         return jsonify({'error': 'No string received'}), 400
 
     try:
-        results = search_engine(food_name, conn)
+        results = search_engine(food_name, conn, active_user_filters[user_id])
         return jsonify(results), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
