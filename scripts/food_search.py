@@ -12,6 +12,7 @@ def connectDB():
     return connection
 
 db_connection = connectDB()
+active_filters = set()
 
 def apply_filter(filter_id, connection, active_user_filters):
 
@@ -19,8 +20,13 @@ def apply_filter(filter_id, connection, active_user_filters):
         active_user_filters.remove(filter_id)
     else:
         active_user_filters.add(filter_id)
-    
+
     print(f"Added Filter of Number ${filter_id} to active_user_filters {active_user_filters}")
+
+def clear_user_filters(user_id, active_user_filters):
+    if user_id in active_user_filters:
+        del active_user_filters[user_id]
+    print(f"User {user_id} has cleared all active filters.")
 
 def search_engine(user_input, connection, active_user_filters):
    

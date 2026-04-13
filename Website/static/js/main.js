@@ -33,7 +33,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (Util.getElement('forgotPasswordPage')) initForgotPassword();
     if (Util.getElement('resetPasswordPage')) initResetPassword();
     if (Util.getElement('logoutPage')) initLogout();
-    if (protectedPage && !userId) {
+    const isLogoutPage = Util.getElement('logoutPage');
+    if (protectedPage && !userId && !isLogoutPage) {
         window.location.href = 'home.html'
     }
 

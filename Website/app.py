@@ -14,7 +14,7 @@ scripts_path = os.path.join(parent_dir, 'scripts')
 sys.path.append(scripts_path)
 
 from PlatePilotUser import ppuser
-from food_search import connectDB, apply_filter, search_engine
+from food_search import connectDB, apply_filter, clear_user_filters, search_engine
 from the_holy_grail import recommend_foods, NUTRIENT_ID_TO_NAME
 from send_email import send_reset_email
 
@@ -109,6 +109,7 @@ def calculate_daily_progress(user_id, conn):
     for fdc_id, nutrient_name, adjusted_amount in nutrient_rows:
         total_grams = total_grams_map.get(fdc_id, 0.0)
         progress[nutrient_name] += adjusted_amount * total_grams
+
     return progress
 
 
@@ -134,8 +135,7 @@ def convert_inches_to_cm(height_in):
     return height_cm
 
 def calculate_age(dob_str: str) -> int:
-    if not dob_str:
-        return 0
+    if not dob_str: return 0
 
     dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
     today = date.today()
@@ -625,6 +625,49 @@ NUTRIENT_IDS = [
     1099, 1100, 1238, 1090, 1101, 1102, 1091, 1092, 1103, 1093, 1095
 ]
 
+@app.route('/api/clear-filters', methods=['POST'])
+def clear_those_filters():
+    data = request.get_json()
+    try:
+        user_id = data.get('user_id')
+
+        if not user_id:
+            return jsonify({'error': 'User ID required to maintain session'}), 400
+
+        print(f"Removing all active filters for user: {user_id}")
+
+        if not user_id in active_user_filters:
+            active_user_filters[user_id] = set()
+
+        clear_user_filters(user_id, active_user_filters)
+        if(user_id in active_user_filters):
+            print(f"user filters: {active_user_filters[user_id]}")
+        else:
+            print("FILTERS CLEARED")
+        return jsonify({
+            'message': 'Filter cleared successfully',
+            'user_Id': user_id,
+            'result': 'success'
+        }), 201
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/get-filters', methods=['GET'])
+def get_filters():
+    try:
+        user_id = request.args.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'User ID required to maintain session'}), 400
+
+        if not user_id in active_user_filters:
+            active_user_filters[user_id] = set()
+        print(active_user_filters[user_id])
+        return jsonify({f'filters': f'{active_user_filters[user_id]}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/apply-filter', methods=['POST'])
 def apply_that_filter():
     data = request.get_json()
@@ -639,7 +682,6 @@ def apply_that_filter():
             return jsonify({'error': 'User ID required to maintain session'}), 400
 
         conn = connectDB()
-
         cur = conn.cursor()
 
         cur.execute("""
@@ -650,9 +692,10 @@ def apply_that_filter():
         
         restrictionId = cur.fetchone()
 
-        print(f"Applying filter: ${restriction} RestrictionId: ${restrictionId[0]}")
+        print(f"Applying filter: {restriction} RestrictionId: {restrictionId[0]}")
 
-        active_user_filters[user_id] = set()
+        if not user_id in active_user_filters:
+            active_user_filters[user_id] = set()
 
         apply_filter(restrictionId[0], conn, active_user_filters[user_id])
 
@@ -770,6 +813,7 @@ def log_food_entry():
     portion = data.get('portion', 1)
     unit = data.get('unit', 'g')
     gram_weight = data.get('gram_weight', 1)
+    mealTag = data.get('meal_tag')
 
     if not user_id or not food_name or not fdc_id: 
         return jsonify({'error': 'User ID, Food Name, or FDC_ID was not passed'}), 400
@@ -784,9 +828,9 @@ def log_food_entry():
 
         # Insert into FoodHistory
         cur.execute("""
-            INSERT INTO FoodHistory (userId, fdc_id, foodName, dateLogged, portion, unit, gram_weight)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (user_id, fdc_id, food_name, today, portion, unit, gram_weight))
+            INSERT INTO FoodHistory (userId, fdc_id, foodName, dateLogged, portion, unit, gram_weight, mealTag)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (user_id, fdc_id, food_name, today, portion, unit, gram_weight, mealTag))
 
         conn.commit()
         print("Entering recommendation algorithm...") 
@@ -813,7 +857,7 @@ def get_food_history(user_id):
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT id, fdc_id, foodName as name, dateLogged as date, portion, unit, gram_weight
+            SELECT id, fdc_id, foodName as name, dateLogged as date, portion, unit, gram_weight, mealTag
             FROM FoodHistory
             WHERE userId = ?
             ORDER BY id DESC
@@ -975,6 +1019,10 @@ def recommendation_algorithm(user_id):
     
     try:
         conn = connectDB()
+        (_, _, age, sex, height_in, weight_lbs,
+         goal, activity_level, _, _, _) = query_db_for_user_info(
+            user_id=user_id, returnJSON=False
+        )
 
         user_info = query_db_for_user_info(user_id=user_id, returnJSON=False)
         print(user_info)
