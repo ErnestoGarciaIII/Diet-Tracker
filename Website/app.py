@@ -658,7 +658,7 @@ def apply_that_filter():
 
         return jsonify({
             'message': 'Filter set successfully',
-            'filterId': restrictionId connectDB(),
+            'filterId': restrictionId,
             'result': 'success'
         }), 201
     except Exception as e:
@@ -670,10 +670,12 @@ def apply_that_filter():
 def execute_search_engine():
     user_id = request.args.get('user_id')
     food_name = request.args.get('name')
-
+    
     if not user_id:
         return jsonify({'error': 'User ID required to maintain session'}), 400
 
+    if not user_id in active_user_filters:
+        active_user_filters[user_id] = set()
 
     conn = connectDB() 
 
