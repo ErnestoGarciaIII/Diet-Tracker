@@ -2,6 +2,8 @@
 // utils.js will hold helper methods 
 // =================================
 
+import { clear_Filters } from "./api.js";
+
 // ==========================
 // DATE HELPERS
 // ==========================
@@ -89,7 +91,38 @@ export function setUserId(id) {
 }
 
 export function clearUser() {
+    clear_Filters(getUserId());
+    clearActiveFilters();
     localStorage.removeItem('user_id');
+}
+
+export function getActiveFilters() {
+    try {
+        const data = JSON.parse(localStorage.getItem('activeFilters') || '[]');
+        return Array.isArray(data) ? data : [];
+    } catch {
+        return [];
+    }
+}
+
+export function addFilterToActiveFilters(filter) {
+    const activeFilters = getActiveFilters();
+
+    if (!activeFilters.includes(filter)) {
+        activeFilters.push(filter);
+    }
+
+    localStorage.setItem('activeFilters', JSON.stringify(activeFilters));
+}
+
+export function removeActiveFilter(filter) {
+    const activeFilters = getActiveFilters();
+    const updatedFilters = activeFilters.filter(f => f !== filter);
+    localStorage.setItem('activeFilters', JSON.stringify(updatedFilters));
+}
+
+export function clearActiveFilters() {
+    localStorage.removeItem('activeFilters');
 }
 
 // =========================
