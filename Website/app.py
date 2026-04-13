@@ -763,39 +763,6 @@ def get_modifiers():
     except Exception as e:
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
-
-@app.route('/api/get-modifiers', methods=['GET'])
-def get_modifiers():
-    print("ENTERED GET MODIFIERS :) ")
-    fdc_id = request.args.get('fdc_id')
-    if not fdc_id:
-        return jsonify({'error': 'fdc_id not pass properly'}), 400
-
-    conn = None
-    try:
-        conn = connectDB()
-        cur = conn.cursor()
-
-        cur.execute("""
-        SELECT
-            COALESCE(gram_weight/amount, 1.0) AS gram_weight,
-            COALESCE(modifier, "g") AS modifier
-        FROM (SELECT 1) AS default_row
-            LEFT JOIN food_portion fp
-            ON fdc_id = ?
-        """, (fdc_id,))
-
-        results = cur.fetchall()
-        print(fdc_id)
-        print(results)
-        
-
-        return jsonify({
-            'modifiers': results
-        }), 200
-    except Exception as e:
-        print("[ERROR]: ", e)
-        return jsonify({'error': str(e)}), 500
     
     finally:
         if conn:
