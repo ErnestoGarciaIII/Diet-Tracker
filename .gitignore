@@ -1,5 +1,6 @@
 db/
 .vs/
+Tests/
 __pycache__/
 user_avatars/
 scripts/
