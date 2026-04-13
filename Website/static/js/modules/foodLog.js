@@ -1,12 +1,12 @@
-import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients } from '../api.js';
-import { getUserId, getElement, getInputValue, showError, showSuccess } from '../utils.js';
+import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters} from '../api.js';
+import { getUserId, getElement, getInputValue, showError, showSuccess, getActiveFilters, addFilterToActiveFilters, removeActiveFilter } from '../utils.js';
 import { getUser, updateProgress } from '../state.js';
-
 let foodCart = []; 
+
 const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
+const MEAL_TAGS = ['Snack', 'Breakfast', 'Lunch', 'Dinner']
 
 export function initFoodLog() {
-    console.log("Hello there!");
     loadProfilePicture();
     loadUserRestrictions();
 
@@ -21,7 +21,7 @@ export function initFoodLog() {
     }
 
     const filtersContainer = document.querySelector('.filterButtons');
-    const activeFilters = new Set();
+    const activeFilters = getActiveFilters();
     filtersContainer.addEventListener('click', (e) => {
         const filterBtn = e.target.closest('.filterBtn');
         if (!filterBtn) return;
@@ -29,11 +29,13 @@ export function initFoodLog() {
         applyFilter(filter).then(response => {
             if (response?.result?.includes("success")) {
                 console.log(`[INFO] Filter (${filter}) was applied successfully.`)
-                if (activeFilters.has(filter)) {
-                    activeFilters.delete(filter);
+
+                if (activeFilters.includes(filter)) {
+                    removeActiveFilter(filter);
                 } else {
-                    activeFilters.add(filter);
+                    addFilterToActiveFilters(filter);
                 }
+
                 filterBtn.classList.toggle('active');
             }
         });
@@ -67,29 +69,42 @@ async function loadProfilePicture() {
 async function loadUserRestrictions() {
     try {
         const currentUser = await getUserInfo(getUserId());
-        currentUser.restrictions.forEach(setUserRestrictions);
-        console.message("[INFO] User predefined filters successfully applied for food search.");
+        if (currentUser.restrictions.includes('None')) { return; }
+        const activeFilters = getActiveFilters();
+        if (activeFilters.length === 0) {
+            currentUser.restrictions.forEach(res => {
+                setUserRestrictions(res, true);
+            });
+            console.log("[INFO] User predefined filters successfully applied for food search.");
+        }
+        else {
+            activeFilters.forEach(res => setUserRestrictions(res, false));
+            console.log("[INFO] User predefined filters are sustained for food search.");
+        }
     } catch (err) {
         console.warn("Failed to load user filters: ", err);
     }
 }
 
-async function setUserRestrictions(restriction) {
-    try {
-        await applyFilter(restriction);
-    } catch (err) {
-        console.error("[ERROR] Could not load user restrictions");
-        return showError("Could not load user restrictions.");
+async function setUserRestrictions(restriction, callApplyFilterAPI) {
+    if (callApplyFilterAPI) {
+        try {
+            await applyFilter(restriction);
+            addFilterToActiveFilters(restriction);
+        } catch (err) {
+            console.error("[ERROR] Could not load user restrictions");
+            return showError("Could not load user restrictions.");
+        }
     }
 
     switch (restriction) {
         case "None":
-            console.message("[INFO] User selected 'None' as their restriction.");
-            break;
-        case "Vegetarian":
-            getElement('VeganFilBtn').classList.toggle('active');
+            console.log("[INFO] User selected 'None' as their restriction.");
             break;
         case "Vegan":
+            getElement('VeganFilBtn').classList.toggle('active');
+            break;
+        case "Vegetarian":
             getElement('vegFilBtn').classList.toggle('active');
             break;
         case "Nut-Allergy":
@@ -117,6 +132,7 @@ async function setUserRestrictions(restriction) {
         default:
             return showError("Failed to load user restrictions.")
     }
+    alert(`activated btn for restriction: ${restriction}`);
 }
 
 async function handleLogCart() {
@@ -127,18 +143,19 @@ async function handleLogCart() {
     	}
 
     	try {
-        	const logPromises = foodCart.map(item => {
-            		return logFood({
-                		user_id: userId,
-                		fdc_id: item.fdc_id,
-                		name: item.name,
-                		portion: item.portion
-            		});
-        	});
-
-        await Promise.all(logPromises);
-
-        foodCart = [];
+            const payload = {
+            user_id: userId,
+            items: foodCart.map(item => ({
+                fdc_id: item.fdc_id,
+                name: item.name,
+                portion: item.portion,
+                unit: item.unit,
+                gram_weight: item.gram_weight,
+                meal_tag: item.meal
+           	}))
+            };
+        await logFood(payload);
+	foodCart = [];
         document.querySelectorAll('.resultItem.selected').forEach(item => {
             item.classList.remove('selected');
         });
@@ -146,10 +163,10 @@ async function handleLogCart() {
         updateProgress();
         showSuccess('Foods logged successfully.');
 
-    } catch (err) {
-        console.error("Logging error:", err);
-        showError(err.message);
-    }
+    	} catch (err) {
+        	console.error("Logging error:", err);
+        	showError(err.message);
+    	}
 }
 
 async function foodSearch() {
@@ -241,6 +258,15 @@ function displayRecommendations(recResults) {
     });
 }
 
+function getDefaultMeal() {
+    const hour = new Date().getHours();
+
+    if (hour < 11) return 'Breakfast';
+    if (hour < 16) return 'Lunch';
+    if (hour < 21) return 'Dinner';
+    return 'Snack';
+}
+
 async function selectFood(foodName, fdcId) {
     const existingIndex = foodCart.findIndex(item => String(item.fdc_id) === String(fdcId));
     if (existingIndex !== -1) {
@@ -249,26 +275,51 @@ async function selectFood(foodName, fdcId) {
     }
 
     try {
-        const data = await getNutrients(fdcId);
-        const calories = data.calories ? Math.round(data.calories) : 0;
-        // Add to cart
+        const data = await getModifiers(fdcId);
+	console.log(data);
+        const defaultModifiers = [
+            { modifier: 'g', gram_weight: 1.0 },
+            { modifier: 'oz', gram_weight: 28.35 }
+        ];
+        const dbModifiers = (data.modifiers || []).map(m => ({
+	    gram_weight: m[0],
+	    modifier: m[1]
+	}));
+        const modifierList = [...dbModifiers];
+	console.log("Made it passed dbModifiers and modifierList instantiation...");
+        defaultModifiers.forEach(def => {
+            if (!modifierList.some(m => m.modifier === def.modifier)) {
+                modifierList.push(def);
+            }
+        });
+	console.log("dbModifiers after map:", dbModifiers);
+	console.log("modifiers raw:", data.modifiers);
         foodCart.push({
             name: foodName,
-            calories: calories,
+            fdc_id: fdcId,
             portion: 1,
-            unit: 'Serving',
-            fdc_id: fdcId
+            unit: modifierList[0].modifier,
+            gram_weight: modifierList[0].gram_weight,
+            modifier_map: modifierList,
+            meal: getDefaultMeal()
         });
+	console.log("Just successfully pushed foodCart");
         setSearchResultSelectedState(fdcId, true);
         displayCart();
+
     } catch (err) {
-        // Add to cart with 0 calories
+        console.error("Failed to fetch modifiers:", err);
         foodCart.push({
             name: foodName,
-            calories: 0,
+            fdc_id: fdcId,
             portion: 1,
-            unit: 'Serving',
-            fdc_id: fdcId
+            unit: 'g',
+            gram_weight: 1.0,
+            modifier_map: [
+                { modifier: 'g', gram_weight: 1.0 },
+                { modifier: 'oz', gram_weight: 28.35 }
+            ],
+            meal: getDefaultMeal()
         });
         setSearchResultSelectedState(fdcId, true);
         displayCart();
@@ -309,10 +360,18 @@ function displayCart() {
         cartItem.className = 'cartItem';
         const portionValue = Number(food.portion) > 0 ? Number(food.portion) : 1;
 
+
+	const SERVING_UNITS = (food.modifier_map && food.modifier_map.length > 0) ? food.modifier_map.map(m => m.modifier) : ['Serving'];
         const unitOptions = SERVING_UNITS.map((unit) => {
             const selected = (food.unit || 'Serving') === unit ? 'selected' : '';
             return `<option value="${unit}" ${selected}>${unit}</option>`;
 	}).join('');
+        const MEAL_TAGS = (food.meal_tags && food.meal_tags.length > 0) ? food.meal_tags : ['Snack', 'Breakfast', 'Lunch', 'Dinner'];
+        const mealTagOptions = MEAL_TAGS.map((meal) => {
+            const selected = (food.meal || 'Snack') === meal ? 'selected' : '';
+            return `<option value="${meal}" ${selected}>${meal}</option>`;
+        }).join('');
+ 
         cartItem.innerHTML = `
             <div class="cartItemContent">
                 <span class="cartItemName">${food.name}</span>
@@ -330,6 +389,10 @@ function displayCart() {
                     <select class="unitSelect" data-index="${index}" aria-label="Serving unit">
                         ${unitOptions}
                     </select>
+                    <select class="mealSelect" data-index="${index}" aria-label="Meal Tag">
+                        ${mealTagOptions}
+                    </select>
+
                 </div>
             </div>
             <button class="removeBtn" data-index="${index}" aria-label="Remove food">
@@ -354,8 +417,24 @@ function displayCart() {
     unitSelects.forEach(select => {
         select.addEventListener('change', () => {
             const idx = parseInt(select.dataset.index);
-            if (!foodCart[idx]) return;
-            foodCart[idx].unit = select.value;
+	    const selectedUnit = select.value;
+	    const item = foodCart[idx];
+
+	    item.unit = selectedUnit;
+
+	    const lookup = item.modifier_map.find(m => m.modifier === selectedUnit);
+	    if (lookup) {
+	    	item.gram_weight = lookup.gram_weight;
+	    }
+
+	    console.log(`Updated ${item.name} to ${selectedUnit}. Background weight is now: ${item.gram_weight}`);
+        });
+    });
+
+    historyList.querySelectorAll('.mealSelect').forEach(select => {
+        select.addEventListener('change', () => {
+            const idx = parseInt(select.dataset.index);
+            foodCart[idx].meal = select.value;
         });
     });
 
