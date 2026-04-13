@@ -102,62 +102,62 @@ class ppuser():
         self.ERR = 0
     
     def calcMacros(self):
-        self.upper_limits["Protein"] = ((self.TDEE * 0.35) / 4, 2.0)
-        self.upper_limits["Fats"] = ((self.TDEE * 0.35) / 9, 3.0)
+        self.upper_limits["Protein"] = ((self.TDEE * 0.35) / 4, 1.0)
+        self.upper_limits["Fats"] = ((self.TDEE * 0.35) / 9, 0.3)
         if (self.sex == "MALE"):
             match self.goal:
                 case 1: #Standard maintain
                     self.macros["Protein"] = (self.TDEE * 0.21)/4
                     self.macros["Carbs"] = (self.TDEE * 0.56)/4
                     self.macros["Fats"] = (self.TDEE * 0.23)/9
-                    self.upper_limits["Energy"] = (self.TDEE, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE, 0.7)
                 case 2: #Weight loss
                     self.macros["Protein"] = (self.TDEE * 0.23*0.95)/4
                     self.macros["Carbs"] = (self.TDEE * 0.56*0.85)/4
                     self.macros["Fats"] = (self.TDEE * 0.21*0.95)/9
-                    self.upper_limits["Energy"] = (self.TDEE*0.90, 6.0)
+                    self.upper_limits["Energy"] = (self.TDEE*0.90, 0.4)
                 case 3: #Muscle building
                     self.macros["Protein"] = (self.TDEE * 0.25)/4
                     self.macros["Carbs"] = (self.TDEE * 0.60)/4
                     self.macros["Fats"] = (self.TDEE * 0.25)/9
-                    self.upper_limits["Energy"] = (self.TDEE*1.1, 3.0)
+                    self.upper_limits["Energy"] = (self.TDEE*1.1, 1.0)
                 case 4: #Weight lifter, maintain
                     self.macros["Protein"] = (self.TDEE * 0.23)/4
                     self.macros["Carbs"] = (self.TDEE * 0.55)/4
                     self.macros["Fats"] = (self.TDEE * 0.22)/9
-                    self.upper_limits["Energy"] = (self.TDEE*1.05, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE*1.05, 0.9)
                 case 5: #Weight lifter, weight loss
                     self.macros["Protein"] = (self.TDEE * 0.25 * 0.95)/4
                     self.macros["Carbs"] = (self.TDEE * 0.53 * 0.85)/4
                     self.macros["Fats"] = (self.TDEE * 0.22 * 0.95)/9
-                    self.upper_limits["Energy"] = (self.TDEE*0.95, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE*0.95, 0.7)
         else:
             match self.goal:
                 case 1: #Standard maintain
                     self.macros["Protein"] = (self.TDEE * 0.19)/4
                     self.macros["Carbs"] = (self.TDEE * 0.56)/4
                     self.macros["Fats"] = (self.TDEE * 0.25)/9
-                    self.upper_limits["Energy"] = (self.TDEE, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE, 0.7)
                 case 2: #Weight loss
                     self.macros["Protein"] = (self.TDEE * 0.23*0.95)/4
                     self.macros["Carbs"] = (self.TDEE * 0.52*0.85)/4
                     self.macros["Fats"] = (self.TDEE * 0.25*0.95)/9
-                    self.upper_limits["Energy"] = (self.TDEE*0.90, 6.0)
+                    self.upper_limits["Energy"] = (self.TDEE*0.90, 0.4)
                 case 3: #Muscle building
                     self.macros["Protein"] = (self.TDEE * 0.22)/4
                     self.macros["Carbs"] = (self.TDEE * 0.62)/4
                     self.macros["Fats"] = (self.TDEE * 0.27)/9
-                    self.upper_limits["Energy"] = (self.TDEE*1.1, 3.0)
+                    self.upper_limits["Energy"] = (self.TDEE*1.1, 1.0)
                 case 4: #Weight lifter, maintain
                     self.macros["Protein"] = (self.TDEE * 0.20)/4
                     self.macros["Carbs"] = (self.TDEE * 0.55)/4
                     self.macros["Fats"] = (self.TDEE * 0.25)/9
-                    self.upper_limits["Energy"] = (self.TDEE*1.05, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE*1.05, 0.9)
                 case 5: #Weight lifter, weight loss
                     self.macros["Protein"] = (self.TDEE * 0.25 * 0.95)/4
                     self.macros["Carbs"] = (self.TDEE * 0.51 * 0.85)/4
                     self.macros["Fats"] = (self.TDEE * 0.24 * 0.95)/9
-                    self.upper_limits["Energy"] = (self.TDEE*0.95, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE*0.95, 0.7)
         if self.sex == "MALE":
             if 19 <= self.age <= 50:
                 self.macros["Fiber"] = 38
@@ -187,6 +187,7 @@ class ppuser():
 
         self.TDEE = self.BMR*self.activity_factor[self.activity_level - 1]
         self.calcMacros()
+        self.upper_limits["Fiber"] = (self.macros["Fiber"] * 2, 1.0)
         if self.sex == "MALE":
             if 19 <= self.age <= 30:
                 self.ERR = 662 - (9.53 * self.age) + self.activity_level * ((9.36 * self.weight) + (539.6 * self.height * 2.5 / 100))
@@ -202,7 +203,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 900
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15
                 self.micros["Vitamin C"] = 90
                 self.micros["Thiamin"] = 1.2
                 self.micros["Riboflavin"] = 1.3
@@ -226,7 +227,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 900
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15
                 self.micros["Vitamin C"] = 90
                 self.micros["Thiamin"] = 1.2
                 self.micros["Riboflavin"] = 1.3
@@ -251,7 +252,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 900
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15 #mcg
                 self.micros["Vitamin C"] = 90
                 self.micros["Thiamin"] = 1.2
                 self.micros["Riboflavin"] = 1.3
@@ -278,7 +279,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 700
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15 #mcg
                 self.micros["Vitamin C"] = 75
                 self.micros["Thiamin"] = 1.1
                 self.micros["Riboflavin"] = 1.1
@@ -304,7 +305,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 700
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15
                 self.micros["Vitamin C"] = 75
                 self.micros["Thiamin"] = 1.1
                 self.micros["Riboflavin"] = 1.1
@@ -330,7 +331,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 700
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15
                 self.micros["Vitamin C"] = 75
                 self.micros["Thiamin"] = 1.1
                 self.micros["Riboflavin"] = 1.1
