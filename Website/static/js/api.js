@@ -151,6 +151,19 @@ export async function apply_Filter(userId, restriction) {
     });
 }
 
+export async function clear_Filters(userId) {
+    return request('/api/clear-filters', {
+        method: 'POST',
+        body: JSON.stringify({
+            user_id: userId,
+        })
+    });
+}
+
+export async function get_Filters(userId) {
+    return request(`/api/get-filters?user_id=${userId}`);
+}
+
 export async function searchFood(userId, foodName) {
     return request(`/api/search-engine?name=${encodeURIComponent(foodName)}&user_id=${userId}`);
 }

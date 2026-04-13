@@ -14,13 +14,13 @@ scripts_path = os.path.join(parent_dir, 'scripts')
 sys.path.append(scripts_path)
 
 from PlatePilotUser import ppuser
-from food_search import connectDB, apply_filter, active_filters, search_engine
+from food_search import connectDB, apply_filter, clear_user_filters, search_engine
 from the_holy_grail import recommend_foods, NUTRIENT_ID_TO_NAME
 from send_email import send_reset_email
 
 app = Flask(__name__)
 
-active_user_conns = {}
+active_user_filters = {}
 
 def migrate_db():
     conn = None
@@ -66,7 +66,7 @@ def calculate_daily_progress(user_id, conn):
         FROM nutrient
         WHERE id IN (1003, 1005, 1004, 1106, 1162, 1114, 1175, 1109, 1185, 1165, 
                     1178, 1166, 1177, 1167, 1180, 1089, 1170, 1087, 1098, 1090, 
-                    1101, 1091, 1092, 1103, 1093, 1095)
+                    1101, 1091, 1092, 1103, 1093, 1079, 1095)
     ),
     selected_foods AS (
         SELECT DISTINCT fdc_id FROM food_nutrient WHERE fdc_id IN ({fdc_placeholders})
@@ -101,6 +101,7 @@ def calculate_daily_progress(user_id, conn):
 
     progress = {"Energy": 0.0}
     for row in nutrient_rows:
+        # debug print(row)
         nutrient_name = row[1]
         if nutrient_name not in progress:
             progress[nutrient_name] = 0.0
@@ -624,6 +625,49 @@ NUTRIENT_IDS = [
     1099, 1100, 1238, 1090, 1101, 1102, 1091, 1092, 1103, 1093, 1095
 ]
 
+@app.route('/api/clear-filters', methods=['POST'])
+def clear_those_filters():
+    data = request.get_json()
+    try:
+        user_id = data.get('user_id')
+
+        if not user_id:
+            return jsonify({'error': 'User ID required to maintain session'}), 400
+
+        print(f"Removing all active filters for user: {user_id}")
+
+        if not user_id in active_user_filters:
+            active_user_filters[user_id] = set()
+
+        clear_user_filters(user_id, active_user_filters)
+        if(user_id in active_user_filters):
+            print(f"user filters: {active_user_filters[user_id]}")
+        else:
+            print("FILTERS CLEARED")
+        return jsonify({
+            'message': 'Filter cleared successfully',
+            'user_Id': user_id,
+            'result': 'success'
+        }), 201
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/get-filters', methods=['GET'])
+def get_filters():
+    try:
+        user_id = request.args.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'User ID required to maintain session'}), 400
+
+        if not user_id in active_user_filters:
+            active_user_filters[user_id] = set()
+        print(active_user_filters[user_id])
+        return jsonify({f'filters': f'{active_user_filters[user_id]}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/apply-filter', methods=['POST'])
 def apply_that_filter():
     data = request.get_json()
@@ -637,10 +681,7 @@ def apply_that_filter():
         if not user_id:
             return jsonify({'error': 'User ID required to maintain session'}), 400
 
-        if user_id not in active_user_conns:
-            active_user_conns[user_id] = connectDB()
-
-        conn = active_user_conns[user_id]
+        conn = connectDB()
         cur = conn.cursor()
 
         cur.execute("""
@@ -651,9 +692,12 @@ def apply_that_filter():
         
         restrictionId = cur.fetchone()
 
-        print(f"Applying filter: ${restriction} RestrictionId: ${restrictionId[0]}")
+        print(f"Applying filter: {restriction} RestrictionId: {restrictionId[0]}")
 
-        apply_filter(restrictionId[0], conn)
+        if not user_id in active_user_filters:
+            active_user_filters[user_id] = set()
+
+        apply_filter(restrictionId[0], conn, active_user_filters[user_id])
 
         return jsonify({
             'message': 'Filter set successfully',
@@ -669,21 +713,20 @@ def apply_that_filter():
 def execute_search_engine():
     user_id = request.args.get('user_id')
     food_name = request.args.get('name')
-    filters_str = request.args.get('filters', '')
-
+    
     if not user_id:
         return jsonify({'error': 'User ID required to maintain session'}), 400
 
-    if user_id not in active_user_conns:
-        active_user_conns[user_id] = connectDB()
+    if not user_id in active_user_filters:
+        active_user_filters[user_id] = set()
 
-    conn = active_user_conns[user_id]
+    conn = connectDB() 
 
     if not food_name:
         return jsonify({'error': 'No string received'}), 400
 
     try:
-        results = search_engine(food_name, conn)
+        results = search_engine(food_name, conn, active_user_filters[user_id])
         return jsonify(results), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -720,7 +763,7 @@ def get_modifiers():
     except Exception as e:
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
-
+    
     finally:
         if conn:
             conn.close()
@@ -772,8 +815,8 @@ def log_food_entry():
     gram_weight = data.get('gram_weight', 1)
     mealTag = data.get('meal_tag')
 
-    if not user_id or not food_name or not fdc_id or not mealTag: 
-        return jsonify({'error': 'User ID, Food Name, meal tag,or FDC_ID was not passed'}), 400
+    if not user_id or not food_name or not fdc_id: 
+        return jsonify({'error': 'User ID, Food Name, or FDC_ID was not passed'}), 400
 
     conn = None
     try:
@@ -790,7 +833,8 @@ def log_food_entry():
         """, (user_id, fdc_id, food_name, today, portion, unit, gram_weight, mealTag))
 
         conn.commit()
-
+        print("Entering recommendation algorithm...") 
+        recommendations = recommendation_algorithm(user_id) 
         return jsonify({
             'message': 'Food logged successfully',
             'result': 'success'
@@ -969,12 +1013,10 @@ def clear_food_history(user_id):
     finally:
         if conn: conn.close()
 
-@app.route('/api/recommendation', methods=['POST'])
-def recommendation_algorithm():
-    data = request.get_json()
-    user_id = data.get('user_id')
-
+def recommendation_algorithm(user_id):
+    
     conn = None
+    
     try:
         conn = connectDB()
         (_, _, age, sex, height_in, weight_lbs,
@@ -982,27 +1024,75 @@ def recommendation_algorithm():
             user_id=user_id, returnJSON=False
         )
 
-        user = ppuser(
-            w=convert_lbs_to_kg(weight_lbs),
-            h=convert_inches_to_cm(height_in),
-            a=int(age),
-            s=str(sex),
-            al=int(activity_level),
-            g=int(goal)
+        user_info = query_db_for_user_info(user_id=user_id, returnJSON=False)
+        print(user_info)
+        user_object = ppuser(
+            w=convert_lbs_to_kg(user_info[5]),
+            h=convert_inches_to_cm(user_info[4]),
+            a=int(user_info[2]),
+            s=str(user_info[3]),
+            al=int(user_info[7]),
+            g=int(user_info[6])
         )
-        user.setDRI()
+        user_object.setDRI()
+        
+        translation_map = {
+            "Protein": "Protein",
+            "Total lipid (fat)": "Fats",
+            "Carbohydrate, by difference": "Carbs",
+            "Fiber, total dietary": "Fiber",
+            "Calcium, Ca": "Calcium",
+            "Iron, Fe": "Iron",
+            "Magnesium, Mg": "Magnesium",
+            "Phosphorus, P": "Phosphorus",
+            "Potassium, K": "Potassium",
+            "Sodium, Na": "Sodium",
+            "Zinc, Zn": "Zinc",
+            "Copper, Cu": "Copper",
+            "Manganese, Mn": "Manganese",
+            "Selenium, Se": "Selenium",
+            "Vitamin A, RAE": "Vitamin A",
+            "Vitamin E (alpha-tocopherol)": "Vitamin E",
+            "Vitamin D (D2 + D3)": "Vitamin D",
+            "Vitamin C, total ascorbic acid": "Vitamin C",
+            "Thiamin": "Thiamin",
+            "Riboflavin": "Riboflavin",
+            "Niacin": "Niacin",
+            "Pantothenic acid": "Pantothenic acid",
+            "Vitamin B-6": "Vitamin B-6",
+            "Folate, total": "Folate",
+            "Vitamin B-12": "Vitamin B-12",
+            "Choline, total": "Choline",
+            "Vitamin K (phylloquinone)": "Vitamin K"
+        }
+        standardized_consumed = {}
+        
+        consumed_data = calculate_daily_progress(user_id, conn)
 
-        consumed = calculate_daily_progress(user_id, conn)
+        for fdc_name, value in consumed_data.items():
+            # Use the map to get the short name; default to fdc_name if not found
+            clean_name = translation_map.get(fdc_name, fdc_name)
+            standardized_consumed[clean_name] = value
+        
+        for index in standardized_consumed:
+            user_object.getNutrientInfo(index)
+            print(f"{index}: {standardized_consumed[index]}")
 
-        all_nutrients = {**user.macros, **user.micros}
-        consumed = {k: consumed.get(k, 0.0) for k in all_nutrients}
-
-        results = recommend_foods(user, conn, consumed)
-        return jsonify({'recommendations': results}), 200
+        recommendations = recommend_foods(user_object, conn, standardized_consumed)
+        print("\nDebug Recommendation \n------------------------------")
+        for item in recommendations:
+            # iteration: 1 -> "1."
+            # name: 'Garlic, raw' -> "Garlic, raw"
+            print(f"{item['iteration']}. {item['name']} (Match Score: {item['score']})")
+            print("--------------------------------\n")
+        
+        print(standardized_consumed)
+        
+        return recommendations
 
     except Exception as e:
-        print("[ERROR]: ", e)
-        return jsonify({'error': str(e)}), 500
+        print(f"Error: {e}")
+        return 0
 
     finally:
         if conn: conn.close()

@@ -1,28 +1,27 @@
-import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers } from '../api.js';
-import { getUserId, getElement, getInputValue, showError, showSuccess } from '../utils.js';
+import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters} from '../api.js';
+import { getUserId, getElement, getInputValue, showError, showSuccess, getActiveFilters, addFilterToActiveFilters, removeActiveFilter } from '../utils.js';
 import { getUser, updateProgress } from '../state.js';
-let foodCart = [];
+let foodCart = []; 
 
 const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
 const MEAL_TAGS = ['Snack', 'Breakfast', 'Lunch', 'Dinner']
 
 export function initFoodLog() {
-    console.log("Hello there!");
     loadProfilePicture();
     loadUserRestrictions();
 
     const btn = getElement('logButton');
     if (btn) {
-        btn.addEventListener('click', handleLogCart);
+    	btn.addEventListener('click', handleLogCart);
     }
 
     const addFoodBtn = getElement('addFoodBtn');
     if (addFoodBtn) {
-        addFoodBtn.addEventListener('click', foodSearch);
+	addFoodBtn.addEventListener('click', foodSearch);
     }
 
     const filtersContainer = document.querySelector('.filterButtons');
-    const activeFilters = new Set();
+    const activeFilters = getActiveFilters();
     filtersContainer.addEventListener('click', (e) => {
         const filterBtn = e.target.closest('.filterBtn');
         if (!filterBtn) return;
@@ -30,11 +29,13 @@ export function initFoodLog() {
         applyFilter(filter).then(response => {
             if (response?.result?.includes("success")) {
                 console.log(`[INFO] Filter (${filter}) was applied successfully.`)
-                if (activeFilters.has(filter)) {
-                    activeFilters.delete(filter);
+
+                if (activeFilters.includes(filter)) {
+                    removeActiveFilter(filter);
                 } else {
-                    activeFilters.add(filter);
+                    addFilterToActiveFilters(filter);
                 }
+
                 filterBtn.classList.toggle('active');
             }
         });
@@ -69,29 +70,41 @@ async function loadUserRestrictions() {
     try {
         const currentUser = await getUserInfo(getUserId());
         if (currentUser.restrictions.includes('None')) { return; }
-        currentUser.restrictions.forEach(setUserRestrictions);
-        console.log("[INFO] User predefined filters successfully applied for food search.");
+        const activeFilters = getActiveFilters();
+        if (activeFilters.length === 0) {
+            currentUser.restrictions.forEach(res => {
+                setUserRestrictions(res, true);
+            });
+            console.log("[INFO] User predefined filters successfully applied for food search.");
+        }
+        else {
+            activeFilters.forEach(res => setUserRestrictions(res, false));
+            console.log("[INFO] User predefined filters are sustained for food search.");
+        }
     } catch (err) {
         console.warn("Failed to load user filters: ", err);
     }
 }
 
-async function setUserRestrictions(restriction) {
-    try {
-        await applyFilter(restriction);
-    } catch (err) {
-        console.error("[ERROR] Could not load user restrictions");
-        return showError("Could not load user restrictions.");
+async function setUserRestrictions(restriction, callApplyFilterAPI) {
+    if (callApplyFilterAPI) {
+        try {
+            await applyFilter(restriction);
+            addFilterToActiveFilters(restriction);
+        } catch (err) {
+            console.error("[ERROR] Could not load user restrictions");
+            return showError("Could not load user restrictions.");
+        }
     }
 
     switch (restriction) {
         case "None":
             console.log("[INFO] User selected 'None' as their restriction.");
             break;
-        case "Vegetarian":
+        case "Vegan":
             getElement('VeganFilBtn').classList.toggle('active');
             break;
-        case "Vegan":
+        case "Vegetarian":
             getElement('vegFilBtn').classList.toggle('active');
             break;
         case "Nut-Allergy":
@@ -119,27 +132,28 @@ async function setUserRestrictions(restriction) {
         default:
             return showError("Failed to load user restrictions.")
     }
+    alert(`activated btn for restriction: ${restriction}`);
 }
 
 async function handleLogCart() {
-    const userId = getUserId();
-    if (foodCart.length === 0) {
-        showError("No foods selected to log.");
-        return;
-    }
+	const userId = getUserId();
+    	if (foodCart.length === 0) {
+        	showError("No foods selected to log.");
+        	return;
+    	}
 
-    try {
-        const logPromises = foodCart.map(item => {
-            return logFood({
-                user_id: userId,
-                fdc_id: item.fdc_id,
-                name: item.name,
-                portion: item.portion,
-                unit: item.unit,
+    	try {
+        	const logPromises = foodCart.map(item => {
+            		return logFood({
+                		user_id: userId,
+                		fdc_id: item.fdc_id,
+                		name: item.name,
+                		portion: item.portion,
+				unit: item.unit,
                 gram_weight: item.gram_weight,
                 meal_tag: item.meal
-            });
-        });
+            		});
+        	});
 
         await Promise.all(logPromises);
 
@@ -151,10 +165,10 @@ async function handleLogCart() {
         updateProgress();
         showSuccess('Foods logged successfully.');
 
-    } catch (err) {
-        console.error("Logging error:", err);
-        showError(err.message);
-    }
+    	} catch (err) {
+        	console.error("Logging error:", err);
+        	showError(err.message);
+    	}
 }
 
 async function foodSearch() {
@@ -167,15 +181,15 @@ async function foodSearch() {
     const message = `Searching for: ${foodName}`;
     console.log(message);
     alert(message);
-
+    
     try {
         const data = await searchFood(userId, foodName);;
-
+        
         if (data.error) {
             showError(data.error);
             return;
         }
-
+        
         displaySearchResults(data);
     } catch (err) {
         console.error("Fetch error:", err);
@@ -186,19 +200,19 @@ async function foodSearch() {
 function displaySearchResults(results) {
     const resultsList = getElement('resultsList');
     if (!resultsList) return;
-
+    
     // Clear previous results
     resultsList.innerHTML = '';
-
+    
     if (results.length === 0) {
         resultsList.innerHTML = '<p>No results found.</p>';
         return;
     }
-
+    
     // Create result items
     results.forEach(result => {
         const [fdcId, productName, categoryName] = result;
-
+        
         const resultItem = document.createElement('div');
         resultItem.className = 'resultItem';
         resultItem.dataset.fdcId = String(fdcId);
@@ -212,10 +226,10 @@ function displaySearchResults(results) {
             </div>
             <div class="resultCategory">${categoryName}</div>
         `;
-
+        
         // Make it clickable to select the food
         resultItem.addEventListener('click', () => selectFood(productName, fdcId));
-
+        
         resultsList.appendChild(resultItem);
     });
 }
@@ -264,24 +278,24 @@ async function selectFood(foodName, fdcId) {
 
     try {
         const data = await getModifiers(fdcId);
-        console.log(data);
+	console.log(data);
         const defaultModifiers = [
             { modifier: 'g', gram_weight: 1.0 },
             { modifier: 'oz', gram_weight: 28.35 }
         ];
         const dbModifiers = (data.modifiers || []).map(m => ({
-            gram_weight: m[0],
-            modifier: m[1]
-        }));
+	    gram_weight: m[0],
+	    modifier: m[1]
+	}));
         const modifierList = [...dbModifiers];
-        console.log("Made it passed dbModifiers and modifierList instantiation...");
+	console.log("Made it passed dbModifiers and modifierList instantiation...");
         defaultModifiers.forEach(def => {
             if (!modifierList.some(m => m.modifier === def.modifier)) {
                 modifierList.push(def);
             }
         });
-        console.log("dbModifiers after map:", dbModifiers);
-        console.log("modifiers raw:", data.modifiers);
+	console.log("dbModifiers after map:", dbModifiers);
+	console.log("modifiers raw:", data.modifiers);
         foodCart.push({
             name: foodName,
             fdc_id: fdcId,
@@ -291,7 +305,7 @@ async function selectFood(foodName, fdcId) {
             modifier_map: modifierList,
             meal: getDefaultMeal()
         });
-        console.log("Just successfully pushed foodCart");
+	console.log("Just successfully pushed foodCart");
         setSearchResultSelectedState(fdcId, true);
         displayCart();
 
@@ -335,25 +349,25 @@ function removeFromCart(index) {
 function displayCart() {
     const historyList = getElement('historyList');
     if (!historyList) return;
-
+    
     historyList.innerHTML = '';
-
+    
     if (foodCart.length === 0) {
         historyList.innerHTML = '<p style="color: #666; font-style: italic;">No foods selected yet. Search and add foods above.</p>';
         return;
     }
-
+    
     foodCart.forEach((food, index) => {
         const cartItem = document.createElement('div');
         cartItem.className = 'cartItem';
         const portionValue = Number(food.portion) > 0 ? Number(food.portion) : 1;
 
 
-        const SERVING_UNITS = (food.modifier_map && food.modifier_map.length > 0) ? food.modifier_map.map(m => m.modifier) : ['Serving'];
+	const SERVING_UNITS = (food.modifier_map && food.modifier_map.length > 0) ? food.modifier_map.map(m => m.modifier) : ['Serving'];
         const unitOptions = SERVING_UNITS.map((unit) => {
             const selected = (food.unit || 'Serving') === unit ? 'selected' : '';
             return `<option value="${unit}" ${selected}>${unit}</option>`;
-        }).join('');
+	}).join('');
         const MEAL_TAGS = (food.meal_tags && food.meal_tags.length > 0) ? food.meal_tags : ['Snack', 'Breakfast', 'Lunch', 'Dinner'];
         const mealTagOptions = MEAL_TAGS.map((meal) => {
             const selected = (food.meal || 'Snack') === meal ? 'selected' : '';
@@ -405,17 +419,17 @@ function displayCart() {
     unitSelects.forEach(select => {
         select.addEventListener('change', () => {
             const idx = parseInt(select.dataset.index);
-            const selectedUnit = select.value;
-            const item = foodCart[idx];
+	    const selectedUnit = select.value;
+	    const item = foodCart[idx];
 
-            item.unit = selectedUnit;
+	    item.unit = selectedUnit;
 
-            const lookup = item.modifier_map.find(m => m.modifier === selectedUnit);
-            if (lookup) {
-                item.gram_weight = lookup.gram_weight;
-            }
+	    const lookup = item.modifier_map.find(m => m.modifier === selectedUnit);
+	    if (lookup) {
+	    	item.gram_weight = lookup.gram_weight;
+	    }
 
-            console.log(`Updated ${item.name} to ${selectedUnit}. Background weight is now: ${item.gram_weight}`);
+	    console.log(`Updated ${item.name} to ${selectedUnit}. Background weight is now: ${item.gram_weight}`);
         });
     });
 
