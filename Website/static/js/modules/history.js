@@ -1,4 +1,4 @@
-import { getUserId } from '../utils.js';
+import { getUserId, getElement } from '../utils.js';
 import { getFoodHistory, updateFoodEntry, deleteFoodEntry, clearFoodHistory } from '../api.js';
 
 let foodHistoryData = [];
@@ -22,8 +22,8 @@ export async function initHistory() {
 }
 
 function renderCalendar() {
-    const grid = document.getElementById('calendarGrid');
-    const monthLabel = document.getElementById('monthDisplay');
+    const grid = getElement('calendarGrid');
+    const monthLabel = getElement('monthDisplay');
 
     if (!grid || !monthLabel) return;
 
@@ -89,8 +89,8 @@ function renderCalendar() {
 
 // SHows specific day details i.e. logged food, curent intake
 function showDayDetails(dateString) {
-    const detailsContainer = document.getElementById('dayDetails');
-    const header = document.getElementById('selectedDateHeader');
+    const detailsContainer = getElement('dayDetails');
+    const header = getElement('selectedDateHeader');
     if (!detailsContainer || !header) return;
 
     header.innerText = dateString;
@@ -110,6 +110,7 @@ function showDayDetails(dateString) {
 	    <div class="d-flex flex-column">
 	    	<span class="fw-bold">${item.name}</span>
 		<small class="text-muted">${item.portion} ${item.unit || 'Serving' }</small>
+		<small class="text-muted">${item.mealTag}</small>
 	    </div>
 	    <div class="history-actions">
 	    	<button class="btn btn-sm btn-outline-danger"
@@ -183,7 +184,7 @@ window.editFoodEntry = function(entryId, currentName, currentCalories, currentPo
                 foodHistoryData[entryIndex].base_kcal = baseKcal;
             }
             renderCalendar();
-            showDayDetails(document.getElementById('selectedDateHeader').innerText);
+            showDayDetails(getElement('selectedDateHeader').innerText);
             alert('Food entry updated successfully!');
         })
         .catch(err => {
@@ -205,7 +206,7 @@ window.deleteFoodEntry = function(entryId, foodName) {
             
             // Refresh the display
             renderCalendar();
-            showDayDetails(document.getElementById('selectedDateHeader').innerText);
+            showDayDetails(getElement('selectedDateHeader').innerText);
             
             alert('Food entry deleted successfully!');
         })
@@ -223,7 +224,7 @@ window.deleteFoodEntry = function(entryId, foodName) {
         api.deleteFoodEntry(entryId, getUserId()).then(() => {
             // Refresh local data and UI
             foodHistoryData = foodHistoryData.filter(i => i.id !== entryId);
-            showDayDetails(document.getElementById('selectedDateHeader').innerText);
+            showDayDetails(getElement('selectedDateHeader').innerText);
             renderCalendar(); 
         });
     });
