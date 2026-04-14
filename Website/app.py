@@ -81,7 +81,7 @@ def calculate_daily_progress(user_id, conn):
             'KCAL' AS unit_name
         FROM food_nutrient
         WHERE nutrient_id IN (1008, 2047)
-          AND fdc_id IN (SELECT fdc_id FROM selected_foods)
+        AND fdc_id IN (SELECT fdc_id FROM selected_foods)
         GROUP BY fdc_id
     )
     SELECT
@@ -267,6 +267,15 @@ def register_user():
     finally:
         if conn:
             conn.close()
+
+#user state for privacy pages
+@app.route('/api/privacy-page', methods=['GET'])
+def authenticate_user_id():
+    user_id = int(request.args.get('user_id'))
+    if user_id is None:
+        return 0
+    else:
+        return 1
 
 
 @app.route('/reset-password', methods=['GET'])
@@ -816,7 +825,7 @@ def log_food_entry():
     if not user_id: 
         return jsonify({'error': 'User ID not passed'}), 400
     if not items or not isinstance(items, list):
-    	return jsonify({'error': 'items must be a non-empty list'}), 400
+        return jsonify({'error': 'items must be a non-empty list'}), 400
 
     conn = None
     try:
@@ -835,7 +844,7 @@ def log_food_entry():
             meal_tag	= item.get('meal_tag')
 
             if not fdc_id or not name:
-            	return jsonify({'error': f'Each item requires fdc_id and name. Bad item: {item}'}), 400
+                return jsonify({'error': f'Each item requires fdc_id and name. Bad item: {item}'}), 400
 
             rows.append((user_id, fdc_id, name, today, portion, unit, gram_weight, meal_tag))
 
