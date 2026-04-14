@@ -268,16 +268,6 @@ def register_user():
         if conn:
             conn.close()
 
-#user state for privacy pages
-@app.route('/api/privacy-page', methods=['GET'])
-def authenticate_user_id():
-    user_id = int(request.args.get('user_id'))
-    if user_id is None:
-        return 0
-    else:
-        return 1
-
-
 @app.route('/reset-password', methods=['GET'])
 def reset_password():
     token = request.args.get('token')

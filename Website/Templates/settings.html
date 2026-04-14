@@ -182,6 +182,21 @@
                 <div id="moreInfoBody" class="infoCollapseBody is-collapsed">
                     <p class="formSubtitle">Learn more about PlatePilot and your health data.</p>
                     <div class="infoList">
+                        <div>
+                            <div class="infoItem">
+                                <span class="label">Gender</span>
+                                <button type="button" class="infoBtn" onclick="toggleSexDisclaimer(event)" style="background: none; border: none; padding: 0; cursor: pointer;">
+                                    <i class="fa-solid fa-info fa-s" style="color: #16a34a;"></i>
+                                </button>
+                                <span class="infoText">Which one should I choose?</span>
+                            </div>
+                            <!-- disclaimer section -->
+                            <div id="sexDisclaimer" class="disclaimer">
+                                <p><strong>Why we ask:</strong> We use sex to calculate your metabolic needs, as there are different equations for men and women.</p>
+                                <p><strong>For transgender or non-binary individuals:</strong> If your gender identity differs from your sex assigned at birth and you haven't started gender-affirming medications, select your sex assigned at birth for accuracy. If you're taking gender-affirming medications, consult your doctor for the best selection for you.</p>
+                                <p>For best results, always consult with your healthcare provider about your nutritional needs.</p>
+                            </div>
+                        </div>
                         <div class="infoItem">
                             <span class="label">Privacy Policy</span>
                             <span class="value infoLinks">
@@ -193,10 +208,6 @@
                             <span class="value infoLinks">
                                 <a href="{{ url_for('html_urls', filename='terms.html') }}">Terms of Service</a>
                             </span>
-                        </div>
-                        <div class="infoItem">
-                            <span class="label">How we calculate macros/micros</span>
-                            <span class="arrow">></span>
                         </div>
                         <div class="infoItem">
                             <span class="label">About Us / Contact Us</span>
@@ -215,7 +226,7 @@
 </body>
 <footer>
     <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
-    <p class="homeFooterTxt">Privacy Policy | Terms of Service</p>
-    <p class="homeFooterTxt">Contact Us: <a href="mailto:berkscott998@outlook.com">Email</a></p>
+    <p class="homeFooterTxt"><a href="{{ url_for('html_urls', filename='privacy.html') }}">Privacy Policy</a> | <a href="{{ url_for('html_urls', filename='terms.html') }}">Terms of Service</a></p>
+    <p class="homeFooterTxt"><a href="mailto:berkscott998@outlook.com">Contact Us</a></p>
 </footer>
 </html>
