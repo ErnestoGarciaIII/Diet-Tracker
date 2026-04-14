@@ -151,12 +151,29 @@ export async function apply_Filter(userId, restriction) {
     });
 }
 
+export async function clear_Filters(userId) {
+    return request('/api/clear-filters', {
+        method: 'POST',
+        body: JSON.stringify({
+            user_id: userId,
+        })
+    });
+}
+
+export async function get_Filters(userId) {
+    return request(`/api/get-filters?user_id=${userId}`);
+}
+
 export async function searchFood(userId, foodName) {
     return request(`/api/search-engine?name=${encodeURIComponent(foodName)}&user_id=${userId}`);
 }
 
 export async function getNutrients(fdcId) {
     return request(`/api/get-nutrients?fdc_id=${fdcId}`);
+}
+
+export async function getModifiers(fdcId) {
+    return request(`/api/get-modifiers?fdc_id=${fdcId}`);
 }
 
 // ==========================

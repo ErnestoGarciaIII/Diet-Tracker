@@ -13,9 +13,13 @@ import { initRegister } from './modules/register.js';
 import { initForgotPassword } from './modules/forgotPassword.js';
 import { initResetPassword } from './modules/resetPassword.js';
 import { initLogout } from './modules/logout.js';
+import { initDynamicAuthLink } from './modules/privacy.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const userId = State.getUserId();
+
+    initDynamicAuthLink();
+
     // Protected pages require login
     const protectedPage =
         Util.getElement('dashboardPage') ||
@@ -33,7 +37,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (Util.getElement('forgotPasswordPage')) initForgotPassword();
     if (Util.getElement('resetPasswordPage')) initResetPassword();
     if (Util.getElement('logoutPage')) initLogout();
-    if (protectedPage && !userId) {
+    const isLogoutPage = Util.getElement('logoutPage');
+    if (protectedPage && !userId && !isLogoutPage) {
         window.location.href = 'home.html'
     }
 

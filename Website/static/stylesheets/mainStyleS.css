@@ -468,7 +468,6 @@ p.change{
     line-height: 1.75;
     margin-bottom: 1rem;
 }
-
 .aboutMissionEmoji {
     font-size: 7rem;
     flex-shrink: 0;
@@ -814,6 +813,11 @@ p.change{
     text-align: center;
 }
 
+.infoHeader{
+    margin-left: 75px;
+
+}
+
 
 /* ------------------------------------------- dashboard pages ------------------------------------- */
 /* --------------------------- Navigation Bar for all dashboard pages ---------------------- */
@@ -882,6 +886,12 @@ p.change{
     gap: 24px;
     max-width: 1320px;
     align-items: start;
+}
+
+.settingsSidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .statsPanel {
@@ -1324,20 +1334,29 @@ li {
     border-left: 4px solid #16a34a;
 }
 
-.food-info {
+.foodInfo {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 8px;
     flex: 1;
 }
+.foodInfo .label{
+    font-weight: 600;
+    color: #000;
+}
+.foodInfo .value{
+    color: #333; 
+    font-weight: 600; 
+}
 
-.food-actions {
+
+.foodActions {
     display: flex;
     gap: 8px;
     margin-left: 15px;
 }
 
-.edit-btn, .delete-btn {
+.edit-btn, .delete-Btn {
     background: none;
     border: none;
     padding: 6px 8px;
@@ -1355,11 +1374,11 @@ li {
     background-color: #dbeafe;
 }
 
-.delete-btn {
+.delete-Btn {
     color: #dc2626;
 }
 
-.delete-btn:hover {
+.delete-Btn:hover {
     background-color: #fee2e2;
 }
 
@@ -1435,6 +1454,66 @@ li {
 	margin-left: 80px;
     padding: 40px;
 	align-items: center;
+}
+
+.settingsSidebar .settingsCard {
+    max-width: none;
+    margin-left: 90px;
+}
+
+.infoCard {
+    min-height: 260px;
+}
+
+.infoCardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.infoCardHeader .resHeader {
+    margin-bottom: 0;
+}
+
+.infoCollapseToggle {
+    border: 1px solid #d1d5db;
+    background: #f9fafb;
+    color: #374151;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.infoCollapseToggle:hover {
+    background-color: #e5e7eb;
+}
+
+
+.infoToggleIcon {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.infoCollapseToggle[aria-expanded="false"] .infoToggleIcon {
+    transform: rotate(-180deg);
+}
+
+.infoCollapseBody {
+    max-height: 500px;
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 0.25s ease, opacity 0.2s ease;
+}
+
+.infoCollapseBody.is-collapsed {
+    max-height: 0;
+    opacity: 0;
 }
 
 .avatarContainer{
@@ -1542,6 +1621,89 @@ li {
 	color: #ccc;
 	font-size: 20px; 
 }
+
+.infoLinks {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.infoLinks a {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.infoLinks a:hover {
+    text-decoration: underline;
+}
+
+.infoLinkDivider {
+    color: #9ca3af;
+}
+/* ------------------------------ privacy & terms links --------------------------------- */
+
+.privacySectionsWrapper {
+    background-color: beige;
+    padding: 2rem 5% 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+
+.privacyCard {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 32px 40px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 900px;
+}
+
+.privacySectionTitle {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #16a34a;
+    margin-bottom: 1rem;
+}
+
+.privacyPolicyContent {
+    max-width: 980px;
+}
+
+.privacyPolicyContent .privacySectionTitle {
+    margin-top: 2rem;
+}
+
+.privacyPolicyContent .privacySectionTitle:first-child {
+    margin-top: 0;
+}
+
+.privacyList {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin: 0 0 1.25rem;
+    max-height: none;
+    overflow: visible;
+}
+
+.privacyList li {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 0.75rem;
+    border-radius: 0;
+    display: list-item;
+    font-size: 1.02rem;
+    color: #4b5563;
+}
+
+.headerDivider {
+    height: 5px;
+    background-color: #16a34a;
+    flex-grow: 1;
+}
+
 
 /* ------------------------------ logout page --------------------------------- */
 .logCard{
@@ -1688,7 +1850,7 @@ li {
 }
 
 .portionInput {
-    width: 80px;
+    width: 67px;
     padding: 6px 8px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
@@ -1696,6 +1858,13 @@ li {
 
 .unitSelect {
     padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.mealSelect{
+    padding: 5px 7px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
     background: #ffffff;

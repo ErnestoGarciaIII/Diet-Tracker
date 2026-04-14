@@ -22,6 +22,7 @@ WHERE (f.food_category_id NOT IN (3, 5, 7, 10, 13, 15, 17, 21, 22, 24, 25, 27)
         AND (f.description NOT LIKE '%giblet%')
         AND (f.description NOT LIKE '%salmon%')
         AND (f.description NOT LIKE '%tuna%')
+	AND (f.description NOT LIKE '%fish%')
         AND (f.description NOT LIKE '%shrimp%')
         AND (f.description NOT LIKE '%prawn%')
         AND (f.description NOT LIKE '%crab%')
@@ -36,4 +37,5 @@ WHERE (f.food_category_id NOT IN (3, 5, 7, 10, 13, 15, 17, 21, 22, 24, 25, 27)
 	OR f.description LIKE '%plant%based%'
 	OR f.description LIKE '%meatless%'
 	OR f.description LIKE '%vegan%'
+	OR f.description LIKE '%goldfish%'
 	)

@@ -1,4 +1,4 @@
-import { getUserInfo, updateUser, uploadAvatar, setRestrictions } from '../api.js';
+﻿import { getUserInfo, updateUser, uploadAvatar, setRestrictions } from '../api.js';
 import { getUserId, getElement, showError, showSuccess, showMessage } from '../utils.js';
 
 let currentUser = null;
@@ -6,6 +6,7 @@ let selected = [];
 export function initSettings() {
     loadUser();
     setupAvatarControls();
+    setupMoreInfoCollapse();
 
     document.querySelectorAll('.tag').forEach(tag => {
         tag.addEventListener('click', () => toggleTag(tag));
@@ -13,6 +14,28 @@ export function initSettings() {
 
     const submitBtn = getElement('submitBtn');
     if (submitBtn) submitBtn.addEventListener('click', saveRestrictions);
+}
+
+function setupMoreInfoCollapse() {
+    const toggleBtn = getElement('moreInfoToggle');
+    const infoBody = getElement('moreInfoBody');
+    if (!toggleBtn || !infoBody) return;
+
+    toggleBtn.addEventListener('click', () => {
+        const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+        const nextState = !isExpanded;
+
+        toggleBtn.setAttribute('aria-expanded', String(nextState));
+        toggleBtn.textContent = nextState ? 'Hide' : 'Show';
+
+        const icon = document.createElement('span');
+        icon.className = 'infoToggleIcon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = '▾';
+        toggleBtn.appendChild(icon);
+
+        infoBody.classList.toggle('is-collapsed', !nextState);
+    });
 }
       //grabs goal value
 function goalIdToLabel(goalId) {
@@ -28,16 +51,19 @@ async function loadUser() {
     try {
         currentUser = await getUserInfo(getUserId());
         currentUser.restrictions.forEach(loadUserRestrictions)
+        // Converts from UTC to users local time
+        const accountDate = new Date(currentUser.account_creation_date_utc).toLocaleDateString();
         // Populate display elements
         getElement('userNameDisplay').textContent = currentUser.name || '';
         getElement('userGenderDisplay').textContent = currentUser.sex || '';
+        getElement('userDobDisplay').textContent = currentUser.date_of_birth || '';
         getElement('userAgeDisplay').textContent = currentUser.age || '';
         getElement('userWeightDisplay').textContent = currentUser.weight_lbs || '';
         getElement('userHeightDisplay').textContent = currentUser.height_in || '';
         getElement('userEmailDisplay').textContent = currentUser.email || '';
         getElement('userActivityDisplay').textContent = currentUser.activity_level || '';
         getElement('userGoalDisplay').textContent = goalIdToLabel(currentUser.goal);
-        
+        getElement('userAccCreatedDisplay').textContent = accountDate || '';
         // Load profile picture
         if (currentUser.profile_picture) {
             const profileImages = document.querySelectorAll('#profilePreview');

@@ -50,6 +50,42 @@ def build_food_table(conn):
         conn.close()
         sys.exit(1)
 
+
+def nuke_food_table(conn):
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute(f"""
+        CREATE INDEX IF NOT EXISTS idx_food_nutrient_fdc_id ON food_nutrient(fdc_id);
+        """)
+        cursor.execute(f"""
+        DELETE FROM food
+        WHERE fdc_id IN (
+            SELECT f.fdc_id
+            FROM food f
+            LEFT JOIN food_nutrient fn ON f.fdc_id = fn.fdc_id
+            WHERE fn.fdc_id IS NULL
+        );
+        """)
+        cursor.execute(f"""
+        DELETE FROM food
+        WHERE fdc_id IN (
+            SELECT f.fdc_id
+            FROM food f
+            LEFT JOIN food_nutrient fn_energy ON f.fdc_id = fn_energy.fdc_id AND fn_energy.nutrient_id IN (1008, 2047)
+            LEFT JOIN food_nutrient fn_macros ON f.fdc_id = fn_macros.fdc_id AND fn_macros.nutrient_id IN (1003, 1004, 1005)
+            GROUP BY f.fdc_id
+            HAVING
+                (MAX(CASE WHEN fn_energy.nutrient_id IN (1008, 2047) THEN fn_energy.amount ELSE 0 END) = 0)
+                AND
+                (MAX(CASE WHEN fn_macros.nutrient_id IN (1003, 1004, 1005) THEN fn_macros.amount ELSE 0 END) > 0)
+        );
+        """)
+    except sqlite3.OperationalError as e:
+        print(f"Error: {e}\nExiting...")
+        conn.close()
+        sys.exit(1)
+
 def build_users_table(conn, cursor):
     cursor.execute("DROP TABLE IF EXISTS Users")
     cursor.execute("""
@@ -61,7 +97,7 @@ def build_users_table(conn, cursor):
         reset_token TEXT,
         reset_token_expiry TEXT,
         date_of_birth TEXT,
-        age INTEGER,
+        account_creation_date TEXT,
         sex TEXT,
         height_inches INTEGER,
         weight_lbs INTEGER,
@@ -123,8 +159,11 @@ def build_food_history_table(conn, cursor):
         fdc_id INTEGER NOT NULL,
         foodName TEXT NOT NULL,
         portion REAL NOT NULL,
+        unit TEXT NOT NULL,
+        gram_weight REAL NOT NULL,
         dateLogged DATE NOT NULL,
         timeLogged TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        mealTag TEXT NOT NULL,
         FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
     )
     """)
@@ -174,7 +213,7 @@ def populate_food_tags(conn, cursor):
         9: "keto_query.sql"
     }
 
-    query_dir = "../scripts/query_templates" 
+    query_dir = f"../scripts/query_templates" 
 
     for res_id, file_name in tag_map.items():
         path = os.path.join(query_dir, file_name)
@@ -189,7 +228,7 @@ def populate_food_tags(conn, cursor):
     print("Food labeling complete.\n")
 
 def populate_top_foods(conn, cursor):
-    sql_path = os.path.join("../scripts/query_templates", "insert_top_foods.sql")
+    sql_path = os.path.join(f"../scripts/query_templates", "insert_top_foods.sql")
     
     if not os.path.exists(sql_path):
         print(f"Error: Could not find {sql_path}. Skipping TopFoods insertion.")
@@ -216,6 +255,8 @@ def main():
     cursor = conn.cursor()
 
     build_food_table(conn)
+    nuke_food_table(conn)
+
     build_users_table(conn, cursor)
     build_restrictions_table(conn, cursor)
     build_user_restrictions_table(conn, cursor)
@@ -224,7 +265,7 @@ def main():
 
     categoryQuery, foodQuery, restrictionsQuery = buildQuery()
     runQuery(categoryQuery, foodQuery, restrictionsQuery, conn, cursor)
-    
+
     build_food_restrictions_table(conn, cursor)
     populate_food_tags(conn, cursor)
     
