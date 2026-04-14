@@ -221,6 +221,16 @@ def html_urls(filename):
 
 ######### API METHODS #########
 
+#privacy
+
+@app.route('/api/privacy-page', methods=['GET'])
+def authenticate_user_id():
+    user_id = int(request.args.get('user_id'))
+    if user_id is None:
+        return 0
+    else:
+        return 1
+
 # Register
 @app.route('/api/register', methods=['POST'])
 def register_user():
