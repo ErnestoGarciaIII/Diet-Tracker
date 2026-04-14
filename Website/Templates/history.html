@@ -79,26 +79,7 @@
             <!-- History display-->
             <div id="dayDetails" class="dayDetails">
                 <h3 id="selectedDateHeader"></h3>
-                <div id="historyList">
-                    <!-- {% for log in history %}
-                    <div class="historyItem">
-                        <div class="foodInfo">
-                            <span class="label"><strong>${{ log.name }}</strong></span>
-                            <span class="value">Portion: {{ log.portion or 1 }}</span>
-                        </div>
-                        <div class="foodActions">
-                            <button class="editBtn" data-id="{{ log.id }}" data-name="{{ log.name }}" data-kcal="{{ log.kcal }}" data-portion="{{ log.portion or 1 }}">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button class="deleteBtn" data-id="{{ log.id }}" data-name="{{ log.name }}">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    {% else %}
-                    <div> No logs for this day. </div>
-                    {% endfor %} -->
-                </div>
+                <div id="historyList"></div>
             </div>
         </div>
     </main>
@@ -106,7 +87,7 @@
 </body>
 <footer>
     <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
-    <p class="homeFooterTxt">Privacy Policy | Terms of Service</p>
-    <p class="homeFooterTxt">Contact Us: <a href="mailto:berkscott998@outlook.com">Email</a></p>
+    <p class="homeFooterTxt"><a href="{{ url_for('html_urls', filename='privacy.html') }}">Privacy Policy</a> | <a href="{{ url_for('html_urls', filename='terms.html') }}">Terms of Service</a></p>
+    <p class="homeFooterTxt"><a href="mailto:berkscott998@outlook.com">Contact Us</a></p>
 </footer>
 </html>

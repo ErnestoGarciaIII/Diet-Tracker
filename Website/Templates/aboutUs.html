@@ -11,9 +11,9 @@
 
     <!-- Navigation Bar -->
     <nav class="homeNavbar">
-        <a href="{{ url_for('html_urls', filename='Home.html') }}" class="mainLogo">PlatePilot</a>
+        <div class="mainLogo">PlatePilot</div>
         <div>
-            <a href="{{ url_for('html_urls', filename='login.html') }}" class="loginLink">Login</a>
+            <a href="{{ url_for('html_urls', filename='settings.html') }}" class="loginLink">Back to Dashboard</a>
         </div>
     </nav>
 
@@ -137,17 +137,8 @@
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="aboutCTA">
-        <h2 class="aboutCTATitle">Ready to take control of your plate?</h2>
-        <p class="welSubtitle">Join PlatePilot today and start eating with purpose.</p>
-        <a href="{{ url_for('html_urls', filename='register.html') }}" class="homeBtns HBtnLink">
-            <button class="homeBtns HBtn-primary">Get Started — It's Free</button>
-        </a>
-    </section>
-
 </body>
-<footer class="homeFooter">
+<footer>
     <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
     <p class="homeFooterTxt">Privacy Policy | Terms of Service</p>
     <p class="homeFooterTxt">Contact Us: <a href="mailto:berkscott998@outlook.com">Email</a></p>
