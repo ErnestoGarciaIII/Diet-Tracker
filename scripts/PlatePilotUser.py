@@ -84,7 +84,7 @@ class ppuser():
             "Manganese":        (11,    2.0),
             "Selenium":         (400,   3.0),
             "Vitamin A":        (3000,  5.0),
-            "Vitamin D":        (0.1,   3.0),
+            "Vitamin D":        (100,   1.5),
             "Vitamin E":        (1000,  1.5),
             "Vitamin K":        (None,  0.0),
             "Vitamin C":        (2000,  1.0),
