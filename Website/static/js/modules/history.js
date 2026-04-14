@@ -107,17 +107,18 @@ function showDayDetails(dateString) {
 	entryDiv.className = "history-item d-flex justify-content-between align-items-center mb-2 p-2 border rounded";
 	const escapedName = item.name.replace(/'/g, "\\'");
 	entryDiv.innerHTML = `
-	    <div class="d-flex flex-column">
-	    	<span class="fw-bold">${item.name}</span>
-		<small class="text-muted">${item.portion} ${item.unit || 'Serving' }</small>
-		<small class="text-muted">${item.mealTag}</small>
-	    </div>
-	    <div class="history-actions">
-	    	<button class="btn btn-sm btn-outline-danger"
-		    onclick="deleteFoodEntry(${item.id}, '${escapedName}')">
-		    Delete
-		</button>
-	    </div>
+        <div class="historyItem">
+            <div class="foodInfo">
+                <span class="label">${item.name}</span> <strong>|</strong>
+                <span class="value">${item.portion} ${item.unit || 'Serving' } </span> <strong>|</strong>
+                <span class="value">${item.mealTag}</span>
+            </div>
+            <div class="foodActions">
+                <button class="delete-Btn" onclick="deleteFoodEntry(${item.id}, '${escapedName}')" aria-label="Delete food entry">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
 	`;
 	detailsContainer.appendChild(entryDiv);
     });
