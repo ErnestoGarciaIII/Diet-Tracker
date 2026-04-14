@@ -1841,7 +1841,7 @@ li {
 }
 
 .portionInput {
-    width: 80px;
+    width: 67px;
     padding: 6px 8px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
@@ -1849,6 +1849,13 @@ li {
 
 .unitSelect {
     padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.mealSelect{
+    padding: 5px 7px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
     background: #ffffff;
