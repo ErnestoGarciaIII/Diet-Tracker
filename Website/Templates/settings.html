@@ -149,45 +149,64 @@
             </footer>
         </div>
 
-        <!-- second card-->
-        <div class="card settingsCard">
-            <h2 class="resHeader">Changes to restrictions (if any)?</h2>
-            <p class="formSubtitle">Tell us what to exclude.</p>
-            <div class="tagsGrid">
-                <div class="tag" id="Vegan" data-value="Vegan">Vegan</div>
-                <div class="tag" id="Vegetarian" data-value="Vegetarian">Vegetarian</div>
-                <div class="tag" id="Soy-Allergy" data-value="Soy-Allergy">Soy-Allergy</div>
-                <div class="tag" id="Dairy-Free" data-value="Dairy-Free">Dairy-Free</div>
-                <div class="tag" id="Keto" data-value="Keto">Keto</div>
-                <div class="tag" id="Nut-Allergy" data-value="Nut-Allergy">No Nuts</div>
-                <div class="tag" id="Pescatarian" data-value="Pescatarian">Pescatarian</div>
-                <div class="tag" id="Egg-Allergy" data-value="Egg-Allergy">Egg-Free</div>
-                <div class="tag" id="Shellfish-Allergy" data-value="Shellfish-Allergy">Shellfish-Allergy</div>
-                <div class="tag" id="None" data-value="None">None</div>
+        <div class="settingsSidebar">
+            <!-- second card-->
+            <div class="card settingsCard settingsSideCard">
+                <h2 class="resHeader">Changes to restrictions (if any)?</h2>
+                <p class="formSubtitle">Tell us what to exclude.</p>
+                <div class="tagsGrid">
+                    <div class="tag" id="Vegan" data-value="Vegan">Vegan</div>
+                    <div class="tag" id="Vegetarian" data-value="Vegetarian">Vegetarian</div>
+                    <div class="tag" id="Soy-Allergy" data-value="Soy-Allergy">Soy-Allergy</div>
+                    <div class="tag" id="Dairy-Free" data-value="Dairy-Free">Dairy-Free</div>
+                    <div class="tag" id="Keto" data-value="Keto">Keto</div>
+                    <div class="tag" id="Nut-Allergy" data-value="Nut-Allergy">No Nuts</div>
+                    <div class="tag" id="Pescatarian" data-value="Pescatarian">Pescatarian</div>
+                    <div class="tag" id="Egg-Allergy" data-value="Egg-Allergy">Egg-Free</div>
+                    <div class="tag" id="Shellfish-Allergy" data-value="Shellfish-Allergy">Shellfish-Allergy</div>
+                    <div class="tag" id="None" data-value="None">None</div>
+                </div>
+                <button id="submitBtn" class="RUGRbtn pagesBtn-primary full-width mt-20">Save & Recalculate Plan</button>
+                <button class="RUGRbtn pagesBtn-secondary full-width mt-10" onclick="history.back()">Back</button>
             </div>
-            <button id="submitBtn" class="RUGRbtn pagesBtn-primary full-width mt-20">Save & Recalculate Plan</button>
-            <button class="RUGRbtn pagesBtn-secondary full-width mt-10" onclick="history.back()">Back</button>
-        </div>
-    </main>
 
-    <!-- More Information -->
-    <main class="dashContent settingsLayout">
-        <!-- third card-->
-        <div class="card settingsCard">
-            <h2 class="resHeader">More Information</h2>
-            <p class="formSubtitle">Learn more about PlatePilot and your health data.</p>
-            <div class="infoList">
-                <div class="infoItem">
-                    <span class="label">Privacy Policy</span>
-                    <span class="arrow">></span>
+            <!-- third card-->
+            <div class="card settingsCard settingsSideCard infoCard">
+                <div class="infoCardHeader">
+                    <h2 class="infoHeader">More Information</h2>
+                    <button id="moreInfoToggle" class="infoCollapseToggle" type="button" aria-expanded="false" aria-controls="moreInfoBody">
+                        Show
+                        <span class="infoToggleIcon" aria-hidden="true">▾</span>
+                    </button>
                 </div>
-                <div class="infoItem">
-                    <span class="label">How we calculate macros/micros</span>
-                    <span class="arrow">></span>
-                </div>
-                <div class="infoItem">
-                    <span class="label">Support / Contact Us</span>
-                    <span class="arrow">></span>
+                <div id="moreInfoBody" class="infoCollapseBody is-collapsed">
+                    <p class="formSubtitle">Learn more about PlatePilot and your health data.</p>
+                    <div class="infoList">
+                        <div class="infoItem">
+                            <span class="label">Privacy Policy</span>
+                            <span class="value infoLinks">
+                                <a href="{{ url_for('html_urls', filename='privacy.html') }}">Privacy Policy</a>
+                            </span>
+                        </div>
+                        <div class="infoItem">
+                            <span class="label">Terms of Service</span>
+                            <span class="value infoLinks">
+                                <a href="{{ url_for('html_urls', filename='terms.html') }}">Terms of Service</a>
+                            </span>
+                        </div>
+                        <div class="infoItem">
+                            <span class="label">How we calculate macros/micros</span>
+                            <span class="arrow">></span>
+                        </div>
+                        <div class="infoItem">
+                            <span class="label">About Us / Contact Us</span>
+                            <span class="value infoLinks">
+                                <a href="{{ url_for('html_urls', filename='aboutUs.html') }}">About Us</a>
+                                <span class="infoLinkDivider">|</span>
+                                <a href="mailto:berkscott998@outlook.com">Contact Us</a>
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
