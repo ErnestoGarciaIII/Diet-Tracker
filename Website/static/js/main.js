@@ -13,9 +13,13 @@ import { initRegister } from './modules/register.js';
 import { initForgotPassword } from './modules/forgotPassword.js';
 import { initResetPassword } from './modules/resetPassword.js';
 import { initLogout } from './modules/logout.js';
+import { initDynamicAuthLink } from './modules/privacy.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const userId = State.getUserId();
+
+    initDynamicAuthLink();
+
     // Protected pages require login
     const protectedPage =
         Util.getElement('dashboardPage') ||
