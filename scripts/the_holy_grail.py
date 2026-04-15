@@ -89,7 +89,7 @@ def load_candidate_pool(conn, restriction_ids=None):
 
     pool = {}
     for fdc_id, description, nutrient_id, amount_per_gram, food_category_id in rows:
-        if nutrient_id == 1093:
+        if nutrient_id == 1093 or nutrient_id == 1004 or nutrient_id == 1005:
             continue
         if fdc_id not in pool:
             pool[fdc_id] = {'name': description, 'nutrients': {}, 'category_id': food_category_id}
@@ -130,16 +130,35 @@ def recommend_foods(user, conn, consumed, iterations=5, restriction_ids=None):
     dri = {**user.macros, **user.micros}
 
     recommendations = []
+    
+    already_recommended = set()
 
     for i in range(iterations):
         best_fdc_id = None
         best_score = -float('inf')
         best_name = None
-
+        
         for fdc_id, food in pool.items():
+            if fdc_id in already_recommended:
+                continue
+
             serving_grams = CATEGORY_SERVING_GRAMS.get(
             	food.get('category_id'), DEFAULT_SERVING_GRAMS
             )
+
+            max_density = max(
+                (
+                (food['nutrients'].get(n, 0) * 100) / dri.get(n, 1)
+                for n in food['nutrients'] if n in dri and dri.get(n, 0) > 0
+                ), default=0.0)
+
+            if max_density > 0.5:
+                serving_grams = min(serving_grams, 15.0)
+            elif max_density > 0.15:
+                serving_grams = min(serving_grams, 30.0)
+            else:
+                serving_grams = min(serving_grams, 100.0)
+
             scaled_nutrients = {
                 nutrient: amount * serving_grams
                 for nutrient, amount in food['nutrients'].items()
@@ -153,6 +172,8 @@ def recommend_foods(user, conn, consumed, iterations=5, restriction_ids=None):
 
         if best_fdc_id is None:
             break
+        
+        already_recommended.add(best_fdc_id)
 
         winner = pool[best_fdc_id]
         winner_serving = CATEGORY_SERVING_GRAMS.get(
