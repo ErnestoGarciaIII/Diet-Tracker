@@ -3,12 +3,23 @@ import { getFoodHistory, updateFoodEntry, deleteFoodEntry, clearFoodHistory } fr
 
 
 let foodHistoryData = [];
+let selectedDateString = new Date().toDateString();
+
+function normalizeHistoryDate(dateValue) {
+    if (!dateValue) return '';
+    const parsed = new Date(dateValue);
+    if (!Number.isNaN(parsed.getTime())) {
+        return parsed.toDateString();
+    }
+    return String(dateValue).trim();
+}
 
 export async function initHistory() {
     // Initialize viewDate to current date
     if (typeof viewDate === 'undefined') {
         window.viewDate = new Date();
     }
+    selectedDateString = new Date().toDateString();
 
     // Attach event listener to Jump to Today button
     const jumpBtn = document.querySelector('.jumpBtn');
@@ -25,7 +36,7 @@ export async function initHistory() {
     }
 
     renderCalendar();
-    showDayDetails(new Date().toDateString()); // Show today's details by default
+    showDayDetails(selectedDateString); // Show today's details by default
 }
 
 function renderCalendar() {
@@ -36,11 +47,10 @@ function renderCalendar() {
 
     // Convert date strings to toDateString format for matching
     const history = foodHistoryData.map(item => ({
-        date: item.date,
+        date: normalizeHistoryDate(item.date),
         name: item.name,
-        kcal: item.kcal
+        kcal: Number(item.kcal) || 0
     }));
-    const now = new Date();
     const displayMonth = window.viewDate.getMonth();
     const displayYear = window.viewDate.getFullYear();
 
@@ -80,7 +90,7 @@ function renderCalendar() {
         const totalCals = dayLogs.reduce((sum, item) => sum + item.kcal, 0);
 
         const dayCard = document.createElement('div');
-        dayCard.className = `calendarDay ${dayStr === new Date().toDateString() ? 'active' : ''}`;
+        dayCard.className = `calendarDay ${dayStr === selectedDateString ? 'active' : ''}`;
         
         const kcalClass = totalCals > dailyGoal ? 'goalExceeded' : 'goalMet';
 
@@ -89,21 +99,28 @@ function renderCalendar() {
             ${totalCals > 0 ? `<span class="dayKcal ${kcalClass}">${totalCals} kcal</span>` : ''}
         `;
         
-        dayCard.onclick = () => showDayDetails(dayStr, dayLogs);
+        dayCard.onclick = () => {
+            selectedDateString = dayStr;
+            renderCalendar();
+            showDayDetails(dayStr);
+        };
         grid.appendChild(dayCard);
     }
 }
 
 // SHows specific day details i.e. logged food, curent intake
 function showDayDetails(dateString) {
-    const detailsContainer = getElement('dayDetails');
+    const detailsContainer = getElement('historyList');
     const header = getElement('selectedDateHeader');
     if (!detailsContainer || !header) return;
 
-    header.innerText = dateString;
+    const selectedDate = dateString || selectedDateString || new Date().toDateString();
+    selectedDateString = selectedDate;
+
+    header.innerText = selectedDate;
     detailsContainer.innerHTML = '';
 
-    const dayEntries = foodHistoryData.filter(item => item.date === dateString);
+    const dayEntries = foodHistoryData.filter(item => normalizeHistoryDate(item.date) === selectedDate);
 
     if (dayEntries.length === 0) {
         detailsContainer.innerHTML = '<p class="text-muted">No food logged for this day.</p>';
@@ -139,8 +156,9 @@ window.changeMonth = function(direction) {
 // Jump to today's date
 window.jumpToToday = function() {
     window.viewDate = new Date();
+    selectedDateString = window.viewDate.toDateString();
     renderCalendar();
-    showDayDetails(new Date().toDateString());
+    showDayDetails(selectedDateString);
 };
 
 // Clear all history
@@ -153,7 +171,7 @@ window.clearHistory = function() {
                 
                 // Refresh the display
                 renderCalendar();
-                showDayDetails();
+                showDayDetails(selectedDateString);
                 
                 alert(result.message);
             })
