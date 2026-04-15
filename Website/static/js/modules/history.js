@@ -201,38 +201,19 @@ window.editFoodEntry = function(entryId, currentName, currentCalories, currentPo
 };
 
 // Deletes food entry
-window.deleteFoodEntry = function(entryId, foodName) {
-    if (!confirm(`Are you sure you want to delete "${foodName}"?`)) {
-        return;
-    }
-    
-    deleteFoodEntry(entryId, getUserId())
-        .then(result => {
-            // Remove from local data
-            foodHistoryData = foodHistoryData.filter(item => item.id !== entryId);
-            
-            // Refresh the display
-            renderCalendar();
-            showDayDetails(getElement('selectedDateHeader').innerText);
-            
-            alert('Food entry deleted successfully!');
-        })
-        .catch(err => {
-            console.error('Failed to delete food entry:', err);
-            alert('Failed to delete food entry. Please try again.');
-        });
-};
-
-window.deleteFoodEntry = function(entryId, foodName) {
+window.deleteFoodEntry = async function(entryId, foodName) {
     if (!confirm(`Are you sure you want to delete "${foodName}"?`)) return;
-
-    // Call API delete function
-    import('../api.js').then(api => {
-        api.deleteFoodEntry(entryId, getUserId()).then(() => {
-            // Refresh local data and UI
-            foodHistoryData = foodHistoryData.filter(i => i.id !== entryId);
-            showDayDetails(getElement('selectedDateHeader').innerText);
-            renderCalendar(); 
-        });
-    });
+    try {
+        await deleteFoodEntry(entryId, getUserId());
+        // Re-fetch food history from backend
+        foodHistoryData = await getFoodHistory(getUserId());
+        renderCalendar();
+        const headerElem = getElement('selectedDateHeader');
+        const dateStr = headerElem ? headerElem.innerText : new Date().toDateString();
+        showDayDetails(dateStr);
+        alert('Food entry deleted successfully!');
+    } catch (err) {
+        console.error('Failed to delete food entry:', err);
+        alert('Failed to delete food entry. Please try again.');
+    }
 };
