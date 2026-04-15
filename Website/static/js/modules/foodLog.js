@@ -246,7 +246,7 @@ function displayRecommendations(recResults) {
     recommendList.innerHTML = '';
 
     if (!Array.isArray(recResults) || recResults.length === 0) {
-        recommendList.innerHTML = '<p>No recommendations available.</p>';
+        recommendList.innerHTML = '<p>No recommendations available for today.</p>';
         return;
     }
 
