@@ -865,9 +865,12 @@ def log_food_entry():
         conn.commit()
         print("Entering recommendation algorithm...") 
         recommendations = recommendation_algorithm(user_id) 
+        if not isinstance(recommendations, list):
+            recommendations = []
         return jsonify({
             'message': f'{len(rows)} food(s) logged successfully',
-            'result': 'success'
+            'result': 'success',
+            'recommendations': recommendations
         }), 201
 
     except Exception as e:
@@ -876,6 +879,21 @@ def log_food_entry():
 
     finally:
         if conn: conn.close()
+
+# Get Recommendations for current user
+@app.route('/api/recommendations', methods=['GET'])
+def get_recommendations():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'User ID required'}), 400
+    try:
+        recommendations = recommendation_algorithm(user_id)
+        if not isinstance(recommendations, list):
+            recommendations = []
+        return jsonify({'recommendations': recommendations}), 200
+    except Exception as e:
+        print('[ERROR]:', e)
+        return jsonify({'error': str(e)}), 500
 
 # Get Food History
 @app.route('/api/food-history/<user_id>', methods=['GET'])

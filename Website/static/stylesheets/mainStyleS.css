@@ -1737,6 +1737,15 @@ li {
     margin-top: 10px;
 }
 
+#recommendList {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    margin-top: 10px;
+}
+
 .resultItem {
     padding: 12px 16px;
     border-bottom: 1px solid #f0f0f0;

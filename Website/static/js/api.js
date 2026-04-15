@@ -217,3 +217,10 @@ export async function clearFoodHistory(userId) {
         method: 'DELETE'
     });
 }
+
+// ==========================
+// RECOMMENDATIONS
+// ==========================
+export async function getRecommendations(userId) {
+    return request(`/api/recommendations?user_id=${userId}`);
+}
