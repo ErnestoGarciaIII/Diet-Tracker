@@ -1,6 +1,7 @@
 import { getUserId, getElement } from '../utils.js';
 import { getFoodHistory, updateFoodEntry, deleteFoodEntry, clearFoodHistory } from '../api.js';
 
+
 let foodHistoryData = [];
 
 export async function initHistory() {
@@ -8,7 +9,13 @@ export async function initHistory() {
     if (typeof viewDate === 'undefined') {
         window.viewDate = new Date();
     }
-    
+
+    // Attach event listener to Jump to Today button
+    const jumpBtn = document.querySelector('.jumpBtn');
+    if (jumpBtn) {
+        jumpBtn.addEventListener('click', window.jumpToToday);
+    }
+
     try {
         // Fetch food history from database
         foodHistoryData = await getFoodHistory(getUserId());
@@ -16,7 +23,7 @@ export async function initHistory() {
         console.error('Failed to load food history:', err);
         foodHistoryData = [];
     }
-    
+
     renderCalendar();
     showDayDetails(new Date().toDateString()); // Show today's details by default
 }
@@ -104,7 +111,6 @@ function showDayDetails(dateString) {
     }
     dayEntries.forEach(item => {
 	const entryDiv = document.createElement('div');
-	entryDiv.className = "history-item d-flex justify-content-between align-items-center mb-2 p-2 border rounded";
 	const escapedName = item.name.replace(/'/g, "\\'");
 	entryDiv.innerHTML = `
         <div class="historyItem">
