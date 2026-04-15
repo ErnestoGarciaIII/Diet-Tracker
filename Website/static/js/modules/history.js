@@ -182,7 +182,7 @@ window.editFoodEntry = function(entryId, currentName, currentCalories, currentPo
 
     updateFoodEntry(entryId, getUserId(), { name: currentName, kcal: newKcal, portion: newPortion })
         .then(result => {
-            // Update local data
+            // Updates local data
             const entryIndex = foodHistoryData.findIndex(item => item.id === entryId);
             if (entryIndex !== -1) {
                 foodHistoryData[entryIndex].name = currentName.trim();
@@ -203,17 +203,18 @@ window.editFoodEntry = function(entryId, currentName, currentCalories, currentPo
 // Deletes food entry
 window.deleteFoodEntry = async function(entryId, foodName) {
     if (!confirm(`Are you sure you want to delete "${foodName}"?`)) return;
+    const entryBtn = document.querySelector(`button[onclick*="deleteFoodEntry(${entryId},"]`);
+    const entryDiv = entryBtn ? entryBtn.closest('.historyItem') : null;
+    if (entryDiv) entryDiv.remove();
+
+    foodHistoryData = foodHistoryData.filter(item => item.id !== entryId);
+
     try {
         await deleteFoodEntry(entryId, getUserId());
-        // Re-fetch food history from backend
-        foodHistoryData = await getFoodHistory(getUserId());
-        renderCalendar();
-        const headerElem = getElement('selectedDateHeader');
-        const dateStr = headerElem ? headerElem.innerText : new Date().toDateString();
-        showDayDetails(dateStr);
         alert('Food entry deleted successfully!');
     } catch (err) {
         console.error('Failed to delete food entry:', err);
         alert('Failed to delete food entry. Please try again.');
+
     }
 };
