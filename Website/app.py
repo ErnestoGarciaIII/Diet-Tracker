@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory, render_template
+from flask import Flask, request, jsonify, send_from_directory, render_template, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date, timedelta, timezone
 import sqlite3
@@ -18,7 +18,9 @@ from food_search import connectDB, apply_filter, clear_user_filters, search_engi
 from the_holy_grail import recommend_foods, NUTRIENT_ID_TO_NAME
 from send_email import send_reset_email
 
+
 app = Flask(__name__)
+app.secret_key = secrets.token_urlsafe(32)  # Needed for session support
 
 active_user_filters = {}
 
@@ -560,6 +562,7 @@ def get_user_info():
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
 
+
 # user login
 @app.route('/api/login', methods=['POST'])
 def login_user():
@@ -576,6 +579,8 @@ def login_user():
         user = cur.fetchone()
 
         if user and check_password_hash(user[1], password):
+            session['user_id'] = user[0]
+            session['logged_in'] = True
             return jsonify({
                 'message': 'Login successful',
                 'user_id': user[0]
@@ -589,6 +594,14 @@ def login_user():
     
     finally:
         conn.close()
+
+
+# API to check session status
+@app.route('/api/session', methods=['GET'])
+def check_session():
+    user_id = session.get('user_id')
+    logged_in = session.get('logged_in', False)
+    return jsonify({'logged_in': logged_in, 'user_id': user_id})
 
 # Calculate DRI
 @app.route('/api/dri', methods=['POST'])
@@ -619,6 +632,12 @@ def calculate_dri():
     except Exception as e:
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 400
+    
+# Logout endpoint to clear session
+@app.route('/api/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return jsonify({'message': 'Logged out'}), 200
 
 # Food Search
 NUTRIENT_IDS = [
