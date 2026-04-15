@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - PlatePilot</title>
+    <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
+</head>
+<body class="homePage">
+    <!-- Navigation Bar -->
+    <nav class="homeNavbar">
+        <div class="mainLogo">PlatePilot</div>
+        <div id="authLinkContainer">
+            <a id="dynamicAuthLink" 
+                href="{{ url_for('html_urls', filename='login.html') }}" 
+                data-dashboard-url="{{ url_for('html_urls', filename='settings.html') }}"
+                class="loginLink">Login</a>
+        </div>
+    </nav>
+
+    <header class="forWho">
+        <h1 class="welTitle">Terms of <span class="accent">Service.</span></h1>
+        <p class="welSubtitle">Effective Date: April 13, 2026</p>
+        <div class="headerDivider"></div>
+    </header>
+
+    <section class="privacySectionsWrapper">
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">1. Acceptance of Terms</h2>
+            <p class="aboutSectionDesc">By accessing or using PlatePilot, you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, please do not use our application.</p>
+        </div>
+
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">2. Use of the Service</h2>
+            <p class="aboutSectionDesc">PlatePilot is provided for personal, non-commercial use only. You agree to use the service lawfully and not to:</p>
+            <ul class="privacyList">
+                <li>Attempt to gain unauthorized access to any part of the platform or its related systems.</li>
+                <li>Submit false or misleading health information that could compromise the accuracy of recommendations.</li>
+                <li>Reverse engineer, decompile, or otherwise attempt to extract the source code of the application.</li>
+                <li>Use the service in any way that could damage, disable, or impair its functionality.</li>
+            </ul>
+        </div>
+
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">3. Account Responsibility</h2>
+            <p class="aboutSectionDesc">You are responsible for maintaining the confidentiality of your account credentials. Any activity that occurs under your account is your responsibility. Please notify us immediately if you suspect unauthorized use of your account.</p>
+        </div>
+
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">4. Health Disclaimer</h2>
+            <p class="aboutSectionDesc">PlatePilot provides nutritional information and recommendations for general informational purposes only. This content is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider before making significant changes to your diet.</p>
+        </div>
+
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">5. Data and Content</h2>
+            <p class="aboutSectionDesc">Nutritional data is sourced from the USDA FoodData Central database. While we strive for accuracy, PlatePilot makes no warranty about the completeness or accuracy of the data provided. You retain ownership of any personal health data you enter into the platform.</p>
+        </div>
+
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">6. Termination</h2>
+            <p class="aboutSectionDesc">You may delete your account at any time from the Settings page. Upon deletion, your personal data will be removed from our system. We reserve the right to suspend or terminate accounts that violate these terms.</p>
+        </div>
+
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">7. Changes to Terms</h2>
+            <p class="aboutSectionDesc">We may update these Terms of Service from time to time. Continued use of PlatePilot after changes are posted constitutes your acceptance of the revised terms.</p>
+        </div>
+
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">8. Contact Us</h2>
+            <p class="aboutSectionDesc">Questions about these terms can be directed to the team at:</p>
+            <p class="aboutSectionDesc">
+                University of Houston - Clear Lake<br>
+                Houston, Texas 77058<br>
+                Email: <a href="mailto:berkscott998@outlook.com">berkscott998@outlook.com</a>
+            </p>
+        </div>
+    </section>
+
+    <footer>
+        <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
+        <p class="homeFooterTxt"><a href="{{ url_for('html_urls', filename='privacy.html') }}">Privacy Policy</a> | <a href="{{ url_for('html_urls', filename='terms.html') }}">Terms of Service</a></p>
+        <p class="homeFooterTxt"><a href="mailto:berkscott998@outlook.com">Contact Us</a></p>
+    </footer>
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

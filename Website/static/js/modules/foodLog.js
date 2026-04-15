@@ -143,21 +143,19 @@ async function handleLogCart() {
     	}
 
     	try {
-        	const logPromises = foodCart.map(item => {
-            		return logFood({
-                		user_id: userId,
-                		fdc_id: item.fdc_id,
-                		name: item.name,
-                		portion: item.portion,
-				unit: item.unit,
+            const payload = {
+            user_id: userId,
+            items: foodCart.map(item => ({
+                fdc_id: item.fdc_id,
+                name: item.name,
+                portion: item.portion,
+                unit: item.unit,
                 gram_weight: item.gram_weight,
                 meal_tag: item.meal
-            		});
-        	});
-
-        await Promise.all(logPromises);
-
-        foodCart = [];
+           	}))
+            };
+        await logFood(payload);
+	foodCart = [];
         document.querySelectorAll('.resultItem.selected').forEach(item => {
             item.classList.remove('selected');
         });

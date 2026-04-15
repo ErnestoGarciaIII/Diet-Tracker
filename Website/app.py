@@ -81,7 +81,7 @@ def calculate_daily_progress(user_id, conn):
             'KCAL' AS unit_name
         FROM food_nutrient
         WHERE nutrient_id IN (1008, 2047)
-          AND fdc_id IN (SELECT fdc_id FROM selected_foods)
+        AND fdc_id IN (SELECT fdc_id FROM selected_foods)
         GROUP BY fdc_id
     )
     SELECT
@@ -98,6 +98,9 @@ def calculate_daily_progress(user_id, conn):
     
     cursor.execute(nutrient_query)
     nutrient_rows = cursor.fetchall()
+    
+    for row in nutrient_rows:
+        print(row)
 
     progress = {"Energy": 0.0}
     for row in nutrient_rows:
@@ -264,7 +267,6 @@ def register_user():
     finally:
         if conn:
             conn.close()
-
 
 @app.route('/reset-password', methods=['GET'])
 def reset_password():
@@ -808,35 +810,44 @@ def get_nutrients():
 def log_food_entry():
     data = request.get_json()
     user_id = data.get('user_id')
-    food_name = data.get('name')
-    fdc_id = data.get('fdc_id')
-    portion = data.get('portion', 1)
-    unit = data.get('unit', 'g')
-    gram_weight = data.get('gram_weight', 1)
-    mealTag = data.get('meal_tag')
+    items = data.get('items', [])
 
-    if not user_id or not food_name or not fdc_id: 
-        return jsonify({'error': 'User ID, Food Name, or FDC_ID was not passed'}), 400
+    if not user_id: 
+        return jsonify({'error': 'User ID not passed'}), 400
+    if not items or not isinstance(items, list):
+        return jsonify({'error': 'items must be a non-empty list'}), 400
 
     conn = None
     try:
         conn = connectDB()
         cur = conn.cursor()
 
-        # Get today's date in the same format as frontend (toDateString)
         today = datetime.now().strftime('%a %b %d %Y')  # Format like "Wed Apr 02 2026"
 
-        # Insert into FoodHistory
-        cur.execute("""
+        rows = []
+        for item in items:
+            fdc_id	= item.get('fdc_id')
+            name	= item.get('name')
+            portion	= item.get('portion', 1)
+            unit	= item.get('unit', 'g')
+            gram_weight	= item.get('gram_weight', 1)
+            meal_tag	= item.get('meal_tag')
+
+            if not fdc_id or not name:
+                return jsonify({'error': f'Each item requires fdc_id and name. Bad item: {item}'}), 400
+
+            rows.append((user_id, fdc_id, name, today, portion, unit, gram_weight, meal_tag))
+
+        cur.executemany("""
             INSERT INTO FoodHistory (userId, fdc_id, foodName, dateLogged, portion, unit, gram_weight, mealTag)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (user_id, fdc_id, food_name, today, portion, unit, gram_weight, mealTag))
+        """, rows)
 
         conn.commit()
         print("Entering recommendation algorithm...") 
         recommendations = recommendation_algorithm(user_id) 
         return jsonify({
-            'message': 'Food logged successfully',
+            'message': f'{len(rows)} food(s) logged successfully',
             'result': 'success'
         }), 201
 
@@ -1016,11 +1027,11 @@ def clear_food_history(user_id):
 def recommendation_algorithm(user_id):
     
     conn = None
-    
+
     try:
         conn = connectDB()
         (_, _, age, sex, height_in, weight_lbs,
-         goal, activity_level, _, _) = query_db_for_user_info(
+         goal, activity_level, _, _, _) = query_db_for_user_info(
             user_id=user_id, returnJSON=False
         )
 
@@ -1078,12 +1089,14 @@ def recommendation_algorithm(user_id):
             user_object.getNutrientInfo(index)
             print(f"{index}: {standardized_consumed[index]}")
 
-        recommendations = recommend_foods(user_object, conn, standardized_consumed)
+        user_filter_ids = list(active_user_filters.get(str(user_id), set()))
+        
+        recommendations = recommend_foods(user_object, conn, standardized_consumed, restriction_ids=user_filter_ids)
         print("\nDebug Recommendation \n------------------------------")
         for item in recommendations:
             # iteration: 1 -> "1."
             # name: 'Garlic, raw' -> "Garlic, raw"
-            print(f"{item['iteration']}. {item['name']} (Match Score: {item['score']})")
+            print(f"{item['iteration']}. {item['name']} Suggested Serving: {item['suggested_serving_oz']} oz (Match Score: {item['score']})")
             print("--------------------------------\n")
         
         print(standardized_consumed)
