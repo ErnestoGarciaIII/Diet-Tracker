@@ -179,8 +179,9 @@ export async function getModifiers(fdcId) {
 // ==========================
 // PROGRESS
 // ==========================
-export async function getProgress(userId) {
-    return request(`/api/progress/${userId}`);
+export async function getProgress(userId, date = null) {
+    const dateQuery = date ? `?date=${encodeURIComponent(date)}` : '';
+    return request(`/api/progress/${userId}${dateQuery}`);
 }
 
 // ==========================
