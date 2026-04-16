@@ -42,15 +42,15 @@ def migrate_db():
 
 migrate_db()
 
-def calculate_daily_progress(user_id, conn):
+def calculate_daily_progress(user_id, conn, target_date=None):
     cursor = conn.cursor()
-    today = datetime.now().strftime('%a %b %d %Y')
+    selected_date = target_date or datetime.now().strftime('%a %b %d %Y')
 
     cursor.execute("""
         SELECT fdc_id, portion, gram_weight
         FROM FoodHistory
         WHERE userId = ? AND dateLogged = ?
-    """, (user_id, today))
+    """, (user_id, selected_date))
 
     history_rows = cursor.fetchall()
     if not history_rows:
@@ -926,7 +926,8 @@ def get_progress(user_id):
     conn = None
     try:
         conn = connectDB()
-        progress = calculate_daily_progress(user_id, conn)
+        selected_date = request.args.get('date')
+        progress = calculate_daily_progress(user_id, conn, selected_date)
         return jsonify(progress), 200
 
     except Exception as e:
