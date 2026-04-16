@@ -48,8 +48,9 @@
         </div>
     </nav>
 	
-    <main class="dashContent">
-        <div class="card">
+    <main class="histContent histCalendarWrap">
+        <!-- History calendar section-->
+        <section class="histCard">
             <h1 class="trackerCard">Activity History</h1>
             <p class="formSubtitle">Review your past activities and progress.</p>
 
@@ -72,15 +73,39 @@
 
             <!-- Jump to Today Button -->
             <div class="btnSec">
-                <button class="jumpBtn">
+                <button id="jumpTodayBtn" class="jumpBtn">
                     <i class="fa-solid fa-calendar-day"></i> Jump to Today
                 </button>
             </div>
-            <!-- History display-->
-            <div id="dayDetails" class="dayDetails">
-                <h3 id="selectedDateHeader">Select a day</h3>
-                <div id="historyList"></div>
+
+            <div class="btnSec compareControls">
+                <button id="compareModeBtn" class="jumpBtn" type="button">
+                    <i class="fa-solid fa-code-compare"></i> Compare Two Dates
+                </button>
+                <button id="clearCompareBtn" class="jumpBtn hidden" type="button">
+                    <i class="fa-solid fa-xmark"></i> Clear Compare
+                </button>
             </div>
+        </section>
+    </main>
+    <main class="histContent histLayoutsWrap">
+        <div class="histLayouts">
+            <!-- History/comparison section-->
+            <section class="compCard">
+                <!-- History display-->
+                <h3 id="selectedDateHeader"></h3>
+                <div id="dayDetails" class="dayDetails">
+                    <div id="historyList"></div>
+                </div>
+            </section>
+
+            <section class="compCard">
+                <!-- compare section-->
+                <h3 id="compareDateHeader">Select &quot;Compare Two Dates&quot;, then pick another day.</h3>
+                <div id="compareDetails" class="dayDetails compareDetails hidden">
+                    <div id="compareHistoryList"></div>
+                </div>
+            </section>
         </div>
     </main>
 	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>

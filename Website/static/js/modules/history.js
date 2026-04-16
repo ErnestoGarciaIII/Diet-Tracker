@@ -3,17 +3,36 @@ import { getFoodHistory, updateFoodEntry, deleteFoodEntry, clearFoodHistory } fr
 
 
 let foodHistoryData = [];
+let selectedDateString = new Date().toDateString();
+let compareDateString = '';
+let isCompareMode = false;
+const mealSectionOrder = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
 export async function initHistory() {
-    // Initialize viewDate to current date
     if (typeof viewDate === 'undefined') {
         window.viewDate = new Date();
     }
+    selectedDateString = new Date().toDateString();
+    compareDateString = '';
+    isCompareMode = false;
 
-    // Attach event listener to Jump to Today button
-    const jumpBtn = document.querySelector('.jumpBtn');
+    const jumpBtn = getElement('jumpTodayBtn');
     if (jumpBtn) {
         jumpBtn.addEventListener('click', window.jumpToToday);
+    }
+
+    const compareModeBtn = getElement('compareModeBtn');
+    if (compareModeBtn) {
+        compareModeBtn.addEventListener('click', () => {
+            window.toggleCompareMode();
+        });
+    }
+
+    const clearCompareBtn = getElement('clearCompareBtn');
+    if (clearCompareBtn) {
+        clearCompareBtn.addEventListener('click', () => {
+            window.clearCompareDate();
+        });
     }
 
     try {
@@ -25,9 +44,105 @@ export async function initHistory() {
     }
 
     renderCalendar();
-    showDayDetails(new Date().toDateString()); // Show today's details by default
+    showDayDetails(selectedDateString); // Show today's details by default
+    showCompareDayDetails(compareDateString);
+    updateCompareControls();
 }
+// normalizes the history date values
+function normalizeHistoryDate(dateValue) {
+    if (!dateValue) return '';
+    const parsed = new Date(dateValue);
+    if (!Number.isNaN(parsed.getTime())) {
+        return parsed.toDateString();
+    }
+    return String(dateValue).trim();
+}
+// normalizes the meal tag values
+function normalizeMealTag(mealTag) {
+    const value = String(mealTag || '').trim().toLowerCase();
+    if (value === 'breakfast') return 'Breakfast';
+    if (value === 'lunch') return 'Lunch';
+    if (value === 'dinner') return 'Dinner';
+    if (value === 'snack' || value === 'snacks') return 'Snack';
+    return 'Other';
+}
+// groups by meal Tag
+function groupEntriesByMealTag(entries) {
+    const grouped = {
+        Breakfast: [],
+        Lunch: [],
+        Dinner: [],
+        Snack: [],
+        Other: []
+    };
 
+    entries.forEach(entry => {
+        grouped[normalizeMealTag(entry.mealTag)].push(entry);
+    });
+
+    return grouped;
+}
+//Displays food log history
+function createHistoryEntry(item, includeActions = false) {
+    const entryDiv = document.createElement('div');
+    const safeName = String(item.name || 'Unknown food');
+    const safePortion = item.portion ?? 1;
+    const safeUnit = item.unit || 'Serving';
+    const safeMealTag = normalizeMealTag(item.mealTag);
+
+    if (includeActions) {
+        const escapedName = safeName.replace(/'/g, "\\'");
+        entryDiv.innerHTML = `
+        <div class="historyItem">
+            <div class="foodInfo">
+                <span class="label">${safeName}</span> <strong>|</strong>
+                <span class="value">${safePortion} ${safeUnit}</span>
+            </div>
+            <div class="foodActions">
+                <button class="delete-Btn" onclick="deleteFoodEntry(${item.id}, '${escapedName}')" aria-label="Delete food entry">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    } else {
+        entryDiv.innerHTML = `
+        <div class="historyItem">
+            <div class="foodInfo">
+                <span class="label">${safeName}</span> <strong>|</strong>
+                <span class="value">${safePortion} ${safeUnit}</span>
+            </div>
+        </div>
+    `;
+    }
+
+    return entryDiv;
+}
+//organizes and renders entries grouped by meal tag
+function renderGroupedEntries(container, entries, includeActions = false) {
+    const grouped = groupEntriesByMealTag(entries);
+
+    mealSectionOrder.forEach(mealName => {
+        const mealEntries = grouped[mealName];
+        if (!mealEntries.length) return;
+
+        const mealSection = document.createElement('section');
+        mealSection.className = 'mealGroup';
+
+        const mealHeader = document.createElement('h4');
+        mealHeader.className = 'mealGroupHeader';
+        mealHeader.innerText = mealName;
+
+        mealSection.appendChild(mealHeader);
+
+        mealEntries.forEach(item => {
+            mealSection.appendChild(createHistoryEntry(item, includeActions));
+        });
+
+        container.appendChild(mealSection);
+    });
+}
+//updates and renders the calendar view
 function renderCalendar() {
     const grid = getElement('calendarGrid');
     const monthLabel = getElement('monthDisplay');
@@ -36,15 +151,11 @@ function renderCalendar() {
 
     // Convert date strings to toDateString format for matching
     const history = foodHistoryData.map(item => ({
-        date: item.date,
-        name: item.name,
-        kcal: item.kcal
+        date: normalizeHistoryDate(item.date),
+        name: item.name
     }));
-    const now = new Date();
     const displayMonth = window.viewDate.getMonth();
     const displayYear = window.viewDate.getFullYear();
-
-    const dailyGoal = 2000; // This will change based on the selected goal
 
     // Display Month Name
     monthLabel.innerText = window.viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -77,57 +188,108 @@ function renderCalendar() {
         const dateObj = new Date(displayYear, displayMonth, day);
         const dayStr = dateObj.toDateString();
         const dayLogs = history.filter(item => item.date === dayStr);
-        const totalCals = dayLogs.reduce((sum, item) => sum + item.kcal, 0);
 
         const dayCard = document.createElement('div');
-        dayCard.className = `calendarDay ${dayStr === new Date().toDateString() ? 'active' : ''}`;
-        
-        const kcalClass = totalCals > dailyGoal ? 'goalExceeded' : 'goalMet';
+        const classes = ['calendarDay'];
+        if (dayStr === selectedDateString) classes.push('active');
+        if (compareDateString && dayStr === compareDateString) classes.push('compareActive');
+        dayCard.className = classes.join(' ');
 
         dayCard.innerHTML = `
             <span class="dayNumber">${day}</span>
-            ${totalCals > 0 ? `<span class="dayKcal ${kcalClass}">${totalCals} kcal</span>` : ''}
         `;
         
-        dayCard.onclick = () => showDayDetails(dayStr, dayLogs);
+        dayCard.onclick = () => {
+            if (isCompareMode) {
+                if (dayStr === selectedDateString) {
+                    alert('Choose a different day for comparison.');
+                    return;
+                }
+                compareDateString = dayStr;
+                isCompareMode = false;
+                showCompareDayDetails(compareDateString);
+                updateCompareControls();
+                renderCalendar();
+                return;
+            }
+
+            selectedDateString = dayStr;
+            if (compareDateString && compareDateString === selectedDateString) {
+                compareDateString = '';
+            }
+            renderCalendar();
+            showDayDetails(dayStr);
+            showCompareDayDetails(compareDateString);
+            updateCompareControls();
+        };
         grid.appendChild(dayCard);
     }
 }
 
 // SHows specific day details i.e. logged food, curent intake
 function showDayDetails(dateString) {
-    const detailsContainer = getElement('dayDetails');
+    const detailsContainer = getElement('historyList');
     const header = getElement('selectedDateHeader');
     if (!detailsContainer || !header) return;
 
-    header.innerText = dateString;
+    const selectedDate = dateString || selectedDateString || new Date().toDateString();
+    selectedDateString = selectedDate;
+
+    header.innerText = `Selected: ${selectedDate}`;
     detailsContainer.innerHTML = '';
 
-    const dayEntries = foodHistoryData.filter(item => item.date === dateString);
+    const dayEntries = foodHistoryData.filter(item => normalizeHistoryDate(item.date) === selectedDate);
 
     if (dayEntries.length === 0) {
         detailsContainer.innerHTML = '<p class="text-muted">No food logged for this day.</p>';
         return;
     }
-    dayEntries.forEach(item => {
-	const entryDiv = document.createElement('div');
-	const escapedName = item.name.replace(/'/g, "\\'");
-	entryDiv.innerHTML = `
-        <div class="historyItem">
-            <div class="foodInfo">
-                <span class="label">${item.name}</span> <strong>|</strong>
-                <span class="value">${item.portion} ${item.unit || 'Serving' } </span> <strong>|</strong>
-                <span class="value">${item.mealTag}</span>
-            </div>
-            <div class="foodActions">
-                <button class="delete-Btn" onclick="deleteFoodEntry(${item.id}, '${escapedName}')" aria-label="Delete food entry">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </div>
-        </div>
-	`;
-	detailsContainer.appendChild(entryDiv);
-    });
+    renderGroupedEntries(detailsContainer, dayEntries, true);
+}
+
+function showCompareDayDetails(dateString) {
+    const compareSection = getElement('compareDetails');
+    const compareHeader = getElement('compareDateHeader');
+    const compareContainer = getElement('compareHistoryList');
+    if (!compareSection || !compareHeader || !compareContainer) return;
+
+    compareContainer.innerHTML = '';
+
+    if (!dateString) {
+        compareSection.classList.add('hidden');
+        compareHeader.innerText = 'Select Compare Two Dates, then pick another day.';
+        return;
+    }
+
+    compareSection.classList.remove('hidden');
+    compareHeader.innerText = `Compare: ${dateString}`;
+
+    const dayEntries = foodHistoryData.filter(item => normalizeHistoryDate(item.date) === dateString);
+    if (dayEntries.length === 0) {
+        compareContainer.innerHTML = '<p class="text-muted">No food logged for this comparison day.</p>';
+        return;
+    }
+
+    renderGroupedEntries(compareContainer, dayEntries, false);
+}
+
+function updateCompareControls() {
+    const compareModeBtn = getElement('compareModeBtn');
+    const clearCompareBtn = getElement('clearCompareBtn');
+
+    if (compareModeBtn) {
+        if (isCompareMode) {
+            compareModeBtn.innerHTML = '<i class="fa-solid fa-ban"></i> Cancel Compare';
+        } else if (compareDateString) {
+            compareModeBtn.innerHTML = '<i class="fa-solid fa-code-compare"></i> Pick New Compare Date';
+        } else {
+            compareModeBtn.innerHTML = '<i class="fa-solid fa-code-compare"></i> Compare Two Dates';
+        }
+    }
+
+    if (clearCompareBtn) {
+        clearCompareBtn.classList.toggle('hidden', !compareDateString);
+    }
 }
 
 // Change month navigation
@@ -139,8 +301,24 @@ window.changeMonth = function(direction) {
 // Jump to today's date
 window.jumpToToday = function() {
     window.viewDate = new Date();
+    selectedDateString = window.viewDate.toDateString();
     renderCalendar();
-    showDayDetails(new Date().toDateString());
+    showDayDetails(selectedDateString);
+    showCompareDayDetails(compareDateString);
+    updateCompareControls();
+};
+
+window.toggleCompareMode = function() {
+    isCompareMode = !isCompareMode;
+    updateCompareControls();
+};
+
+window.clearCompareDate = function() {
+    compareDateString = '';
+    isCompareMode = false;
+    showCompareDayDetails(compareDateString);
+    renderCalendar();
+    updateCompareControls();
 };
 
 // Clear all history
@@ -150,10 +328,14 @@ window.clearHistory = function() {
             .then(result => {
                 // Clear local data
                 foodHistoryData = [];
+                compareDateString = '';
+                isCompareMode = false;
                 
                 // Refresh the display
                 renderCalendar();
-                showDayDetails();
+                showDayDetails(selectedDateString);
+                showCompareDayDetails(compareDateString);
+                updateCompareControls();
                 
                 alert(result.message);
             })
@@ -182,7 +364,7 @@ window.editFoodEntry = function(entryId, currentName, currentCalories, currentPo
 
     updateFoodEntry(entryId, getUserId(), { name: currentName, kcal: newKcal, portion: newPortion })
         .then(result => {
-            // Update local data
+            // Updates local data
             const entryIndex = foodHistoryData.findIndex(item => item.id === entryId);
             if (entryIndex !== -1) {
                 foodHistoryData[entryIndex].name = currentName.trim();
@@ -191,7 +373,8 @@ window.editFoodEntry = function(entryId, currentName, currentCalories, currentPo
                 foodHistoryData[entryIndex].base_kcal = baseKcal;
             }
             renderCalendar();
-            showDayDetails(getElement('selectedDateHeader').innerText);
+            showDayDetails(selectedDateString);
+            showCompareDayDetails(compareDateString);
             alert('Food entry updated successfully!');
         })
         .catch(err => {
@@ -203,17 +386,22 @@ window.editFoodEntry = function(entryId, currentName, currentCalories, currentPo
 // Deletes food entry
 window.deleteFoodEntry = async function(entryId, foodName) {
     if (!confirm(`Are you sure you want to delete "${foodName}"?`)) return;
+    const entryBtn = document.querySelector(`button[onclick*="deleteFoodEntry(${entryId},"]`);
+    const entryDiv = entryBtn ? entryBtn.closest('.historyItem') : null;
+    if (entryDiv) entryDiv.remove();
+
+    foodHistoryData = foodHistoryData.filter(item => item.id !== entryId);
+
     try {
         await deleteFoodEntry(entryId, getUserId());
-        // Re-fetch food history from backend
-        foodHistoryData = await getFoodHistory(getUserId());
         renderCalendar();
-        const headerElem = getElement('selectedDateHeader');
-        const dateStr = headerElem ? headerElem.innerText : new Date().toDateString();
-        showDayDetails(dateStr);
+        showDayDetails(selectedDateString);
+        showCompareDayDetails(compareDateString);
+        updateCompareControls();
         alert('Food entry deleted successfully!');
     } catch (err) {
         console.error('Failed to delete food entry:', err);
         alert('Failed to delete food entry. Please try again.');
+
     }
 };
