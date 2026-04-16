@@ -89,7 +89,7 @@ function toNumber(value) {
 }
 
 //
-function resolveProgressMetrics(progress) {
+function progressMetrics(progress) {
     const calories = toNumber(progress?.calories ?? progress?.Energy ?? 0);
     const protein = toNumber(progress?.Protein ?? progress?.protein ?? 0);
     const carbs = toNumber(
@@ -126,7 +126,7 @@ function getProgressIcon(percent) {
 
 // Update the progress bars and icons in the UI based on the user's progress
 function updateProgressUI(progress) {
-    const { calories, macros, micros } = resolveProgressMetrics(progress);
+    const { calories, macros, micros } = progressMetrics(progress);
 
     const tiers = [
         { name: "Cessna", icon: "🛩️", goal: 500 },
@@ -238,7 +238,7 @@ export async function renderActivityChart() {
         );
 
         dailyProgressList.forEach(progress => {
-            const metrics = resolveProgressMetrics(progress || {});
+            const metrics = progressMetrics(progress || {});
             caloriesData.push(Math.round(metrics.calories));
             macrosData.push(Math.round(metrics.macros));
             microsData.push(Math.round(metrics.micros));

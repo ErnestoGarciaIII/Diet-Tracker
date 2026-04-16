@@ -178,7 +178,7 @@ function toNumber(value) {
     return Number.isFinite(n) ? n : 0;
 }
 
-function resolveProgressMetrics(progress) {
+function progressMetrics(progress) {
     const calories = toNumber(progress?.calories ?? progress?.Energy ?? 0);
 
     const protein = toNumber(progress?.Protein ?? progress?.protein ?? 0);
@@ -273,7 +273,7 @@ async function loadProgressPreview() {
         if (!userId) return;
 
         const progressData = await getProgress(userId);
-        const metrics = resolveProgressMetrics(progressData);
+        const metrics = progressMetrics(progressData);
 
         updateProgress(metrics);
         applyProgressToPreview(metrics);
