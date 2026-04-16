@@ -994,6 +994,15 @@ p.change{
     position: relative;
     z-index: 2;
 }
+#kcalProgressPreview {
+    width: 0%;
+    height: 100%;
+    background: rgba(22, 163, 74, 0.6);
+    border-radius: 25px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+}
 #gProgressBar {
     width: 0%;
     height: 100%;
@@ -1003,7 +1012,25 @@ p.change{
     position: relative;
     z-index: 2;
 }
+#gProgressPreview {
+    width: 0%;
+    height: 100%;
+    background: rgba(54, 162, 235, 0.6);
+    border-radius: 25px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+}
 #mgProgressBar {
+    width: 0%;
+    height: 100%;
+    background: rgba(255, 206, 86, 0.6);
+    border-radius: 25px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+}
+#mgProgressPreview {
     width: 0%;
     height: 100%;
     background: rgba(255, 206, 86, 0.6);
