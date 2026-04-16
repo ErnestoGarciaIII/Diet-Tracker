@@ -1379,6 +1379,17 @@ li {
     margin-top: 30px;
 }
 
+.mealGroup {
+    margin-bottom: 18px;
+}
+
+.mealGroupHeader {
+    font-size: 0.95rem;
+    color: #065f46;
+    margin: 0 0 10px;
+    font-weight: 700;
+}
+
 .compareDetails {
     border-top-style: solid;
 }

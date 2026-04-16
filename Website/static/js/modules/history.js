@@ -6,15 +6,7 @@ let foodHistoryData = [];
 let selectedDateString = new Date().toDateString();
 let compareDateString = '';
 let isCompareMode = false;
-
-function normalizeHistoryDate(dateValue) {
-    if (!dateValue) return '';
-    const parsed = new Date(dateValue);
-    if (!Number.isNaN(parsed.getTime())) {
-        return parsed.toDateString();
-    }
-    return String(dateValue).trim();
-}
+const mealSectionOrder = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
 export async function initHistory() {
     if (typeof viewDate === 'undefined') {
@@ -56,7 +48,101 @@ export async function initHistory() {
     showCompareDayDetails(compareDateString);
     updateCompareControls();
 }
+// normalizes the history date values
+function normalizeHistoryDate(dateValue) {
+    if (!dateValue) return '';
+    const parsed = new Date(dateValue);
+    if (!Number.isNaN(parsed.getTime())) {
+        return parsed.toDateString();
+    }
+    return String(dateValue).trim();
+}
+// normalizes the meal tag values
+function normalizeMealTag(mealTag) {
+    const value = String(mealTag || '').trim().toLowerCase();
+    if (value === 'breakfast') return 'Breakfast';
+    if (value === 'lunch') return 'Lunch';
+    if (value === 'dinner') return 'Dinner';
+    if (value === 'snack' || value === 'snacks') return 'Snack';
+    return 'Other';
+}
+// groups by meal Tag
+function groupEntriesByMealTag(entries) {
+    const grouped = {
+        Breakfast: [],
+        Lunch: [],
+        Dinner: [],
+        Snack: [],
+        Other: []
+    };
 
+    entries.forEach(entry => {
+        grouped[normalizeMealTag(entry.mealTag)].push(entry);
+    });
+
+    return grouped;
+}
+//Displays food log history
+function createHistoryEntry(item, includeActions = false) {
+    const entryDiv = document.createElement('div');
+    const safeName = String(item.name || 'Unknown food');
+    const safePortion = item.portion ?? 1;
+    const safeUnit = item.unit || 'Serving';
+    const safeMealTag = normalizeMealTag(item.mealTag);
+
+    if (includeActions) {
+        const escapedName = safeName.replace(/'/g, "\\'");
+        entryDiv.innerHTML = `
+        <div class="historyItem">
+            <div class="foodInfo">
+                <span class="label">${safeName}</span> <strong>|</strong>
+                <span class="value">${safePortion} ${safeUnit}</span>
+            </div>
+            <div class="foodActions">
+                <button class="delete-Btn" onclick="deleteFoodEntry(${item.id}, '${escapedName}')" aria-label="Delete food entry">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    } else {
+        entryDiv.innerHTML = `
+        <div class="historyItem">
+            <div class="foodInfo">
+                <span class="label">${safeName}</span> <strong>|</strong>
+                <span class="value">${safePortion} ${safeUnit}</span>
+            </div>
+        </div>
+    `;
+    }
+
+    return entryDiv;
+}
+//organizes and renders entries grouped by meal tag
+function renderGroupedEntries(container, entries, includeActions = false) {
+    const grouped = groupEntriesByMealTag(entries);
+
+    mealSectionOrder.forEach(mealName => {
+        const mealEntries = grouped[mealName];
+        if (!mealEntries.length) return;
+
+        const mealSection = document.createElement('section');
+        mealSection.className = 'mealGroup';
+
+        const mealHeader = document.createElement('h4');
+        mealHeader.className = 'mealGroupHeader';
+        mealHeader.innerText = mealName;
+
+        mealSection.appendChild(mealHeader);
+
+        mealEntries.forEach(item => {
+            mealSection.appendChild(createHistoryEntry(item, includeActions));
+        });
+
+        container.appendChild(mealSection);
+    });
+}
+//updates and renders the calendar view
 function renderCalendar() {
     const grid = getElement('calendarGrid');
     const monthLabel = getElement('monthDisplay');
@@ -158,25 +244,7 @@ function showDayDetails(dateString) {
         detailsContainer.innerHTML = '<p class="text-muted">No food logged for this day.</p>';
         return;
     }
-    dayEntries.forEach(item => {
-	const entryDiv = document.createElement('div');
-	const escapedName = item.name.replace(/'/g, "\\'");
-	entryDiv.innerHTML = `
-        <div class="historyItem">
-            <div class="foodInfo">
-                <span class="label">${item.name}</span> <strong>|</strong>
-                <span class="value">${item.portion} ${item.unit || 'Serving' } </span> <strong>|</strong>
-                <span class="value">${item.mealTag}</span>
-            </div>
-            <div class="foodActions">
-                <button class="delete-Btn" onclick="deleteFoodEntry(${item.id}, '${escapedName}')" aria-label="Delete food entry">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </div>
-        </div>
-	`;
-	detailsContainer.appendChild(entryDiv);
-    });
+    renderGroupedEntries(detailsContainer, dayEntries, true);
 }
 
 function showCompareDayDetails(dateString) {
@@ -202,19 +270,7 @@ function showCompareDayDetails(dateString) {
         return;
     }
 
-    dayEntries.forEach(item => {
-        const entryDiv = document.createElement('div');
-        entryDiv.innerHTML = `
-        <div class="historyItem">
-            <div class="foodInfo">
-                <span class="label">${item.name}</span> <strong>|</strong>
-                <span class="value">${item.portion} ${item.unit || 'Serving' } </span> <strong>|</strong>
-                <span class="value">${item.mealTag}</span>
-            </div>
-        </div>
-    `;
-        compareContainer.appendChild(entryDiv);
-    });
+    renderGroupedEntries(compareContainer, dayEntries, false);
 }
 
 function updateCompareControls() {
