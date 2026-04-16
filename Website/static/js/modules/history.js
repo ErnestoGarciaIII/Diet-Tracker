@@ -1,6 +1,7 @@
 import { getUserId, getElement } from '../utils.js';
 import { getFoodHistory, updateFoodEntry, deleteFoodEntry, clearFoodHistory } from '../api.js';
 
+
 let foodHistoryData = [];
 
 export async function initHistory() {
@@ -8,7 +9,13 @@ export async function initHistory() {
     if (typeof viewDate === 'undefined') {
         window.viewDate = new Date();
     }
-    
+
+    // Attach event listener to Jump to Today button
+    const jumpBtn = document.querySelector('.jumpBtn');
+    if (jumpBtn) {
+        jumpBtn.addEventListener('click', window.jumpToToday);
+    }
+
     try {
         // Fetch food history from database
         foodHistoryData = await getFoodHistory(getUserId());
@@ -16,7 +23,7 @@ export async function initHistory() {
         console.error('Failed to load food history:', err);
         foodHistoryData = [];
     }
-    
+
     renderCalendar();
     showDayDetails(new Date().toDateString()); // Show today's details by default
 }
@@ -104,7 +111,6 @@ function showDayDetails(dateString) {
     }
     dayEntries.forEach(item => {
 	const entryDiv = document.createElement('div');
-	entryDiv.className = "history-item d-flex justify-content-between align-items-center mb-2 p-2 border rounded";
 	const escapedName = item.name.replace(/'/g, "\\'");
 	entryDiv.innerHTML = `
         <div class="historyItem">
@@ -195,38 +201,19 @@ window.editFoodEntry = function(entryId, currentName, currentCalories, currentPo
 };
 
 // Deletes food entry
-window.deleteFoodEntry = function(entryId, foodName) {
-    if (!confirm(`Are you sure you want to delete "${foodName}"?`)) {
-        return;
-    }
-    
-    deleteFoodEntry(entryId, getUserId())
-        .then(result => {
-            // Remove from local data
-            foodHistoryData = foodHistoryData.filter(item => item.id !== entryId);
-            
-            // Refresh the display
-            renderCalendar();
-            showDayDetails(getElement('selectedDateHeader').innerText);
-            
-            alert('Food entry deleted successfully!');
-        })
-        .catch(err => {
-            console.error('Failed to delete food entry:', err);
-            alert('Failed to delete food entry. Please try again.');
-        });
-};
-
-window.deleteFoodEntry = function(entryId, foodName) {
+window.deleteFoodEntry = async function(entryId, foodName) {
     if (!confirm(`Are you sure you want to delete "${foodName}"?`)) return;
-
-    // Call API delete function
-    import('../api.js').then(api => {
-        api.deleteFoodEntry(entryId, getUserId()).then(() => {
-            // Refresh local data and UI
-            foodHistoryData = foodHistoryData.filter(i => i.id !== entryId);
-            showDayDetails(getElement('selectedDateHeader').innerText);
-            renderCalendar(); 
-        });
-    });
+    try {
+        await deleteFoodEntry(entryId, getUserId());
+        // Re-fetch food history from backend
+        foodHistoryData = await getFoodHistory(getUserId());
+        renderCalendar();
+        const headerElem = getElement('selectedDateHeader');
+        const dateStr = headerElem ? headerElem.innerText : new Date().toDateString();
+        showDayDetails(dateStr);
+        alert('Food entry deleted successfully!');
+    } catch (err) {
+        console.error('Failed to delete food entry:', err);
+        alert('Failed to delete food entry. Please try again.');
+    }
 };
