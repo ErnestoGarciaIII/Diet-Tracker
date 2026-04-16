@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - PlatePilot</title>
+    <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
+</head>
+<body class="homePage">
+    <!-- Navigation Bar -->
+    <nav class="homeNavbar">
+        <div class="mainLogo">PlatePilot</div>
+        <div id="authLinkContainer">
+            <a id="dynamicAuthLink" 
+                href="{{ url_for('html_urls', filename='login.html') }}" 
+                data-dashboard-url="{{ url_for('html_urls', filename='settings.html') }}"
+                class="loginLink">Login</a>
+        </div>
+    </nav>
+
+    <header class="forWho">
+        <h1 class="welTitle">Your Privacy</h1>
+        <h1 class="welTitle accent">Your Control.</h1>
+        <p class="welSubtitle">Effective Date: April 13, 2026</p>
+        <div class="headerDivider"></div>
+    </header>
+
+    <section class="privacySectionsWrapper">
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">1. Introduction</h2>
+            <p class="aboutSectionDesc">Welcome to PlatePilot! We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, and safeguard your data when you use our web application to track and plan your daily nutrient intake.</p>
+        </div>
+
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">2. Information We Collect</h2>
+            <p class="aboutSectionDesc">To provide a personalized "co-pilot" experience for your nutrition, we collect the following information:</p>
+            <ul class="privacyList">
+                <li><strong>Account Information:</strong> Name, email, and login credentials stored in our localized database.</li>
+                <li><strong>Health Metrics:</strong> Information you provide such as age, weight, height, activity level, and specific nutritional goals.</li>
+                <li><strong>Preferences:</strong> Information regarding allergies, dietary restrictions, and flavor preferences.</li>
+                <li><strong>Nutritional Logs:</strong> Data regarding the food items you track and your progress toward micronutrient and macronutrient goals.</li>
+            </ul>
+        </div>
+
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">3. How We Use Your Information</h2>
+            <p class="aboutSectionDesc">PlatePilot uses your data to:</p>
+            <ul class="privacyList">
+                <li>Calculate your personalized recommended needs for micronutrients and macronutrients.</li>
+                <li>Generate smart food recommendations that fill nutritional gaps using the USDA FoodData Central database.</li>
+                <li>Maintain a record of your history to track progress toward your dieting goals.</li>
+                <li>Ensure the security and authentication of your account.</li>
+            </ul>
+        </div>
+
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">4. Data Storage and Security</h2>
+            <p class="aboutSectionDesc">We use Flask libraries to encrypt sensitive information in the database rather than storing it as plain text.</p>
+        </div>
+
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">5. Third-Party Data</h2>
+            <p class="aboutSectionDesc">PlatePilot leverages the USDA FoodData Central database to provide accurate nutritional information. While we retrieve data from this public source, we do not share your personal health metrics or identity with the USDA or any other external third parties for marketing purposes.</p>
+        </div>
+
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">6. Your Rights and Choices</h2>
+            <p class="aboutSectionDesc">You have the right to access, update, or delete your personal information at any time through your account settings. As an application built with a focus on user control, we ensure you remain the primary pilot of your data.</p>
+        </div>
+
+        <div class="privacyCard">
+            <h2 class="privacySectionTitle">7. Contact Us</h2>
+            <p class="aboutSectionDesc">Questions regarding our privacy practices can be directed to the team at:</p>
+            <p class="aboutSectionDesc">
+                University of Houston - Clear Lake<br>
+                Houston, Texas 77058<br>
+                Email: <a href="mailto:berkscott998@outlook.com">berkscott998@outlook.com</a>
+            </p>
+        </div>
+    </section>
+
+    <footer>
+        <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
+        <p class="homeFooterTxt"><a href="{{ url_for('html_urls', filename='privacy.html') }}">Privacy Policy</a> | <a href="{{ url_for('html_urls', filename='terms.html') }}">Terms of Service</a></p>
+        <p class="homeFooterTxt"><a href="mailto:berkscott998@outlook.com">Contact Us</a></p>
+    </footer>
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

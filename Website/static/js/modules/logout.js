@@ -14,9 +14,13 @@ export function initLogout() {
 
         if (secondsRemaining <= 0) {
             clearInterval(intervalId);
-            clearUser();
-            resetState();
-            window.location.href = 'home.html';
+            // Clear server-side session
+            fetch('/api/logout', { method: 'POST' })
+                .finally(() => {
+                    clearUser();
+                    resetState();
+                    window.location.href = 'home.html';
+                });
         }
     }, 1000);
 }

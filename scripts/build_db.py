@@ -67,6 +67,20 @@ def nuke_food_table(conn):
             WHERE fn.fdc_id IS NULL
         );
         """)
+        cursor.execute(f"""
+        DELETE FROM food
+        WHERE fdc_id IN (
+            SELECT f.fdc_id
+            FROM food f
+            LEFT JOIN food_nutrient fn_energy ON f.fdc_id = fn_energy.fdc_id AND fn_energy.nutrient_id IN (1008, 2047)
+            LEFT JOIN food_nutrient fn_macros ON f.fdc_id = fn_macros.fdc_id AND fn_macros.nutrient_id IN (1003, 1004, 1005)
+            GROUP BY f.fdc_id
+            HAVING
+                (MAX(CASE WHEN fn_energy.nutrient_id IN (1008, 2047) THEN fn_energy.amount ELSE 0 END) = 0)
+                AND
+                (MAX(CASE WHEN fn_macros.nutrient_id IN (1003, 1004, 1005) THEN fn_macros.amount ELSE 0 END) > 0)
+        );
+        """)
     except sqlite3.OperationalError as e:
         print(f"Error: {e}\nExiting...")
         conn.close()
@@ -199,7 +213,7 @@ def populate_food_tags(conn, cursor):
         9: "keto_query.sql"
     }
 
-    query_dir = "../scripts/query_templates" 
+    query_dir = f"../scripts/query_templates" 
 
     for res_id, file_name in tag_map.items():
         path = os.path.join(query_dir, file_name)
@@ -214,7 +228,7 @@ def populate_food_tags(conn, cursor):
     print("Food labeling complete.\n")
 
 def populate_top_foods(conn, cursor):
-    sql_path = os.path.join("../scripts/query_templates", "insert_top_foods.sql")
+    sql_path = os.path.join(f"../scripts/query_templates", "insert_top_foods.sql")
     
     if not os.path.exists(sql_path):
         print(f"Error: Could not find {sql_path}. Skipping TopFoods insertion.")

@@ -468,7 +468,6 @@ p.change{
     line-height: 1.75;
     margin-bottom: 1rem;
 }
-
 .aboutMissionEmoji {
     font-size: 7rem;
     flex-shrink: 0;
@@ -814,6 +813,11 @@ p.change{
     text-align: center;
 }
 
+.infoHeader{
+    margin-left: 75px;
+
+}
+
 
 /* ------------------------------------------- dashboard pages ------------------------------------- */
 /* --------------------------- Navigation Bar for all dashboard pages ---------------------- */
@@ -882,6 +886,12 @@ p.change{
     gap: 24px;
     max-width: 1320px;
     align-items: start;
+}
+
+.settingsSidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .statsPanel {
@@ -984,6 +994,15 @@ p.change{
     position: relative;
     z-index: 2;
 }
+#kcalProgressPreview {
+    width: 0%;
+    height: 100%;
+    background: rgba(22, 163, 74, 0.6);
+    border-radius: 25px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+}
 #gProgressBar {
     width: 0%;
     height: 100%;
@@ -993,7 +1012,25 @@ p.change{
     position: relative;
     z-index: 2;
 }
+#gProgressPreview {
+    width: 0%;
+    height: 100%;
+    background: rgba(54, 162, 235, 0.6);
+    border-radius: 25px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+}
 #mgProgressBar {
+    width: 0%;
+    height: 100%;
+    background: rgba(255, 206, 86, 0.6);
+    border-radius: 25px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+}
+#mgProgressPreview {
     width: 0%;
     height: 100%;
     background: rgba(255, 206, 86, 0.6);
@@ -1097,7 +1134,7 @@ p.change{
     max-width: 900px;
 }
 
-.foodLogLayout, .settingsLayout {
+.foodLogLayout, .settingsLayout{
     display: grid;
     grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
     gap: 24px;
@@ -1232,6 +1269,57 @@ li {
 }
 
 /* -------------------------- Calendar Styling -------------------------------- */
+.histContent{
+    margin-left: 80px;
+    padding: 40px;
+    width: calc(100% - 80px);
+    max-width: none;
+}
+
+.histCalendarWrap {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 10px;
+}
+
+.histCalendarWrap .histCard {
+    width: min(100%, 1000px);
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+}
+
+.histLayoutsWrap {
+    display: flex;
+    justify-content: center;
+    padding-top: 10px;
+}
+
+.histLayouts{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    width: min(100%, 1460px);
+    align-items: start;
+}
+
+.histCard{
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    margin-bottom: 25px;
+    align-items: center;;
+}
+.compCard{
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    margin-bottom: 25px;
+    align-items: center;
+;
+}
 .calendarGrid {
     display: grid;
     grid-template-columns: repeat(7, 1fr); /* 7 Days a week */
@@ -1307,10 +1395,30 @@ li {
     background: #f0fdf4; 
 }
 
+.calendarDay.compareActive {
+    border: 2px solid #2563eb;
+    background: #eff6ff;
+}
+
 .dayDetails {
     border-top: 1px solid #eee;
     padding-top: 20px;
     margin-top: 30px;
+}
+
+.mealGroup {
+    margin-bottom: 18px;
+}
+
+.mealGroupHeader {
+    font-size: 0.95rem;
+    color: #065f46;
+    margin: 0 0 10px;
+    font-weight: 700;
+}
+
+.compareDetails {
+    border-top-style: solid;
 }
 
 .historyItem {
@@ -1324,20 +1432,29 @@ li {
     border-left: 4px solid #16a34a;
 }
 
-.food-info {
+.foodInfo {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 8px;
     flex: 1;
 }
+.foodInfo .label{
+    font-weight: 600;
+    color: #000;
+}
+.foodInfo .value{
+    color: #333; 
+    font-weight: 600; 
+}
 
-.food-actions {
+
+.foodActions {
     display: flex;
     gap: 8px;
     margin-left: 15px;
 }
 
-.edit-btn, .delete-btn {
+.edit-btn, .delete-Btn {
     background: none;
     border: none;
     padding: 6px 8px;
@@ -1355,11 +1472,11 @@ li {
     background-color: #dbeafe;
 }
 
-.delete-btn {
+.delete-Btn {
     color: #dc2626;
 }
 
-.delete-btn:hover {
+.delete-Btn:hover {
     background-color: #fee2e2;
 }
 
@@ -1419,6 +1536,16 @@ li {
     padding-bottom: 20px;
 }
 
+.compareControls {
+    margin-top: 0;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.hidden {
+    display: none !important;
+}
+
 @media (max-width: 480px) {
     .calendarGrid {
         grid-template-columns: repeat(4,1fr);
@@ -1435,6 +1562,66 @@ li {
 	margin-left: 80px;
     padding: 40px;
 	align-items: center;
+}
+
+.settingsSidebar .settingsCard {
+    max-width: none;
+    margin-left: 90px;
+}
+
+.infoCard {
+    min-height: 260px;
+}
+
+.infoCardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.infoCardHeader .resHeader {
+    margin-bottom: 0;
+}
+
+.infoCollapseToggle {
+    border: 1px solid #d1d5db;
+    background: #f9fafb;
+    color: #374151;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.infoCollapseToggle:hover {
+    background-color: #e5e7eb;
+}
+
+
+.infoToggleIcon {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.infoCollapseToggle[aria-expanded="false"] .infoToggleIcon {
+    transform: rotate(-180deg);
+}
+
+.infoCollapseBody {
+    max-height: 500px;
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 0.25s ease, opacity 0.2s ease;
+}
+
+.infoCollapseBody.is-collapsed {
+    max-height: 0;
+    opacity: 0;
 }
 
 .avatarContainer{
@@ -1543,6 +1730,89 @@ li {
 	font-size: 20px; 
 }
 
+.infoLinks {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.infoLinks a {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.infoLinks a:hover {
+    text-decoration: underline;
+}
+
+.infoLinkDivider {
+    color: #9ca3af;
+}
+/* ------------------------------ privacy & terms links --------------------------------- */
+
+.privacySectionsWrapper {
+    background-color: beige;
+    padding: 2rem 5% 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+
+.privacyCard {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 32px 40px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 900px;
+}
+
+.privacySectionTitle {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #16a34a;
+    margin-bottom: 1rem;
+}
+
+.privacyPolicyContent {
+    max-width: 980px;
+}
+
+.privacyPolicyContent .privacySectionTitle {
+    margin-top: 2rem;
+}
+
+.privacyPolicyContent .privacySectionTitle:first-child {
+    margin-top: 0;
+}
+
+.privacyList {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin: 0 0 1.25rem;
+    max-height: none;
+    overflow: visible;
+}
+
+.privacyList li {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 0.75rem;
+    border-radius: 0;
+    display: list-item;
+    font-size: 1.02rem;
+    color: #4b5563;
+}
+
+.headerDivider {
+    height: 5px;
+    background-color: #16a34a;
+    flex-grow: 1;
+}
+
+
 /* ------------------------------ logout page --------------------------------- */
 .logCard{
 	background: #ffffff;
@@ -1567,6 +1837,15 @@ li {
 
 /* ------------------------------------ Food Log Search Results ------------------------------------ */
 #resultsList {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    margin-top: 10px;
+}
+
+#recommendList {
     max-height: 300px;
     overflow-y: auto;
     border: 1px solid #e0e0e0;
@@ -1688,7 +1967,7 @@ li {
 }
 
 .portionInput {
-    width: 80px;
+    width: 67px;
     padding: 6px 8px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
@@ -1696,6 +1975,13 @@ li {
 
 .unitSelect {
     padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.mealSelect{
+    padding: 5px 7px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
     background: #ffffff;

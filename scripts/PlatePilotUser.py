@@ -187,6 +187,7 @@ class ppuser():
 
         self.TDEE = self.BMR*self.activity_factor[self.activity_level - 1]
         self.calcMacros()
+        self.upper_limits["Fiber"] = (self.macros["Fiber"] * 2, 1.0)
         if self.sex == "MALE":
             if 19 <= self.age <= 30:
                 self.ERR = 662 - (9.53 * self.age) + self.activity_level * ((9.36 * self.weight) + (539.6 * self.height * 2.5 / 100))
@@ -202,7 +203,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 900
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15
                 self.micros["Vitamin C"] = 90
                 self.micros["Thiamin"] = 1.2
                 self.micros["Riboflavin"] = 1.3
@@ -226,7 +227,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 900
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15
                 self.micros["Vitamin C"] = 90
                 self.micros["Thiamin"] = 1.2
                 self.micros["Riboflavin"] = 1.3
@@ -251,7 +252,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 900
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15 #mcg
                 self.micros["Vitamin C"] = 90
                 self.micros["Thiamin"] = 1.2
                 self.micros["Riboflavin"] = 1.3
@@ -278,7 +279,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 700
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15 #mcg
                 self.micros["Vitamin C"] = 75
                 self.micros["Thiamin"] = 1.1
                 self.micros["Riboflavin"] = 1.1
@@ -304,7 +305,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 700
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15
                 self.micros["Vitamin C"] = 75
                 self.micros["Thiamin"] = 1.1
                 self.micros["Riboflavin"] = 1.1
@@ -330,7 +331,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 700
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15
                 self.micros["Vitamin C"] = 75
                 self.micros["Thiamin"] = 1.1
                 self.micros["Riboflavin"] = 1.1

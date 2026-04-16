@@ -1,7 +1,6 @@
-import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters} from '../api.js';
+import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getProgress } from '../api.js';
 import { getUserId, getElement, getInputValue, showError, showSuccess, getActiveFilters, addFilterToActiveFilters, removeActiveFilter } from '../utils.js';
 import { getUser, updateProgress } from '../state.js';
-let foodCart = []; 
 
 const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
 const MEAL_TAGS = ['Snack', 'Breakfast', 'Lunch', 'Dinner']
@@ -9,10 +8,11 @@ const MEAL_TAGS = ['Snack', 'Breakfast', 'Lunch', 'Dinner']
 export function initFoodLog() {
     loadProfilePicture();
     loadUserRestrictions();
+    loadProgressPreview();
 
     const btn = getElement('logButton');
     if (btn) {
-    	btn.addEventListener('click', handleLogCart);
+        btn.addEventListener('click', handleLogCart);
     }
 
     const addFoodBtn = getElement('addFoodBtn');
@@ -53,6 +53,9 @@ export function initFoodLog() {
             }
         });
     }
+
+    // Load recommendations on page load
+    loadRecommendations();
 }
 
 async function loadProfilePicture() {
@@ -137,40 +140,152 @@ async function setUserRestrictions(restriction, callApplyFilterAPI) {
 
 async function handleLogCart() {
 	const userId = getUserId();
-    	if (foodCart.length === 0) {
-        	showError("No foods selected to log.");
-        	return;
-    	}
+        if (foodCart.length === 0) {
+            showError("No foods selected to log.");
+            return;
+        }
 
-    	try {
-        	const logPromises = foodCart.map(item => {
-            		return logFood({
-                		user_id: userId,
-                		fdc_id: item.fdc_id,
-                		name: item.name,
-                		portion: item.portion,
-				unit: item.unit,
-                gram_weight: item.gram_weight,
-                meal_tag: item.meal
-            		});
-        	});
-
-        await Promise.all(logPromises);
-
-        foodCart = [];
-        document.querySelectorAll('.resultItem.selected').forEach(item => {
-            item.classList.remove('selected');
-        });
-        displayCart();
-        updateProgress();
-        showSuccess('Foods logged successfully.');
-
-    	} catch (err) {
-        	console.error("Logging error:", err);
-        	showError(err.message);
-    	}
+        try {
+            const payload = {
+                user_id: userId,
+                items: foodCart.map(item => ({
+                    fdc_id: item.fdc_id,
+                    name: item.name,
+                    portion: item.portion,
+                    unit: item.unit,
+                    gram_weight: item.gram_weight,
+                    meal_tag: item.meal
+                }))
+            };
+            const response = await logFood(payload);
+            foodCart = [];
+            document.querySelectorAll('.resultItem.selected').forEach(item => {
+                item.classList.remove('selected');
+            });
+            displayCart();
+            await loadProgressPreview();
+            showSuccess('Foods logged successfully.');
+            // Display recommendations if present
+            if (response && response.recommendations) {
+                displayRecommendations(response.recommendations);
+            }
+        } catch (err) {
+            console.error("Logging error:", err);
+            showError(err.message);
+        }
+}
+// all this for progress bars
+function toNumber(value) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
 }
 
+function progressMetrics(progress) {
+    const calories = toNumber(progress?.calories ?? progress?.Energy ?? 0);
+
+    const protein = toNumber(progress?.Protein ?? progress?.protein ?? 0);
+    const carbs = toNumber(
+        progress?.Carbs ?? progress?.carbs ?? progress?.Carbohydrate ?? progress?.['Carbohydrate, by difference'] ?? 0
+    );
+    const fats = toNumber(
+        progress?.Fats ?? progress?.fats ?? progress?.Fat ?? progress?.['Total lipid (fat)'] ?? 0
+    );
+
+    const macros = toNumber(progress?.macros ?? (protein + carbs + fats));
+
+    let micros = toNumber(progress?.micros ?? 0);
+    if (!micros) {
+        const excludedKeys = new Set([
+            'calories', 'energy', 'protein', 'carbs', 'carbohydrate', 'carbohydrate, by difference',
+            'fats', 'fat', 'total lipid (fat)', 'macros', 'micros'
+        ]);
+
+        micros = Object.entries(progress || {}).reduce((sum, [key, value]) => {
+            if (excludedKeys.has(String(key).toLowerCase())) return sum;
+            return sum + toNumber(value);
+        }, 0);
+    }
+
+    return { calories, macros, micros };
+}
+
+function getProgressIcon(percent) {
+    if (percent >= 100) return '🛸';
+    if (percent >= 70) return '🚀';
+    if (percent >= 35) return '✈️';
+    return '🛩️';
+}
+
+function applyProgressToPreview(metrics) {
+    const { calories, macros, micros } = metrics;
+
+    const tiers = [
+        { icon: '🛩️', goal: 500 },
+        { icon: '✈️', goal: 1500 },
+        { icon: '🚀', goal: 2500 },
+        { icon: '🛸', goal: 5000 }
+    ];
+
+    let activeTier = tiers[0];
+    for (let i = 0; i < tiers.length; i++) {
+        if (calories >= tiers[i].goal) {
+            activeTier = tiers[i];
+        }
+    }
+
+    const percent = Math.min((calories / activeTier.goal) * 100, 100);
+    const kcalBar = getElement('kcalProgressPreview');
+    const kcalPlane = getElement('planeIcon');
+    const macroBar = getElement('gProgressPreview');
+    const macroPlane = getElement('planeIcon1');
+    const microBar = getElement('mgProgressPreview');
+    const microPlane = getElement('planeIcon2');
+
+    if (kcalBar) {
+        kcalBar.style.width = `${percent}%`;
+    }
+
+    if (kcalPlane) {
+        kcalPlane.style.left = `${percent}%`;
+        kcalPlane.innerText = activeTier.icon;
+    }
+
+    const macroPercent = Math.min((macros / 300) * 100, 100);
+    if (macroBar) {
+        macroBar.style.width = `${macroPercent}%`;
+    }
+    if (macroPlane) {
+        macroPlane.style.left = `${macroPercent}%`;
+        macroPlane.innerText = getProgressIcon(macroPercent);
+    }
+
+    const microPercent = Math.min((micros / 1000) * 100, 100);
+    if (microBar) {
+        microBar.style.width = `${microPercent}%`;
+    }
+    if (microPlane) {
+        microPlane.style.left = `${microPercent}%`;
+        microPlane.innerText = getProgressIcon(microPercent);
+    }
+}
+
+async function loadProgressPreview() {
+    try {
+        const userId = getUserId();
+        if (!userId) return;
+
+        const progressData = await getProgress(userId);
+        const metrics = progressMetrics(progressData);
+
+        updateProgress(metrics);
+        applyProgressToPreview(metrics);
+    } catch (err) {
+        console.warn('Failed to load progress preview:', err);
+    }
+}
+// end of progress bars
+
+//food search
 async function foodSearch() {
     const foodName = getInputValue('foodInput');
     const userId = getUserId();
@@ -197,6 +312,7 @@ async function foodSearch() {
     }
 }
 
+//display search results
 function displaySearchResults(results) {
     const resultsList = getElement('resultsList');
     if (!resultsList) return;
@@ -234,6 +350,7 @@ function displaySearchResults(results) {
     });
 }
 
+//display recommendations
 function displayRecommendations(recResults) {
     const recommendList = getElement('recommendList');
     if (!recommendList) return;
@@ -241,23 +358,40 @@ function displayRecommendations(recResults) {
     // clears previous results
     recommendList.innerHTML = '';
 
-    if (recResults.length === 0) {
-        recommendList.innerHTML = '<p>No recommendations available.</p>';
+    if (!Array.isArray(recResults) || recResults.length === 0) {
+        recommendList.innerHTML = '<p>No recommendations available for today.</p>';
         return;
     }
 
-    //* create recommendation items
-    recResults.forEach(result => {
-        const [fdcId, productName, categoryName] = result;
-        const recItem = document.createElement('div');
-        recItem.className = 'recItem';
-        recItem.innerHTML = `
-            <div class="recName">${productName}</div>
-            <div class="recCategory">${categoryName}</div>
-        `;
-
-        recommendList.appendChild(recItem);
-    });
+    // create recommendation items
+        recResults.forEach(result => {
+            let fdcId, productName, categoryName, servingSize;
+            if (Array.isArray(result)) {
+                [fdcId, productName, categoryName, servingSize] = result;
+            } else if (typeof result === 'object' && result !== null) {
+                fdcId = result.fdc_id || result.fdcId || result.id || '';
+                productName = result.name || result.productName || '';
+                categoryName = result.category || result.categoryName || '';
+                servingSize = result.suggested_serving_oz || result.servingSize || result.suggestedServing || '';
+            } else {
+                fdcId = '';
+                productName = String(result);
+                categoryName = '';
+                servingSize = '';
+            }
+            const recItem = document.createElement('div');
+            recItem.className = 'resultItem'; 
+            recItem.dataset.fdcId = String(fdcId);
+            recItem.innerHTML = `
+                <div class="resultTopRow">
+                    <div class="resultName">${productName}</div>
+                    ${servingSize ? `<span class="servingSize"><strong>Suggested:</strong> ${servingSize} oz</span>` : ''}
+                </div>
+                <div class="resultCategory">${categoryName}</div>
+            `;
+            recItem.addEventListener('click', () => selectFood(productName, fdcId));
+            recommendList.appendChild(recItem);
+        });
 }
 
 function getDefaultMeal() {
@@ -269,6 +403,7 @@ function getDefaultMeal() {
     return 'Snack';
 }
 
+// Select a food item and add it to the cart
 async function selectFood(foodName, fdcId) {
     const existingIndex = foodCart.findIndex(item => String(item.fdc_id) === String(fdcId));
     if (existingIndex !== -1) {
@@ -278,14 +413,14 @@ async function selectFood(foodName, fdcId) {
 
     try {
         const data = await getModifiers(fdcId);
-	console.log(data);
+	      console.log(data);
         const defaultModifiers = [
             { modifier: 'g', gram_weight: 1.0 },
             { modifier: 'oz', gram_weight: 28.35 }
         ];
         const dbModifiers = (data.modifiers || []).map(m => ({
-	    gram_weight: m[0],
-	    modifier: m[1]
+	      gram_weight: m[0],
+	      modifier: m[1]
 	}));
         const modifierList = [...dbModifiers];
 	console.log("Made it passed dbModifiers and modifierList instantiation...");
@@ -328,11 +463,13 @@ async function selectFood(foodName, fdcId) {
     }
 }
 
+// Set the selected state of a search result item
 function setSearchResultSelectedState(fdcId, isSelected) {
     const matches = document.querySelectorAll(`.resultItem[data-fdc-id="${String(fdcId)}"]`);
     matches.forEach(item => item.classList.toggle('selected', isSelected));
 }
 
+// Remove a food item from the cart
 function removeFromCart(index) {
     if (Number.isNaN(index) || index < 0 || index >= foodCart.length) {
         return;
@@ -346,6 +483,7 @@ function removeFromCart(index) {
     displayCart();
 }
 
+// Display the food cart
 function displayCart() {
     const historyList = getElement('historyList');
     if (!historyList) return;
@@ -362,7 +500,6 @@ function displayCart() {
         cartItem.className = 'cartItem';
         const portionValue = Number(food.portion) > 0 ? Number(food.portion) : 1;
 
-
 	const SERVING_UNITS = (food.modifier_map && food.modifier_map.length > 0) ? food.modifier_map.map(m => m.modifier) : ['Serving'];
         const unitOptions = SERVING_UNITS.map((unit) => {
             const selected = (food.unit || 'Serving') === unit ? 'selected' : '';
@@ -373,7 +510,7 @@ function displayCart() {
             const selected = (food.meal || 'Snack') === meal ? 'selected' : '';
             return `<option value="${meal}" ${selected}>${meal}</option>`;
         }).join('');
- 
+
         cartItem.innerHTML = `
             <div class="cartItemContent">
                 <span class="cartItemName">${food.name}</span>
@@ -419,17 +556,17 @@ function displayCart() {
     unitSelects.forEach(select => {
         select.addEventListener('change', () => {
             const idx = parseInt(select.dataset.index);
-	    const selectedUnit = select.value;
-	    const item = foodCart[idx];
+        const selectedUnit = select.value;
+        const item = foodCart[idx];
 
-	    item.unit = selectedUnit;
+        item.unit = selectedUnit;
 
-	    const lookup = item.modifier_map.find(m => m.modifier === selectedUnit);
-	    if (lookup) {
-	    	item.gram_weight = lookup.gram_weight;
-	    }
-
-	    console.log(`Updated ${item.name} to ${selectedUnit}. Background weight is now: ${item.gram_weight}`);
+        const lookup = item.modifier_map.find(m => m.modifier === selectedUnit);
+        if (lookup) {
+            item.gram_weight = lookup.gram_weight;
+        }
+        
+        console.log(`Updated ${item.name} to ${selectedUnit}. Background weight is now: ${item.gram_weight}`);
         });
     });
 
@@ -449,6 +586,7 @@ function displayCart() {
     });
 }
 
+// Apply a filter to the user's food search
 async function applyFilter(filter) {
     const userId = getUserId();
     if (!userId) {
@@ -465,5 +603,21 @@ async function applyFilter(filter) {
         return await apply_Filter(userId, filter);
     } catch (err) {
         console.error("Post error: ", err);
+    }
+}
+
+// Load food recommendations for the user
+async function loadRecommendations() {
+    try {
+        const userId = getUserId();
+        if (!userId) return;
+        const data = await getRecommendations(userId);
+        if (data && data.recommendations) {
+            displayRecommendations(data.recommendations);
+        } else {
+            displayRecommendations([]);
+        }
+    } catch (err) {
+        displayRecommendations([]);
     }
 }
