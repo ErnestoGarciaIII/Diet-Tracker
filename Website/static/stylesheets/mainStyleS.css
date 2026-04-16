@@ -994,6 +994,15 @@ p.change{
     position: relative;
     z-index: 2;
 }
+#kcalProgressPreview {
+    width: 0%;
+    height: 100%;
+    background: rgba(22, 163, 74, 0.6);
+    border-radius: 25px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+}
 #gProgressBar {
     width: 0%;
     height: 100%;
@@ -1003,7 +1012,25 @@ p.change{
     position: relative;
     z-index: 2;
 }
+#gProgressPreview {
+    width: 0%;
+    height: 100%;
+    background: rgba(54, 162, 235, 0.6);
+    border-radius: 25px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+}
 #mgProgressBar {
+    width: 0%;
+    height: 100%;
+    background: rgba(255, 206, 86, 0.6);
+    border-radius: 25px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+}
+#mgProgressPreview {
     width: 0%;
     height: 100%;
     background: rgba(255, 206, 86, 0.6);
@@ -1107,7 +1134,7 @@ p.change{
     max-width: 900px;
 }
 
-.foodLogLayout, .settingsLayout {
+.foodLogLayout, .settingsLayout{
     display: grid;
     grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
     gap: 24px;
@@ -1242,6 +1269,57 @@ li {
 }
 
 /* -------------------------- Calendar Styling -------------------------------- */
+.histContent{
+    margin-left: 80px;
+    padding: 40px;
+    width: calc(100% - 80px);
+    max-width: none;
+}
+
+.histCalendarWrap {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 10px;
+}
+
+.histCalendarWrap .histCard {
+    width: min(100%, 1000px);
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+}
+
+.histLayoutsWrap {
+    display: flex;
+    justify-content: center;
+    padding-top: 10px;
+}
+
+.histLayouts{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    width: min(100%, 1460px);
+    align-items: start;
+}
+
+.histCard{
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    margin-bottom: 25px;
+    align-items: center;;
+}
+.compCard{
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    margin-bottom: 25px;
+    align-items: center;
+;
+}
 .calendarGrid {
     display: grid;
     grid-template-columns: repeat(7, 1fr); /* 7 Days a week */
@@ -1317,10 +1395,30 @@ li {
     background: #f0fdf4; 
 }
 
+.calendarDay.compareActive {
+    border: 2px solid #2563eb;
+    background: #eff6ff;
+}
+
 .dayDetails {
     border-top: 1px solid #eee;
     padding-top: 20px;
     margin-top: 30px;
+}
+
+.mealGroup {
+    margin-bottom: 18px;
+}
+
+.mealGroupHeader {
+    font-size: 0.95rem;
+    color: #065f46;
+    margin: 0 0 10px;
+    font-weight: 700;
+}
+
+.compareDetails {
+    border-top-style: solid;
 }
 
 .historyItem {
@@ -1436,6 +1534,16 @@ li {
     justify-content: center;
     margin-top: 30px; 
     padding-bottom: 20px;
+}
+
+.compareControls {
+    margin-top: 0;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.hidden {
+    display: none !important;
 }
 
 @media (max-width: 480px) {
@@ -1729,6 +1837,15 @@ li {
 
 /* ------------------------------------ Food Log Search Results ------------------------------------ */
 #resultsList {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    margin-top: 10px;
+}
+
+#recommendList {
     max-height: 300px;
     overflow-y: auto;
     border: 1px solid #e0e0e0;

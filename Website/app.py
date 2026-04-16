@@ -42,15 +42,15 @@ def migrate_db():
 
 migrate_db()
 
-def calculate_daily_progress(user_id, conn):
+def calculate_daily_progress(user_id, conn, target_date=None):
     cursor = conn.cursor()
-    today = datetime.now().strftime('%a %b %d %Y')
+    selected_date = target_date or datetime.now().strftime('%a %b %d %Y')
 
     cursor.execute("""
         SELECT fdc_id, portion, gram_weight
         FROM FoodHistory
         WHERE userId = ? AND dateLogged = ?
-    """, (user_id, today))
+    """, (user_id, selected_date))
 
     history_rows = cursor.fetchall()
     if not history_rows:
@@ -865,9 +865,12 @@ def log_food_entry():
         conn.commit()
         print("Entering recommendation algorithm...") 
         recommendations = recommendation_algorithm(user_id) 
+        if not isinstance(recommendations, list):
+            recommendations = []
         return jsonify({
             'message': f'{len(rows)} food(s) logged successfully',
-            'result': 'success'
+            'result': 'success',
+            'recommendations': recommendations
         }), 201
 
     except Exception as e:
@@ -876,6 +879,21 @@ def log_food_entry():
 
     finally:
         if conn: conn.close()
+
+# Get Recommendations for current user
+@app.route('/api/recommendations', methods=['GET'])
+def get_recommendations():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'User ID required'}), 400
+    try:
+        recommendations = recommendation_algorithm(user_id)
+        if not isinstance(recommendations, list):
+            recommendations = []
+        return jsonify({'recommendations': recommendations}), 200
+    except Exception as e:
+        print('[ERROR]:', e)
+        return jsonify({'error': str(e)}), 500
 
 # Get Food History
 @app.route('/api/food-history/<user_id>', methods=['GET'])
@@ -908,7 +926,8 @@ def get_progress(user_id):
     conn = None
     try:
         conn = connectDB()
-        progress = calculate_daily_progress(user_id, conn)
+        selected_date = request.args.get('date')
+        progress = calculate_daily_progress(user_id, conn, selected_date)
         return jsonify(progress), 200
 
     except Exception as e:

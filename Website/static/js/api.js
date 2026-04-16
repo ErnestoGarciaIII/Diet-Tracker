@@ -179,8 +179,9 @@ export async function getModifiers(fdcId) {
 // ==========================
 // PROGRESS
 // ==========================
-export async function getProgress(userId) {
-    return request(`/api/progress/${userId}`);
+export async function getProgress(userId, date = null) {
+    const dateQuery = date ? `?date=${encodeURIComponent(date)}` : '';
+    return request(`/api/progress/${userId}${dateQuery}`);
 }
 
 // ==========================
@@ -216,4 +217,11 @@ export async function clearFoodHistory(userId) {
     return request(`/api/food-history/clear/${userId}`, {
         method: 'DELETE'
     });
+}
+
+// ==========================
+// RECOMMENDATIONS
+// ==========================
+export async function getRecommendations(userId) {
+    return request(`/api/recommendations?user_id=${userId}`);
 }
