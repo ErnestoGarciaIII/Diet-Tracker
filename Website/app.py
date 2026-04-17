@@ -24,6 +24,8 @@ app.secret_key = secrets.token_urlsafe(32)  # Needed for session support
 
 active_user_filters = {}
 
+# Helpers
+
 def migrate_db():
     conn = None
     try:
@@ -117,8 +119,92 @@ def calculate_daily_progress(user_id, conn, target_date=None):
 
     return progress
 
+def recommendation_algorithm(user_id):
+    
+    conn = None
 
-# Helpers
+    try:
+        conn = connectDB()
+        (_, _, age, sex, height_in, weight_lbs,
+         goal, activity_level, _, _, _) = query_db_for_user_info(
+            user_id=user_id, returnJSON=False
+        )
+
+        user_info = query_db_for_user_info(user_id=user_id, returnJSON=False)
+        print(user_info)
+        user_object = ppuser(
+            w=convert_lbs_to_kg(user_info[5]),
+            h=convert_inches_to_cm(user_info[4]),
+            a=int(user_info[2]),
+            s=str(user_info[3]),
+            al=int(user_info[7]),
+            g=int(user_info[6])
+        )
+        user_object.setDRI()
+        
+        translation_map = {
+            "Protein": "Protein",
+            "Total lipid (fat)": "Fats",
+            "Carbohydrate, by difference": "Carbs",
+            "Fiber, total dietary": "Fiber",
+            "Calcium, Ca": "Calcium",
+            "Iron, Fe": "Iron",
+            "Magnesium, Mg": "Magnesium",
+            "Phosphorus, P": "Phosphorus",
+            "Potassium, K": "Potassium",
+            "Sodium, Na": "Sodium",
+            "Zinc, Zn": "Zinc",
+            "Copper, Cu": "Copper",
+            "Manganese, Mn": "Manganese",
+            "Selenium, Se": "Selenium",
+            "Vitamin A, RAE": "Vitamin A",
+            "Vitamin E (alpha-tocopherol)": "Vitamin E",
+            "Vitamin D (D2 + D3)": "Vitamin D",
+            "Vitamin C, total ascorbic acid": "Vitamin C",
+            "Thiamin": "Thiamin",
+            "Riboflavin": "Riboflavin",
+            "Niacin": "Niacin",
+            "Pantothenic acid": "Pantothenic acid",
+            "Vitamin B-6": "Vitamin B-6",
+            "Folate, total": "Folate",
+            "Vitamin B-12": "Vitamin B-12",
+            "Choline, total": "Choline",
+            "Vitamin K (phylloquinone)": "Vitamin K"
+        }
+        standardized_consumed = {}
+        
+        consumed_data = calculate_daily_progress(user_id, conn)
+
+        for fdc_name, value in consumed_data.items():
+            # Use the map to get the short name; default to fdc_name if not found
+            clean_name = translation_map.get(fdc_name, fdc_name)
+            standardized_consumed[clean_name] = value
+        
+        for index in standardized_consumed:
+            user_object.getNutrientInfo(index)
+            print(f"{index}: {standardized_consumed[index]}")
+
+        user_filter_ids = list(active_user_filters.get(str(user_id), set()))
+        
+        recommendations = recommend_foods(user_object, conn, standardized_consumed, restriction_ids=user_filter_ids)
+        print("\nDebug Recommendation \n------------------------------")
+        for item in recommendations:
+            # iteration: 1 -> "1."
+            # name: 'Garlic, raw' -> "Garlic, raw"
+            print(f"{item['iteration']}. {item['name']} Suggested Serving: {item['suggested_serving_oz']} oz (Match Score: {item['score']})")
+            print("--------------------------------\n")
+        
+        print(standardized_consumed)
+        
+        return recommendations
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return 0
+
+    finally:
+        if conn: conn.close()
+
 def generate_reset_token():
     return secrets.token_urlsafe(32)
 
@@ -208,6 +294,8 @@ def query_db_for_user_info(user_id, returnJSON=True):
     finally:
        if conn: conn.close()
 
+def normalize_progress(progress):
+    return 0
 
 #Deliver HTML
 @app.route('/')
@@ -1061,93 +1149,6 @@ def clear_food_history(user_id):
 
     finally:
         if conn: conn.close()
-
-def recommendation_algorithm(user_id):
-    
-    conn = None
-
-    try:
-        conn = connectDB()
-        (_, _, age, sex, height_in, weight_lbs,
-         goal, activity_level, _, _, _) = query_db_for_user_info(
-            user_id=user_id, returnJSON=False
-        )
-
-        user_info = query_db_for_user_info(user_id=user_id, returnJSON=False)
-        print(user_info)
-        user_object = ppuser(
-            w=convert_lbs_to_kg(user_info[5]),
-            h=convert_inches_to_cm(user_info[4]),
-            a=int(user_info[2]),
-            s=str(user_info[3]),
-            al=int(user_info[7]),
-            g=int(user_info[6])
-        )
-        user_object.setDRI()
-        
-        translation_map = {
-            "Protein": "Protein",
-            "Total lipid (fat)": "Fats",
-            "Carbohydrate, by difference": "Carbs",
-            "Fiber, total dietary": "Fiber",
-            "Calcium, Ca": "Calcium",
-            "Iron, Fe": "Iron",
-            "Magnesium, Mg": "Magnesium",
-            "Phosphorus, P": "Phosphorus",
-            "Potassium, K": "Potassium",
-            "Sodium, Na": "Sodium",
-            "Zinc, Zn": "Zinc",
-            "Copper, Cu": "Copper",
-            "Manganese, Mn": "Manganese",
-            "Selenium, Se": "Selenium",
-            "Vitamin A, RAE": "Vitamin A",
-            "Vitamin E (alpha-tocopherol)": "Vitamin E",
-            "Vitamin D (D2 + D3)": "Vitamin D",
-            "Vitamin C, total ascorbic acid": "Vitamin C",
-            "Thiamin": "Thiamin",
-            "Riboflavin": "Riboflavin",
-            "Niacin": "Niacin",
-            "Pantothenic acid": "Pantothenic acid",
-            "Vitamin B-6": "Vitamin B-6",
-            "Folate, total": "Folate",
-            "Vitamin B-12": "Vitamin B-12",
-            "Choline, total": "Choline",
-            "Vitamin K (phylloquinone)": "Vitamin K"
-        }
-        standardized_consumed = {}
-        
-        consumed_data = calculate_daily_progress(user_id, conn)
-
-        for fdc_name, value in consumed_data.items():
-            # Use the map to get the short name; default to fdc_name if not found
-            clean_name = translation_map.get(fdc_name, fdc_name)
-            standardized_consumed[clean_name] = value
-        
-        for index in standardized_consumed:
-            user_object.getNutrientInfo(index)
-            print(f"{index}: {standardized_consumed[index]}")
-
-        user_filter_ids = list(active_user_filters.get(str(user_id), set()))
-        
-        recommendations = recommend_foods(user_object, conn, standardized_consumed, restriction_ids=user_filter_ids)
-        print("\nDebug Recommendation \n------------------------------")
-        for item in recommendations:
-            # iteration: 1 -> "1."
-            # name: 'Garlic, raw' -> "Garlic, raw"
-            print(f"{item['iteration']}. {item['name']} Suggested Serving: {item['suggested_serving_oz']} oz (Match Score: {item['score']})")
-            print("--------------------------------\n")
-        
-        print(standardized_consumed)
-        
-        return recommendations
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return 0
-
-    finally:
-        if conn: conn.close()
-
 
 if __name__ == '__main__':
     print("PlatePilot server running at http://localhost:5000")
