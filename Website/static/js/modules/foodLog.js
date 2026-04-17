@@ -5,6 +5,8 @@ import { getUser, updateProgress } from '../state.js';
 const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
 const MEAL_TAGS = ['Snack', 'Breakfast', 'Lunch', 'Dinner']
 
+let foodCart = []
+
 export function initFoodLog() {
     loadProfilePicture();
     loadUserRestrictions();
@@ -92,7 +94,7 @@ async function loadUserRestrictions() {
 async function setUserRestrictions(restriction, callApplyFilterAPI) {
     if (callApplyFilterAPI) {
         try {
-            await applyFilter(restriction);
+            await apply_Filter(restriction);
             addFilterToActiveFilters(restriction);
         } catch (err) {
             console.error("[ERROR] Could not load user restrictions");
