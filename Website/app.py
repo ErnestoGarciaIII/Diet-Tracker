@@ -44,6 +44,27 @@ def migrate_db():
 
 migrate_db()
 
+def make_user(user_id, conn):
+    try:
+        (_, _, age, sex, height_in, weight_lbs,
+         goal, activity_level, _, _, _) = query_db_for_user_info(
+            user_id=user_id, returnJSON=False
+        )
+
+        user_info = query_db_for_user_info(user_id=user_id, returnJSON=False)
+        print(user_info)
+        user_object = ppuser(
+            w=convert_lbs_to_kg(user_info[5]),
+            h=convert_inches_to_cm(user_info[4]),
+            a=int(user_info[2]),
+            s=str(user_info[3]),
+            al=int(user_info[7]),
+            g=int(user_info[6])
+        )
+        return user_object
+    except Exception as e:
+        print(f"Error: {e}")
+
 def calculate_daily_progress(user_id, conn, target_date=None):
     cursor = conn.cursor()
     selected_date = target_date or datetime.now().strftime('%a %b %d %Y')
@@ -125,21 +146,9 @@ def recommendation_algorithm(user_id):
 
     try:
         conn = connectDB()
-        (_, _, age, sex, height_in, weight_lbs,
-         goal, activity_level, _, _, _) = query_db_for_user_info(
-            user_id=user_id, returnJSON=False
-        )
 
-        user_info = query_db_for_user_info(user_id=user_id, returnJSON=False)
-        print(user_info)
-        user_object = ppuser(
-            w=convert_lbs_to_kg(user_info[5]),
-            h=convert_inches_to_cm(user_info[4]),
-            a=int(user_info[2]),
-            s=str(user_info[3]),
-            al=int(user_info[7]),
-            g=int(user_info[6])
-        )
+        user_object = make_user(user_id, conn)
+
         user_object.setDRI()
         
         translation_map = {
@@ -174,7 +183,6 @@ def recommendation_algorithm(user_id):
         standardized_consumed = {}
         
         consumed_data = calculate_daily_progress(user_id, conn)
-
         for fdc_name, value in consumed_data.items():
             # Use the map to get the short name; default to fdc_name if not found
             clean_name = translation_map.get(fdc_name, fdc_name)
@@ -183,6 +191,7 @@ def recommendation_algorithm(user_id):
         for index in standardized_consumed:
             user_object.getNutrientInfo(index)
             print(f"{index}: {standardized_consumed[index]}")
+            
 
         user_filter_ids = list(active_user_filters.get(str(user_id), set()))
         
