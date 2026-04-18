@@ -172,11 +172,11 @@ class ppuser():
 
     def getNutrientInfo(self, index):
         if index in self.micros:
-            print(f"{index}: {self.micros[index]}")
+            return self.micros[index]
         elif index in self.macros:
-            print(f"{index}: {self.macros[index]}")
+            return self.macros[index]
         elif index == "Energy":
-            print(f"Calories: {self.TDEE}")
+            return self.TDEE
 
 
     def setDRI(self):

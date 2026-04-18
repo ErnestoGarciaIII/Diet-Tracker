@@ -7,6 +7,7 @@ export function initSettings() {
     loadUser();
     setupAvatarControls();
     setupMoreInfoCollapse();
+    window.toggleSexDisclaimer = toggleSexDisclaimer;
 
     document.querySelectorAll('.tag').forEach(tag => {
         tag.addEventListener('click', () => toggleTag(tag));
@@ -14,6 +15,18 @@ export function initSettings() {
 
     const submitBtn = getElement('submitBtn');
     if (submitBtn) submitBtn.addEventListener('click', saveRestrictions);
+}
+
+function toggleSexDisclaimer(event) {
+    event.preventDefault();
+    const disclaimer = document.getElementById('sexDisclaimer');
+    if (!disclaimer) return;
+
+    if (disclaimer.style.display === 'none') {
+        disclaimer.style.display = 'block';
+    } else {
+        disclaimer.style.display = 'none';
+    }
 }
 
 function setupMoreInfoCollapse() {

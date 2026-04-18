@@ -303,8 +303,12 @@ def query_db_for_user_info(user_id, returnJSON=True):
     finally:
        if conn: conn.close()
 
-def normalize_progress(progress):
-    return 0
+def normalize_progress(progress, user_object):
+    aggregate_progress = {}
+    for index in progress:
+        aggregate_progress[index] = progress[index] / user_object.getNutrientInfo(Index)
+
+    return aggregate_progress
 
 #Deliver HTML
 @app.route('/')
