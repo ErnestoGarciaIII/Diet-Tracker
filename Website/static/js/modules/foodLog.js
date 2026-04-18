@@ -1,7 +1,6 @@
 import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getProgress } from '../api.js';
 import { getUserId, getElement, getInputValue, showError, showSuccess, getActiveFilters, addFilterToActiveFilters, removeActiveFilter } from '../utils.js';
 import { getUser, updateProgress } from '../state.js';
-let foodCart = []; 
 
 const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
 const MEAL_TAGS = ['Snack', 'Breakfast', 'Lunch', 'Dinner']
@@ -414,14 +413,14 @@ async function selectFood(foodName, fdcId) {
 
     try {
         const data = await getModifiers(fdcId);
-	console.log(data);
+	      console.log(data);
         const defaultModifiers = [
             { modifier: 'g', gram_weight: 1.0 },
             { modifier: 'oz', gram_weight: 28.35 }
         ];
         const dbModifiers = (data.modifiers || []).map(m => ({
-            gram_weight: m[0],
-            modifier: m[1]
+	      gram_weight: m[0],
+	      modifier: m[1]
 	}));
         const modifierList = [...dbModifiers];
 	console.log("Made it passed dbModifiers and modifierList instantiation...");

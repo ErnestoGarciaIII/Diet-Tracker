@@ -2,5 +2,5 @@ db/
 .vs/
 Tests/
 __pycache__/
-scripts/__pycache__/
-Website/static/images/user_avatars/
+user_avatars/
+scripts/
