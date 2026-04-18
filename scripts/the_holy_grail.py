@@ -34,8 +34,19 @@ CATEGORY_SERVING_GRAMS = {
     27: 100.0,  # Quality Control         — N/A, fallback
     28: 355.0,  # Alcoholic Beverages     — 12 oz beer equivalent
 }
+NUTRIENT_WEIGHTS = {
+    "Vitamin D":        4.0,   
+    "Vitamin K":        2.5,   
+    "Vitamin E":        2.0,   
+    "Folate":           2.0,   
+    "Vitamin A":        5.0,  
+    "Calcium":          1.5,   
+    "Magnesium":        1.2,
+    "Zinc":             1.2,
+    "Fiber":            1.5,
+}
 DEFAULT_SERVING_GRAMS = 100.0
-
+CALORIC_DENSITY_NUTRIENTS = {"Protein", "Carbs", "Fats"}
 NUTRIENT_ID_TO_NAME = {
     1003: "Protein",
     1004: "Fats",
@@ -89,8 +100,6 @@ def load_candidate_pool(conn, restriction_ids=None):
 
     pool = {}
     for fdc_id, description, nutrient_id, amount_per_gram, food_category_id in rows:
-        if nutrient_id == 1093 or nutrient_id == 1004 or nutrient_id == 1005:
-            continue
         if fdc_id not in pool:
             pool[fdc_id] = {'name': description, 'nutrients': {}, 'category_id': food_category_id}
         nutrient_name = NUTRIENT_ID_TO_NAME.get(nutrient_id)
@@ -109,7 +118,10 @@ def rate_food(food_nutrients, consumed_nutrients, dri, upper_limits):
         remaining = max(0, dri[nutrient] - consumed_nutrients[nutrient])
         deficit = remaining / dri[nutrient]
         fill = min(food_amount, remaining)
-        benefit = (deficit ** 2) * (fill / dri[nutrient])
+        benefit = (deficit ** 2) * ((fill + 0.01) / dri[nutrient])
+
+        weight = NUTRIENT_WEIGHTS.get(nutrient, 1.0)
+        benefit *= weight
 
         over_consumption_penalty = 0.0
         if nutrient in upper_limits:
@@ -146,15 +158,17 @@ def recommend_foods(user, conn, consumed, iterations=5, restriction_ids=None):
             	food.get('category_id'), DEFAULT_SERVING_GRAMS
             )
 
-            max_density = max(
+            macro_density = max(
                 (
-                (food['nutrients'].get(n, 0) * 100) / dri.get(n, 1)
-                for n in food['nutrients'] if n in dri and dri.get(n, 0) > 0
-                ), default=0.0)
-
-            if max_density > 0.5:
+                    (food['nutrients'].get(n, 0) * 100) / dri.get(n, 1)
+                    for n in CALORIC_DENSITY_NUTRIENTS
+                        if n in food['nutrients']  and dri.get(n, 0) > 0
+                ),
+                default=0.0
+            )
+            if macro_density > 0.5:
                 serving_grams = min(serving_grams, 15.0)
-            elif max_density > 0.15:
+            elif macro_density > 0.15:
                 serving_grams = min(serving_grams, 30.0)
             else:
                 serving_grams = min(serving_grams, 100.0)
