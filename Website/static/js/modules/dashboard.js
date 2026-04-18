@@ -72,7 +72,7 @@ function renderRestrictions(restrictions) {
 async function loadProgress() {
     try {
         const userId = State.getUserId();
-        const progress = await API.getProgress(userId);
+        const progress = await API.getNutrientProgress(userId);
 
         State.setProgress(progress);
         updateProgressUI(progress);
@@ -234,7 +234,7 @@ export async function renderActivityChart() {
         }
 
         const dailyProgressList = await Promise.all(
-            dateStrings.map(dateStr => API.getProgress(userId, dateStr))
+            dateStrings.map(dateStr => API.getNutrientProgress(userId, dateStr))
         );
 
         dailyProgressList.forEach(progress => {
