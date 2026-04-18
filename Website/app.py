@@ -124,8 +124,8 @@ def calculate_daily_progress(user_id, conn, target_date=None):
     cursor.execute(nutrient_query)
     nutrient_rows = cursor.fetchall()
     
-    for row in nutrient_rows:
-        print(row)
+    #for row in nutrient_rows: debug nutrient query printing
+        #print(row)
 
     progress = {"Energy": 0.0}
     for row in nutrient_rows:
@@ -180,21 +180,18 @@ def recommendation_algorithm(user_id):
             "Choline, total": "Choline",
             "Vitamin K (phylloquinone)": "Vitamin K"
         }
-        standardized_consumed = {}
         
-        consumed_data = calculate_daily_progress(user_id, conn)
-        for fdc_name, value in consumed_data.items():
-            # Use the map to get the short name; default to fdc_name if not found
-            clean_name = translation_map.get(fdc_name, fdc_name)
-            standardized_consumed[clean_name] = value
+        standardized_consumed, aggregate_progress = get_nutrient_progress(user_id, conn)
         
-        for index in standardized_consumed:
-            user_object.getNutrientInfo(index)
-            print(f"{index}: {standardized_consumed[index]}")
-            
+        total_micros, total_macros = aggregate_totals(aggregate_progress, user_object)
+
+        print(f"Total Micronutrient Progress: {round((total_micros*100), 1)}%")
+        print(f"Total Macronutrient Progress: {round((total_macros*100), 1)}%")
+        print(f"Total Caloric Progress:       {round((standardized_consumed["Energy"]/user_object.getNutrientInfo("Energy"))*100, 1)}%")
 
         user_filter_ids = list(active_user_filters.get(str(user_id), set()))
-        
+        print(user_filter_ids)
+
         recommendations = recommend_foods(user_object, conn, standardized_consumed, restriction_ids=user_filter_ids)
         print("\nDebug Recommendation \n------------------------------")
         for item in recommendations:
@@ -306,9 +303,85 @@ def query_db_for_user_info(user_id, returnJSON=True):
 def normalize_progress(progress, user_object):
     aggregate_progress = {}
     for index in progress:
-        aggregate_progress[index] = progress[index] / user_object.getNutrientInfo(Index)
+        aggregate_progress[index] = progress[index] / user_object.getNutrientInfo(index)
 
     return aggregate_progress
+
+def aggregate_totals(aggregate_progress, user_object):
+    micros_count = 0
+    macros_count = 0
+    total_micros = 0
+    total_macros = 0
+
+    for index in aggregate_progress:
+        if index in user_object.micros:
+            micros_count += 1
+            total_micros += min(1, aggregate_progress[index])
+        elif index in user_object.macros:
+            macros_count += 1
+            total_macros += min(1, aggregate_progress[index])
+   
+    if micros_count == 0 or macros_count == 0:
+        print(f"Something happened, the macros or micros count variable is 0, which should not be possible for this function at this point")
+        print(f"Micros count = {micros_count}\nMacros count = {macros_count}")
+
+    total_micros = total_micros / max(micros_count, 1)
+    total_macros = total_macros / max(macros_count, 1)
+
+    return total_micros, total_macros
+
+def get_nutrient_progress(user_id, conn):
+        
+    translation_map = {
+        "Protein": "Protein",
+        "Total lipid (fat)": "Fats",
+        "Carbohydrate, by difference": "Carbs",
+        "Fiber, total dietary": "Fiber",
+        "Calcium, Ca": "Calcium",
+        "Iron, Fe": "Iron",
+        "Magnesium, Mg": "Magnesium",
+        "Phosphorus, P": "Phosphorus",
+        "Potassium, K": "Potassium",
+        "Sodium, Na": "Sodium",
+        "Zinc, Zn": "Zinc",
+        "Copper, Cu": "Copper",
+        "Manganese, Mn": "Manganese",
+        "Selenium, Se": "Selenium",
+        "Vitamin A, RAE": "Vitamin A",
+        "Vitamin E (alpha-tocopherol)": "Vitamin E",
+        "Vitamin D (D2 + D3)": "Vitamin D",
+        "Vitamin C, total ascorbic acid": "Vitamin C",
+        "Thiamin": "Thiamin",
+        "Riboflavin": "Riboflavin",
+        "Niacin": "Niacin",
+        "Pantothenic acid": "Pantothenic acid",
+        "Vitamin B-6": "Vitamin B-6",
+        "Folate, total": "Folate",
+        "Vitamin B-12": "Vitamin B-12",
+        "Choline, total": "Choline",
+        "Vitamin K (phylloquinone)": "Vitamin K"
+    }
+
+    standardized_consumed = {}
+
+    consumed_data = calculate_daily_progress(user_id, conn)
+    for fdc_name, value in consumed_data.items():
+        # Use the map to get the short name; default to fdc_name if not found
+        clean_name = translation_map.get(fdc_name, fdc_name)
+        standardized_consumed[clean_name] = value
+    
+    user_object = make_user(user_id, conn)
+    user_object.setDRI()
+    
+    aggregate_progress = normalize_progress(standardized_consumed, user_object)
+    
+    for index in standardized_consumed:
+        print(f"{index}: {user_object.getNutrientInfo(index)}")
+        print(f"{index}: {standardized_consumed[index]}")
+        print(f"{index}: {round((aggregate_progress[index]*100), 1)}% Daily Value")
+
+    return standardized_consumed, aggregate_progress
+
 
 #Deliver HTML
 @app.route('/')
