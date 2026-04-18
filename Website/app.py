@@ -1081,6 +1081,23 @@ def get_food_history(user_id):
     finally:
         if conn: conn.close()
 
+# Get total consumed for a given day
+@app.route('/api/consumed/<user_id>', methods=['GET'])
+def get_progress(user_id):
+    conn = None
+    try:
+        conn = connectDB()
+        selected_date = request.args.get('date')
+        progress = consumed_progress(user_id, conn, selected_date)
+        return jsonify(progress), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        if conn: conn.close()
+
 # Get Nutrient Progress
 @app.route('/api/nutrient-progress/<user_id>', methods=['GET'])
 def get_progress(user_id):
@@ -1098,7 +1115,7 @@ def get_progress(user_id):
     finally:
         if conn: conn.close()
 
-# Get generic progress
+# Get generic progress (macros, micros, caloric totals)
 @app.route('/api/generic-progress/<user_id>', methods=['GET'])
 def get_generic_progress(user_id):
     try:

@@ -1,4 +1,4 @@
-import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getNutrientProgress } from '../api.js';
+import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getConsumed } from '../api.js';
 import { getUserId, getElement, getInputValue, showError, showSuccess, getActiveFilters, addFilterToActiveFilters, removeActiveFilter } from '../utils.js';
 import { getUser, updateProgress } from '../state.js';
 
@@ -274,7 +274,7 @@ async function loadProgressPreview() {
         const userId = getUserId();
         if (!userId) return;
 
-        const progressData = await getNutrientProgress(userId);
+        const progressData = await getConsumed(userId);
         const metrics = progressMetrics(progressData);
 
         updateProgress(metrics);
