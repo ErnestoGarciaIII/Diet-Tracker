@@ -126,7 +126,7 @@ async function renderGraphs(graphContainer, selectedDate) {
     const nutrientProgress = await getNutrientProgress(userId, selectedDate);
     const actualConsumed = nutrientProgress[0];
     const percentConsumed = nutrientProgress[1];
-    const dailyReccomended = nutrientProgress[2];
+    const dailyRecomended = nutrientProgress[2];
     const genericProgress = await getGenericProgress(userId, selectedDate);
 
     console.log(nutrientProgress);
@@ -142,7 +142,7 @@ async function renderGraphs(graphContainer, selectedDate) {
 
     Object.keys(actualConsumed).forEach(nutrient => {
         nutrientGraph.appendChild(createGraphItem(`Total ${nutrient} consumed`, Math.round(actualConsumed[nutrient]*10)/10));
-        nutrientGraph.appendChild(createGraphItem(`Daily ${nutrient} reccomended`, Math.round(dailyReccomended[nutrient]*10)/10));
+        nutrientGraph.appendChild(createGraphItem(`Daily ${nutrient} reccomended`, Math.round(dailyRecomended[nutrient]*10)/10));
         nutrientGraph.appendChild(createGraphItem(`Percentage of ${nutrient} consumed`, Math.round(parseFloat(percentConsumed[nutrient])*1000)/10, true));
     })
 
@@ -159,6 +159,8 @@ async function renderGraphs(graphContainer, selectedDate) {
     genericGraph.appendChild(createGraphItem(`Total Micronutrient Progress `, genericProgress[0]));
     genericGraph.appendChild(createGraphItem(`Total Macronutrient Progress `, genericProgress[1]));
     genericGraph.appendChild(createGraphItem(`Total Caloric Progress `, genericProgress[2], true));
+    genericGraph.appendChild(createGraphItem(`Total Calories consumed `, Math.round(actualConsumed["Energy"]*10)/10));
+    genericGraph.appendChild(createGraphItem(`Total recommended calories`, Math.round(dailyRecomended["Energy"]*10)/10));
 
     graphContainer.appendChild(genericGraph);
 }
