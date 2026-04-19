@@ -72,13 +72,14 @@ function renderRestrictions(restrictions) {
 async function loadProgress() {
     try {
         const userId = State.getUserId();
-        const [progress, genericProgress] = await Promise.all([
+        const [progress, genericProgress, dri] = await Promise.all([
             API.getConsumed(userId),
-            API.getGenericProgress(userId)
+            API.getGenericProgress(userId),
+            API.calculateDRI(userId)
         ]);
 
         State.setProgress(progress);
-        updateProgressUI(progress, genericProgress);
+        updateProgressUI(progress, genericProgress, dri);
 
     } catch (err) {
         console.error("Failed to load progress:", err);
@@ -148,7 +149,7 @@ function formatPercent(value) {
 }
 
 // Update the progress bars and icons in the UI based on the user's progress
-function updateProgressUI(progress, genericProgress) {
+function updateProgressUI(progress, genericProgress, dri) {
     const { calories, macros, micros } = progressMetrics(progress);
     const { caloriePercent, macroPercent, microPercent } = parseGenericProgress(genericProgress);
 
@@ -211,9 +212,10 @@ function updateProgressUI(progress, genericProgress) {
         }, 800);
     }
 
+    const recommendedKcal = dri && dri.TDEE ? Math.round(dri.TDEE) : activeTier.goal;
     if (getElement('planeRank')) getElement('planeRank').innerText = activeTier.name;
     if (getElement('currentTotal')) getElement('currentTotal').innerText = Math.round(calories);
-    if (getElement('goalNum')) getElement('goalNum').innerText = activeTier.goal;
+    if (getElement('goalNum')) getElement('goalNum').innerText = recommendedKcal;
 }
 
 // ==========================
