@@ -14,6 +14,7 @@ export async function initDashboard() {
         renderRestrictions(user.restrictions || []);
 
         await loadProgress();
+        await loadMoreDetails();
         await renderActivityChart();
         await updateDailyQuote();
 
@@ -146,6 +147,56 @@ function parseGenericProgress(genericProgress) {
 
 function formatPercent(value) {
     return `${Math.round(toNumber(value) * 10) / 10}%`;
+}
+
+function createNutrientBarRow(nutrient, pct, consumed, recommended) {
+    const clampedPct = Math.min(Math.max(pct, 0), 100);
+    const row = document.createElement('div');
+    row.className = 'nutrientBarRow';
+    row.innerHTML = `
+        <span class="nutrientBarLabel">${nutrient}</span>
+        <div class="nutrientMiniBarWrap">
+            <div class="nutrientMiniBar" style="width: ${clampedPct}%"></div>
+            <span class="nutrientBarPct">${pct}%</span>
+            <div class="nutrientHoverTooltip">
+                <p><strong>Consumed:</strong> ${consumed}</p>
+                <p><strong>Recommended:</strong> ${recommended}</p>
+            </div>
+        </div>
+    `;
+
+    return row;
+}
+
+async function loadMoreDetails() {
+    const graphContainer = getElement('dashboardMoreDetailsGraph');
+    if (!graphContainer) return;
+
+    try {
+        const userId = State.getUserId();
+        if (!userId) return;
+
+        const nutrientProgress = await API.getNutrientProgress(userId, new Date().toDateString());
+        const actualConsumed = nutrientProgress?.[0] || {};
+        const percentConsumed = nutrientProgress?.[1] || {};
+        const dailyRecommended = nutrientProgress?.[2] || {};
+
+        graphContainer.innerHTML = '';
+
+        Object.keys(actualConsumed).forEach((nutrient) => {
+            const pct = Math.round(parseFloat(percentConsumed[nutrient]) * 1000) / 10;
+            const consumed = Math.round(toNumber(actualConsumed[nutrient]) * 10) / 10;
+            const recommended = Math.round(toNumber(dailyRecommended[nutrient]) * 10) / 10;
+            graphContainer.appendChild(createNutrientBarRow(nutrient, pct, consumed, recommended));
+        });
+
+        if (!graphContainer.children.length) {
+            graphContainer.innerHTML = '<p class="text-muted">No nutrient details available yet.</p>';
+        }
+    } catch (err) {
+        console.warn('Failed to load dashboard nutrient details:', err);
+        graphContainer.innerHTML = '<p class="text-muted">Unable to load nutrient details.</p>';
+    }
 }
 
 // Update the progress bars and icons in the UI based on the user's progress

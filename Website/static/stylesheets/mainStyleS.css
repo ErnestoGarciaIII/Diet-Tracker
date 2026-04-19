@@ -876,7 +876,7 @@ p.change{
     margin-left: 80px;
     padding: 40px;
     width: 100%;
-    max-width: 900px;
+    max-width: 1380px;
 }
 
 
@@ -896,8 +896,14 @@ p.change{
 
 .statsPanel {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: minmax(340px, 1.1fr) minmax(320px, 0.9fr);
     gap: 30px;
+    align-items: start;
+}
+
+.leftCol,
+.rightCol {
+    min-width: 0;
 }
 
 .statCard {
@@ -927,18 +933,16 @@ p.change{
 }
 
 .chartContainer{
-    width: 65%;
     display: flex; 
-    justify-content: left;
+    justify-content: flex-start;
 }
 
 .chartCard{
-    flex: 2;
-    min-width: 600px;
-    width: 50%;
-    max-width: 1000px; /* Limits how wide it gets on giant monitors */
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    max-width: none;
+    background: #ffffff;
     border-radius: 20px;
     padding: 25px;
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -962,6 +966,11 @@ p.change{
 /* For mobile: Stack the sidebar on top */
 @media (max-width: 900px) {
     .dashContent {
+        padding: 24px 16px;
+        margin-left: 0;
+    }
+
+    .statsPanel {
         grid-template-columns: 1fr;
     }
 }
