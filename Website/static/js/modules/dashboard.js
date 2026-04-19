@@ -225,7 +225,7 @@ async function updateDailyQuote() {
     const el = document.getElementById('motivational');
     if (!el) return;
 
-    el.innerText = "Loading...";
+    el.innerText = "Loading today's inspiration...";
 
     try {
         const res = await fetch('https://api.allorigins.win/get?url=' +
@@ -251,9 +251,9 @@ export async function renderActivityChart() {
 
         const days = 7;
         const labels = [];
-        const caloriesData = [];
-        const macrosData = [];
-        const microsData = [];
+        const caloriesPercentData = [];
+        const macrosPercentData = [];
+        const microsPercentData = [];
         const dateStrings = [];
 
         for (let i = days - 1; i >= 0; i--) {
@@ -266,14 +266,14 @@ export async function renderActivityChart() {
         }
 
         const dailyProgressList = await Promise.all(
-            dateStrings.map(dateStr => API.getConsumed(userId, dateStr))
+            dateStrings.map(dateStr => API.getGenericProgress(userId, dateStr))
         );
 
         dailyProgressList.forEach(progress => {
-            const metrics = progressMetrics(progress || {});
-            caloriesData.push(Math.round(metrics.calories));
-            macrosData.push(Math.round(metrics.macros));
-            microsData.push(Math.round(metrics.micros));
+            const { caloriePercent, macroPercent, microPercent } = parseGenericProgress(progress || {});
+            caloriesPercentData.push(Math.round(caloriePercent * 10) / 10);
+            macrosPercentData.push(Math.round(macroPercent * 10) / 10);
+            microsPercentData.push(Math.round(microPercent * 10) / 10);
         });
 
         new Chart(ctx, {
@@ -281,8 +281,8 @@ export async function renderActivityChart() {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Calories (kcal)',
-                    data: caloriesData,
+                    label: 'Calories (%)',
+                    data: caloriesPercentData,
                     backgroundColor: 'rgba(22, 163, 74, 0.6)',
                     borderColor: '#16a34a',
                     borderWidth: 2,
@@ -291,8 +291,8 @@ export async function renderActivityChart() {
                     categoryPercentage: 0.7
                 },
                 {
-                    label: 'Macros',
-                    data: macrosData,
+                    label: 'Macros (%)',
+                    data: macrosPercentData,
                     backgroundColor: '#3498db',
                     borderColor: '#3498db',
                     borderWidth: 2,
@@ -301,8 +301,8 @@ export async function renderActivityChart() {
                     categoryPercentage: 0.7
                 },
                 {
-                    label: 'Micros',
-                    data: microsData,
+                    label: 'Micros (%)',
+                    data: microsPercentData,
                     backgroundColor: '#f1c40f',
                     borderColor: '#f1c40f',
                     borderWidth: 2,
@@ -317,6 +317,10 @@ export async function renderActivityChart() {
                 scales: {
                     y: {
                         beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: (value) => `${value}%`
+                        },
                         grid: {color: 'rgba(0,0,0,0.05)'}
                     },
                     x: {

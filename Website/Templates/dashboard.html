@@ -64,26 +64,28 @@
                         <span>Goal: <span id="currentTotal"></span> / <span id="goalNum"></span> kcal</span>
                     </div>
                     <!-- calories progress bar-->
+                    <h4>Calories</h4>
                     <div class="progressWrapper">
                         <div id="kcalProgressBar"></div>
                         <span id="kcalBarPercent" class="progressInlinePercent">0%</span>
                         <div id="planeIcon">🛩️</div>
                     </div>
                     <!-- macros progress bar-->
+                    <h4>Macros</h4>
                     <div class ="progressWrapper">
                         <div id="gProgressBar"> </div>
                         <span id="gBarPercent" class="progressInlinePercent">0%</span>
                         <div id="planeIcon1">🛩️</div>
                     </div>
                     <!-- micros progress bar-->
+                    <h4>Micros</h4>
                     <div class ="progressWrapper">
                         <div id="mgProgressBar"> </div>
                         <span id="mgBarPercent" class="progressInlinePercent">0%</span>
                         <div id="planeIcon2">🛩️</div>
                     </div>
                     <!-- motivational quotes -->
-                    <div id="motivational"class="motivationalQuote">
-                        "Loading today's inspiration..."
+                    <div id="motivational" class="motivationalQuote">
                     </div>
                     <!-- link to food log -->
                     <a href="{{ url_for('html_urls', filename='foodLog.html') }}" class="navLink">

@@ -916,6 +916,12 @@ p.change{
     margin-bottom: 25px;
 }
 
+.card h4 {
+    text-align: left;
+    font-weight: bold;
+    color: #34495e;
+}
+
 .trackerCard {
     text-align: center;
 }
@@ -1085,6 +1091,31 @@ p.change{
 .nutrientMiniBarWrap:hover .nutrientHoverTooltip {
     display: block;
 }
+
+.moreNutrientsDropdown {
+    margin-top: 18px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 10px 12px;
+}
+
+.moreNutrientsDropdown > summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: #1f2937;
+    outline: none;
+}
+
+.moreNutrientsDropdown[open] > summary {
+    margin-bottom: 10px;
+}
+
+.moreNutrientsGraph {
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
 /* all progress bars */
 #kcalProgressBar {
     width: 0%;
@@ -1200,21 +1231,8 @@ p.change{
 /* ---------------------- quote section ------------- */
 .motivationalQuote{
 	margin-top: 25px;
-}
-
-/* ----------------------Meals when added----------------------------------*/
-/* AI recommendation section */
-.mealGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-}
-
-/* Meal Cards */
-.mealItem {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 15px 20px; border-radius: 18px; margin-bottom: 12px;
-    font-weight: 600;
+    font-weight: bold;
+    color: #34495e;
 }
 
 /* ---------------------- food logging page -------------- */
@@ -1246,10 +1264,6 @@ p.change{
 .foodLogCard,
 .foodSummaryCard, .foodRecoCard {
     margin-bottom: 0;
-}
-
-.contRight{
-    background-color: #16a34a;
 }
 
 .resultContent{
@@ -1333,34 +1347,6 @@ li {
     font-size: 0.9rem;
     display: flex;
     justify-content: space-between;
-}
-
-.viewLink {
-    display: block;
-    text-align: center;
-    margin-top: 1.5rem;
-    color: #3498db;
-    text-decoration: none;
-    font-size: 0.9rem;
-}
-
-.nutritionInfo{
-    display: flex;
-    align-items: center;
-    padding: 15px 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    cursor: pointer;
-}
-
-.nutritionInfo .label {
-	width: 150px;
-	color: #888;
-	font-size: 14px;
-}
-.nutritionInfo .value {
-	flex: 1;
-	color: #333; 
-	font-weight: 500; 
 }
 
 @media (max-width: 1024px) {
