@@ -4,7 +4,7 @@ import { getUser, updateProgress } from '../state.js';
 
 const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
 const MEAL_TAGS = ['Snack', 'Breakfast', 'Lunch', 'Dinner']
-
+let foodCart = [];
 export function initFoodLog() {
     loadProfilePicture();
     loadUserRestrictions();

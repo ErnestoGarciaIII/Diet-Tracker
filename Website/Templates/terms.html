@@ -10,7 +10,9 @@
 <body class="homePage">
     <!-- Navigation Bar -->
     <nav class="homeNavbar">
-        <div class="mainLogo">PlatePilot</div>
+        <div class="mainLogo">
+            <a href="{{ url_for('html_urls', filename='Home.html') }}" class="mainLogo">PlatePilot</a>
+        </div>
         <div id="authLinkContainer">
             <a id="dynamicAuthLink" 
                 href="{{ url_for('html_urls', filename='login.html') }}" 
