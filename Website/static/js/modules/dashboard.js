@@ -225,8 +225,6 @@ async function updateDailyQuote() {
     const el = document.getElementById('motivational');
     if (!el) return;
 
-    el.innerText = "Loading today's inspiration...";
-
     try {
         const res = await fetch('/api/daily-quote');
         if (!res.ok) {
@@ -242,7 +240,7 @@ async function updateDailyQuote() {
 
         throw new Error('Invalid quote payload');
     } catch {
-        el.innerText = 'Quote unavailable right now.';
+        el.innerText = 'Loading....';
     }
 }
 
