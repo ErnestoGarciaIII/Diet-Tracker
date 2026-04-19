@@ -228,14 +228,21 @@ async function updateDailyQuote() {
     el.innerText = "Loading today's inspiration...";
 
     try {
-        const res = await fetch('https://api.allorigins.win/get?url=' +
-            encodeURIComponent('https://zenquotes.io/api/random'));
-        const data = await res.json();
-        const quote = JSON.parse(data.contents)[0];
+        const res = await fetch('/api/daily-quote');
+        if (!res.ok) {
+            throw new Error(`Quote API failed: ${res.status}`);
+        }
 
-        el.innerText = `"${quote.q}" — ${quote.a}`;
+        const data = await res.json();
+        const author = data.author ? ` — ${data.author}` : '';
+        if (data?.quote) {
+            el.innerText = `"${data.quote}"${author}`;
+            return;
+        }
+
+        throw new Error('Invalid quote payload');
     } catch {
-        el.innerText = `"Small steps lead to big changes."`;
+        el.innerText = 'Quote unavailable right now.';
     }
 }
 
