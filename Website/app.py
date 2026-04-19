@@ -1083,7 +1083,7 @@ def get_food_history(user_id):
 
 # Get total consumed for a given day
 @app.route('/api/consumed/<user_id>', methods=['GET'])
-def get_progress(user_id):
+def get_consumed(user_id):
     conn = None
     try:
         conn = connectDB()
@@ -1100,7 +1100,7 @@ def get_progress(user_id):
 
 # Get Nutrient Progress
 @app.route('/api/nutrient-progress/<user_id>', methods=['GET'])
-def get_progress(user_id):
+def get_nutrient_progress(user_id):
     conn = None
     try:
         conn = connectDB()
