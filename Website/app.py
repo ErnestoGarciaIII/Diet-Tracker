@@ -181,16 +181,20 @@ def get_nutrient_progress(user_id, conn, target_date=None):
         standardized_consumed[clean_name] = value
     
     user_object = make_user(user_id, conn)
+    print(user_object)
     user_object.setDRI()
     
     aggregate_progress = normalize_progress(standardized_consumed, user_object)
     
+    user_nutrients = {}
+    print(f"For target date: {target_date}")
     for index in standardized_consumed:
-        print(f"{index}: {user_object.getNutrientInfo(index)}") # Daily Recommended
+        user_nutrients[index] = user_object.getNutrientInfo(index)
+        print(f"{index}: {user_nutrients[index]}") # Daily Recommended
         print(f"{index}: {standardized_consumed[index]}") # Actual consumed
         print(f"{index}: {round((aggregate_progress[index]*100), 1)}% Daily Value") # Percent value
 
-    return standardized_consumed, aggregate_progress
+    return standardized_consumed, aggregate_progress, user_nutrients
 
 def normalize_progress(progress, user_object):
     aggregate_progress = {}
@@ -231,7 +235,7 @@ def get_total_generic_progress(user_id, target_date=None):
 
         user_object.setDRI()
         
-        standardized_consumed, aggregate_progress = get_nutrient_progress(user_id, conn, target_date)
+        standardized_consumed, aggregate_progress, _ = get_nutrient_progress(user_id, conn, target_date)
         
         total_micros, total_macros = aggregate_totals(aggregate_progress, user_object)
 
@@ -239,6 +243,7 @@ def get_total_generic_progress(user_id, target_date=None):
         total_macros = round((total_macros*100), 1)
         total_caloric_progress = round((standardized_consumed["Energy"]/user_object.getNutrientInfo("Energy"))*100, 1)
         
+        print(f"For target date: {target_date}")
         print(f"Total Micronutrient Progress: {total_micros}%")
         print(f"Total Macronutrient Progress: {total_macros}%")
         print(f"Total Caloric Progress:       {total_caloric_progress}%")
@@ -1100,7 +1105,7 @@ def get_consumed(user_id):
 
 # Get Nutrient Progress
 @app.route('/api/nutrient-progress/<user_id>', methods=['GET'])
-def get_nutrient_progress(user_id):
+def nutrient_progress(user_id):
     conn = None
     try:
         conn = connectDB()

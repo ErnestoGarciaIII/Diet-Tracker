@@ -1,5 +1,5 @@
 import { getUserId, getElement } from '../utils.js';
-import { getFoodHistory, updateFoodEntry, deleteFoodEntry, clearFoodHistory } from '../api.js';
+import { getFoodHistory, updateFoodEntry, deleteFoodEntry, clearFoodHistory, getNutrientProgress, getGenericProgress } from '../api.js';
 
 
 let foodHistoryData = [];
@@ -118,8 +118,67 @@ function createHistoryEntry(item, includeActions = false) {
 
     return entryDiv;
 }
+
+async function renderGraphs(graphContainer, selectedDate) {
+    console.log("graphContainer:", graphContainer);
+    graphContainer.replaceChildren();
+    const userId = getUserId();
+    const nutrientProgress = await getNutrientProgress(userId, selectedDate);
+    const actualConsumed = nutrientProgress[0];
+    const percentConsumed = nutrientProgress[1];
+    const dailyReccomended = nutrientProgress[2];
+    const genericProgress = await getGenericProgress(userId, selectedDate);
+
+    console.log(nutrientProgress);
+    console.log(genericProgress);
+
+    const nutrientGraph = document.createElement('section');
+    nutrientGraph.className = 'nutrientGraph';
+
+    const nutrientGraphHeader = document.createElement('h4');
+    nutrientGraphHeader.className = 'nutrientGraphHeader';
+    nutrientGraphHeader.innerText = 'Nutrients Progress';
+    nutrientGraph.appendChild(nutrientGraphHeader);
+
+    Object.keys(actualConsumed).forEach(nutrient => {
+        nutrientGraph.appendChild(createGraphItem(`Total ${nutrient} consumed`, Math.round(actualConsumed[nutrient]*10)/10));
+        nutrientGraph.appendChild(createGraphItem(`Daily ${nutrient} reccomended`, Math.round(dailyReccomended[nutrient]*10)/10));
+        nutrientGraph.appendChild(createGraphItem(`Percentage of ${nutrient} consumed`, Math.round(parseFloat(percentConsumed[nutrient])*1000)/10, true));
+    })
+
+    graphContainer.appendChild(nutrientGraph);
+
+    const genericGraph = document.createElement('section');
+    genericGraph.className = 'genericGraph';
+
+    const genericGraphHeader = document.createElement('h4');
+    genericGraphHeader.className = 'genericGraphHeader';
+    genericGraphHeader.innerText = 'General Progress';
+    genericGraph.appendChild(genericGraphHeader);
+
+    genericGraph.appendChild(createGraphItem(`Total Micronutrient Progress `, genericProgress[0]));
+    genericGraph.appendChild(createGraphItem(`Total Macronutrient Progress `, genericProgress[1]));
+    genericGraph.appendChild(createGraphItem(`Total Caloric Progress `, genericProgress[2], true));
+
+    graphContainer.appendChild(genericGraph);
+}
+
+function createGraphItem(nutrient, value, percentage) {
+    const entryDiv = document.createElement('div');
+    entryDiv.innerHTML = `
+        <div class="graphItem">
+            <div class="nutrientInfo">
+                <span class="label">${nutrient}</span> <strong>|</strong>
+                <span class="value">${value}${percentage ? '%' : ''}</span>
+            </div>
+        </div>
+        `;
+
+    return entryDiv;
+}
+
 //organizes and renders entries grouped by meal tag
-function renderGroupedEntries(container, entries, includeActions = false) {
+async function renderGroupedEntries(container, entries, includeActions = false) {
     const grouped = groupEntriesByMealTag(entries);
 
     mealSectionOrder.forEach(mealName => {
@@ -228,9 +287,10 @@ function renderCalendar() {
 
 // SHows specific day details i.e. logged food, curent intake
 function showDayDetails(dateString) {
+    const graphContainer = getElement('historyGraph');
     const detailsContainer = getElement('historyList');
     const header = getElement('selectedDateHeader');
-    if (!detailsContainer || !header) return;
+    if (!detailsContainer || !header || !graphContainer) return;
 
     const selectedDate = dateString || selectedDateString || new Date().toDateString();
     selectedDateString = selectedDate;
@@ -242,12 +302,16 @@ function showDayDetails(dateString) {
 
     if (dayEntries.length === 0) {
         detailsContainer.innerHTML = '<p class="text-muted">No food logged for this day.</p>';
+        graphContainer.innerHTML = '';
         return;
     }
+
+    renderGraphs(graphContainer, selectedDate);
     renderGroupedEntries(detailsContainer, dayEntries, true);
 }
 
 function showCompareDayDetails(dateString) {
+    const graphContainer = getElement('compareGraph');
     const compareSection = getElement('compareDetails');
     const compareHeader = getElement('compareDateHeader');
     const compareContainer = getElement('compareHistoryList');
@@ -267,9 +331,11 @@ function showCompareDayDetails(dateString) {
     const dayEntries = foodHistoryData.filter(item => normalizeHistoryDate(item.date) === dateString);
     if (dayEntries.length === 0) {
         compareContainer.innerHTML = '<p class="text-muted">No food logged for this comparison day.</p>';
+        graphContainer.innerHTML = '';
         return;
     }
 
+    renderGraphs(graphContainer, dateString);
     renderGroupedEntries(compareContainer, dayEntries, false);
 }
 
