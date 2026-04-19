@@ -179,9 +179,19 @@ export async function getModifiers(fdcId) {
 // ==========================
 // PROGRESS
 // ==========================
-export async function getProgress(userId, date = null) {
+export async function getConsumed(userId, date = null) {
     const dateQuery = date ? `?date=${encodeURIComponent(date)}` : '';
-    return request(`/api/progress/${userId}${dateQuery}`);
+    return request(`/api/consumed/${userId}${dateQuery}`);
+}
+
+export async function getNutrientProgress(userId, date = null) {
+    const dateQuery = date ? `?date=${encodeURIComponent(date)}` : '';
+    return request(`/api/nutrient-progress/${userId}${dateQuery}`);
+}
+
+export async function getGenericProgress(userId, date = null) {
+    const dateQuery = date ? `?date=${encodeURIComponent(date)}` : '';
+    return request(`/api/generic-progress/${userId}${dateQuery}`);
 }
 
 // ==========================
