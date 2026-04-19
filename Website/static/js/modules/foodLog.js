@@ -1,4 +1,4 @@
-import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getConsumed, getGenericProgress } from '../api.js';
+import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getConsumed, getGenericProgress, getNutrientProgress } from '../api.js';
 import { getUserId, getElement, getInputValue, showError, showSuccess, getActiveFilters, addFilterToActiveFilters, removeActiveFilter } from '../utils.js';
 import { getUser, updateProgress } from '../state.js';
 
@@ -10,6 +10,7 @@ export function initFoodLog() {
     loadProfilePicture();
     loadUserRestrictions();
     loadProgressPreview();
+    loadMoreNutrients();
 
     const btn = getElement('logButton');
     if (btn) {
@@ -237,6 +238,56 @@ function formatPercent(value) {
     return `${Math.round(toNumber(value) * 10) / 10}%`;
 }
 
+function createNutrientBarRow(nutrient, pct, consumed, recommended) {
+    const clampedPct = Math.min(Math.max(pct, 0), 100);
+    const row = document.createElement('div');
+    row.className = 'nutrientBarRow';
+    row.innerHTML = `
+        <span class="nutrientBarLabel">${nutrient}</span>
+        <div class="nutrientMiniBarWrap">
+            <div class="nutrientMiniBar" style="width: ${clampedPct}%"></div>
+            <span class="nutrientBarPct">${pct}%</span>
+            <div class="nutrientHoverTooltip">
+                <p><strong>Consumed:</strong> ${consumed}</p>
+                <p><strong>Recommended:</strong> ${recommended}</p>
+            </div>
+        </div>
+    `;
+
+    return row;
+}
+
+async function loadMoreNutrients() {
+    const graphContainer = getElement('moreNutrientsGraph');
+    if (!graphContainer) return;
+
+    try {
+        const userId = getUserId();
+        if (!userId) return;
+
+        const nutrientProgress = await getNutrientProgress(userId, new Date().toDateString());
+        const actualConsumed = nutrientProgress?.[0] || {};
+        const percentConsumed = nutrientProgress?.[1] || {};
+        const dailyRecommended = nutrientProgress?.[2] || {};
+
+        graphContainer.innerHTML = '';
+
+        Object.keys(actualConsumed).forEach((nutrient) => {
+            const pct = Math.round(parseFloat(percentConsumed[nutrient]) * 1000) / 10;
+            const consumed = Math.round(toNumber(actualConsumed[nutrient]) * 10) / 10;
+            const recommended = Math.round(toNumber(dailyRecommended[nutrient]) * 10) / 10;
+            graphContainer.appendChild(createNutrientBarRow(nutrient, pct, consumed, recommended));
+        });
+
+        if (!graphContainer.children.length) {
+            graphContainer.innerHTML = '<p class="text-muted">No nutrient details available yet.</p>';
+        }
+    } catch (err) {
+        console.warn('Failed to load more nutrients:', err);
+        graphContainer.innerHTML = '<p class="text-muted">Unable to load nutrient details.</p>';
+    }
+}
+
 function applyProgressToPreview(metrics, genericProgress) {
     const { calories, macros, micros } = metrics;
     const { caloriePercent, macroPercent, microPercent } = parseGenericProgress(genericProgress);
@@ -316,6 +367,7 @@ async function loadProgressPreview() {
 
         updateProgress(metrics);
         applyProgressToPreview(metrics, genericProgress);
+        await loadMoreNutrients();
     } catch (err) {
         console.warn('Failed to load progress preview:', err);
     }

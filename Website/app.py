@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify, send_from_directory, render_template, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date, timedelta, timezone
+from time import time
+import requests
 import sqlite3
 import secrets
 import sys
@@ -187,12 +189,12 @@ def get_nutrient_progress(user_id, conn, target_date=None):
     aggregate_progress = normalize_progress(standardized_consumed, user_object)
     
     user_nutrients = {}
+    print(f"For target date: {'Today' if target_date is None else target_date}")
     for index in standardized_consumed:
         user_nutrients[index] = user_object.getNutrientInfo(index)
-        #print(f"{index}: {user_nutrients[index]}") # Daily Recommended
-        #print(f"{index}: {standardized_consumed[index]}") # Actual consumed
-        if (round((aggregate_progress[index]*100), 1) < 100.0):
-            print(f"{index}: {round((aggregate_progress[index]*100), 1)}% Daily Value") # Percent value
+        print(f"{index}: {user_nutrients[index]}") # Daily Recommended
+        print(f"{index}: {standardized_consumed[index]}") # Actual consumed
+        print(f"{index}: {round((aggregate_progress[index]*100), 1)}% Daily Value") # Percent value
 
     return standardized_consumed, aggregate_progress, user_nutrients
 
@@ -280,6 +282,8 @@ def recommendation_algorithm(user_id):
             # name: 'Garlic, raw' -> "Garlic, raw"
             print(f"{item['iteration']}. {item['name']} Suggested Serving: {item['suggested_serving_oz']} oz (Match Score: {item['score']})")
             print("--------------------------------\n")
+        
+        print(standardized_consumed)
         
         return recommendations
 
@@ -396,6 +400,34 @@ def reset_password():
     return render_template('resetPassword.html', token=token)
 
 ######### API METHODS #########
+
+# Quotes
+cached_quote = None
+last_fetch = 0
+@app.route('/api/daily-quote')
+def daily_quote():
+    global cached_quote, last_fetch
+
+    if cached_quote and time() - last_fetch < 900:  # 15 minutes
+        return jsonify(cached_quote)
+
+    try:
+        res = requests.get("https://zenquotes.io/api/random", timeout=3)
+        data = res.json()
+
+        cached_quote = {
+            "quote": data[0]["q"],
+            "author": data[0]["a"]
+        }
+        last_fetch = time()
+
+        return jsonify(cached_quote)
+
+    except Exception:
+        return jsonify({
+            "quote": "Stay consistent. Small steps compound into big results.",
+            "author": "Fallback"
+        })
 
 # Logout endpoint to clear session
 @app.route('/api/logout', methods=['POST'])
@@ -666,6 +698,37 @@ def update_goal():
     
     finally:
         conn.close()
+
+@app.route('/api/get-num-of-log-dates', methods=['GET'])
+def num_of_user_log_dates():
+    conn = None
+    try:
+        user_id = int(request.args.get('user_id'))
+        if not user_id:
+            return jsonify({'error': 'Missing user_id'}), 400
+        conn = connectDB()
+        cur = conn.cursor()
+
+        cur.execute("""
+             SELECT COUNT(DISTINCT dateLogged) 
+             FROM foodHistory            
+             WHERE userId = ?
+        """, (user_id,))
+
+        row = cur.fetchone()
+        print(f"Number of days the user has logged is {row[0]}")
+
+        if not row:
+            return jsonify({'error': 'User not found'}), 404
+
+        return jsonify({
+                'days': row,
+                'message': 'success'}), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
 
 # Upload profile avatar
 @app.route('/api/upload-avatar', methods=['POST'])

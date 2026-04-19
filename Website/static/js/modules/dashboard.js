@@ -14,6 +14,7 @@ export async function initDashboard() {
         renderRestrictions(user.restrictions || []);
 
         await loadProgress();
+        await loadMoreDetails();
         await renderActivityChart();
         await updateDailyQuote();
 
@@ -148,6 +149,56 @@ function formatPercent(value) {
     return `${Math.round(toNumber(value) * 10) / 10}%`;
 }
 
+function createNutrientBarRow(nutrient, pct, consumed, recommended) {
+    const clampedPct = Math.min(Math.max(pct, 0), 100);
+    const row = document.createElement('div');
+    row.className = 'nutrientBarRow';
+    row.innerHTML = `
+        <span class="nutrientBarLabel">${nutrient}</span>
+        <div class="nutrientMiniBarWrap">
+            <div class="nutrientMiniBar" style="width: ${clampedPct}%"></div>
+            <span class="nutrientBarPct">${pct}%</span>
+            <div class="nutrientHoverTooltip">
+                <p><strong>Consumed:</strong> ${consumed}</p>
+                <p><strong>Recommended:</strong> ${recommended}</p>
+            </div>
+        </div>
+    `;
+
+    return row;
+}
+
+async function loadMoreDetails() {
+    const graphContainer = getElement('dashboardMoreDetailsGraph');
+    if (!graphContainer) return;
+
+    try {
+        const userId = State.getUserId();
+        if (!userId) return;
+
+        const nutrientProgress = await API.getNutrientProgress(userId, new Date().toDateString());
+        const actualConsumed = nutrientProgress?.[0] || {};
+        const percentConsumed = nutrientProgress?.[1] || {};
+        const dailyRecommended = nutrientProgress?.[2] || {};
+
+        graphContainer.innerHTML = '';
+
+        Object.keys(actualConsumed).forEach((nutrient) => {
+            const pct = Math.round(parseFloat(percentConsumed[nutrient]) * 1000) / 10;
+            const consumed = Math.round(toNumber(actualConsumed[nutrient]) * 10) / 10;
+            const recommended = Math.round(toNumber(dailyRecommended[nutrient]) * 10) / 10;
+            graphContainer.appendChild(createNutrientBarRow(nutrient, pct, consumed, recommended));
+        });
+
+        if (!graphContainer.children.length) {
+            graphContainer.innerHTML = '<p class="text-muted">No nutrient details available yet.</p>';
+        }
+    } catch (err) {
+        console.warn('Failed to load dashboard nutrient details:', err);
+        graphContainer.innerHTML = '<p class="text-muted">Unable to load nutrient details.</p>';
+    }
+}
+
 // Update the progress bars and icons in the UI based on the user's progress
 function updateProgressUI(progress, genericProgress, dri) {
     const { calories, macros, micros } = progressMetrics(progress);
@@ -225,17 +276,22 @@ async function updateDailyQuote() {
     const el = document.getElementById('motivational');
     if (!el) return;
 
-    el.innerText = "Loading...";
-
     try {
-        const res = await fetch('https://api.allorigins.win/get?url=' +
-            encodeURIComponent('https://zenquotes.io/api/random'));
-        const data = await res.json();
-        const quote = JSON.parse(data.contents)[0];
+        const res = await fetch('/api/daily-quote');
+        if (!res.ok) {
+            throw new Error(`Quote API failed: ${res.status}`);
+        }
 
-        el.innerText = `"${quote.q}" — ${quote.a}`;
+        const data = await res.json();
+        const author = data.author ? ` — ${data.author}` : '';
+        if (data?.quote) {
+            el.innerText = `"${data.quote}"${author}`;
+            return;
+        }
+
+        throw new Error('Invalid quote payload');
     } catch {
-        el.innerText = `"Small steps lead to big changes."`;
+        el.innerText = 'Loading....';
     }
 }
 
@@ -251,9 +307,9 @@ export async function renderActivityChart() {
 
         const days = 7;
         const labels = [];
-        const caloriesData = [];
-        const macrosData = [];
-        const microsData = [];
+        const caloriesPercentData = [];
+        const macrosPercentData = [];
+        const microsPercentData = [];
         const dateStrings = [];
 
         for (let i = days - 1; i >= 0; i--) {
@@ -266,14 +322,14 @@ export async function renderActivityChart() {
         }
 
         const dailyProgressList = await Promise.all(
-            dateStrings.map(dateStr => API.getConsumed(userId, dateStr))
+            dateStrings.map(dateStr => API.getGenericProgress(userId, dateStr))
         );
 
         dailyProgressList.forEach(progress => {
-            const metrics = progressMetrics(progress || {});
-            caloriesData.push(Math.round(metrics.calories));
-            macrosData.push(Math.round(metrics.macros));
-            microsData.push(Math.round(metrics.micros));
+            const { caloriePercent, macroPercent, microPercent } = parseGenericProgress(progress || {});
+            caloriesPercentData.push(Math.round(caloriePercent * 10) / 10);
+            macrosPercentData.push(Math.round(macroPercent * 10) / 10);
+            microsPercentData.push(Math.round(microPercent * 10) / 10);
         });
 
         new Chart(ctx, {
@@ -281,8 +337,8 @@ export async function renderActivityChart() {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Calories (kcal)',
-                    data: caloriesData,
+                    label: 'Calories (%)',
+                    data: caloriesPercentData,
                     backgroundColor: 'rgba(22, 163, 74, 0.6)',
                     borderColor: '#16a34a',
                     borderWidth: 2,
@@ -291,8 +347,8 @@ export async function renderActivityChart() {
                     categoryPercentage: 0.7
                 },
                 {
-                    label: 'Macros',
-                    data: macrosData,
+                    label: 'Macros (%)',
+                    data: macrosPercentData,
                     backgroundColor: '#3498db',
                     borderColor: '#3498db',
                     borderWidth: 2,
@@ -301,8 +357,8 @@ export async function renderActivityChart() {
                     categoryPercentage: 0.7
                 },
                 {
-                    label: 'Micros',
-                    data: microsData,
+                    label: 'Micros (%)',
+                    data: microsPercentData,
                     backgroundColor: '#f1c40f',
                     borderColor: '#f1c40f',
                     borderWidth: 2,
@@ -317,6 +373,10 @@ export async function renderActivityChart() {
                 scales: {
                     y: {
                         beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: (value) => `${value}%`
+                        },
                         grid: {color: 'rgba(0,0,0,0.05)'}
                     },
                     x: {
