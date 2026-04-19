@@ -1,10 +1,11 @@
-import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getConsumed } from '../api.js';
+import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getConsumed, getGenericProgress } from '../api.js';
 import { getUserId, getElement, getInputValue, showError, showSuccess, getActiveFilters, addFilterToActiveFilters, removeActiveFilter } from '../utils.js';
 import { getUser, updateProgress } from '../state.js';
 
 const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
 const MEAL_TAGS = ['Snack', 'Breakfast', 'Lunch', 'Dinner']
 let foodCart = [];
+
 export function initFoodLog() {
     loadProfilePicture();
     loadUserRestrictions();
@@ -216,8 +217,29 @@ function getProgressIcon(percent) {
     return '🛩️';
 }
 
-function applyProgressToPreview(metrics) {
+function parseGenericProgress(genericProgress) {
+    if (Array.isArray(genericProgress)) {
+        return {
+            microPercent: toNumber(genericProgress[0]),
+            macroPercent: toNumber(genericProgress[1]),
+            caloriePercent: toNumber(genericProgress[2])
+        };
+    }
+
+    return {
+        microPercent: toNumber(genericProgress?.micros ?? genericProgress?.micro ?? 0),
+        macroPercent: toNumber(genericProgress?.macros ?? genericProgress?.macro ?? 0),
+        caloriePercent: toNumber(genericProgress?.calories ?? genericProgress?.energy ?? 0)
+    };
+}
+
+function formatPercent(value) {
+    return `${Math.round(toNumber(value) * 10) / 10}%`;
+}
+
+function applyProgressToPreview(metrics, genericProgress) {
     const { calories, macros, micros } = metrics;
+    const { caloriePercent, macroPercent, microPercent } = parseGenericProgress(genericProgress);
 
     const tiers = [
         { icon: '🛩️', goal: 500 },
@@ -233,38 +255,50 @@ function applyProgressToPreview(metrics) {
         }
     }
 
-    const percent = Math.min((calories / activeTier.goal) * 100, 100);
+    const calorieBarPercent = Math.min(Math.max(caloriePercent, 0), 100);
     const kcalBar = getElement('kcalProgressPreview');
     const kcalPlane = getElement('planeIcon');
     const macroBar = getElement('gProgressPreview');
     const macroPlane = getElement('planeIcon1');
     const microBar = getElement('mgProgressPreview');
     const microPlane = getElement('planeIcon2');
+    const kcalPercentLabel = getElement('kcalPreviewPercent');
+    const macroPercentLabel = getElement('gPreviewPercent');
+    const microPercentLabel = getElement('mgPreviewPercent');
 
     if (kcalBar) {
-        kcalBar.style.width = `${percent}%`;
+        kcalBar.style.width = `${calorieBarPercent}%`;
+    }
+    if (kcalPercentLabel) {
+        kcalPercentLabel.innerText = formatPercent(caloriePercent);
     }
 
     if (kcalPlane) {
-        kcalPlane.style.left = `${percent}%`;
+        kcalPlane.style.left = `${calorieBarPercent}%`;
         kcalPlane.innerText = activeTier.icon;
     }
 
-    const macroPercent = Math.min((macros / 300) * 100, 100);
+    const safeMacroPercent = Math.min(Math.max(macroPercent, 0), 100);
     if (macroBar) {
-        macroBar.style.width = `${macroPercent}%`;
+        macroBar.style.width = `${safeMacroPercent}%`;
+    }
+    if (macroPercentLabel) {
+        macroPercentLabel.innerText = formatPercent(macroPercent);
     }
     if (macroPlane) {
-        macroPlane.style.left = `${macroPercent}%`;
+        macroPlane.style.left = `${safeMacroPercent}%`;
         macroPlane.innerText = getProgressIcon(macroPercent);
     }
 
-    const microPercent = Math.min((micros / 1000) * 100, 100);
+    const safeMicroPercent = Math.min(Math.max(microPercent, 0), 100);
     if (microBar) {
-        microBar.style.width = `${microPercent}%`;
+        microBar.style.width = `${safeMicroPercent}%`;
+    }
+    if (microPercentLabel) {
+        microPercentLabel.innerText = formatPercent(microPercent);
     }
     if (microPlane) {
-        microPlane.style.left = `${microPercent}%`;
+        microPlane.style.left = `${safeMicroPercent}%`;
         microPlane.innerText = getProgressIcon(microPercent);
     }
 }
@@ -274,11 +308,14 @@ async function loadProgressPreview() {
         const userId = getUserId();
         if (!userId) return;
 
-        const progressData = await getConsumed(userId);
+        const [progressData, genericProgress] = await Promise.all([
+            getConsumed(userId),
+            getGenericProgress(userId)
+        ]);
         const metrics = progressMetrics(progressData);
 
         updateProgress(metrics);
-        applyProgressToPreview(metrics);
+        applyProgressToPreview(metrics, genericProgress);
     } catch (err) {
         console.warn('Failed to load progress preview:', err);
     }
