@@ -984,6 +984,19 @@ p.change{
     border-top: 2px dashed rgba(255,255,255,0.6);
     z-index: 1;
 }
+
+.progressInlinePercent {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    color: #ffffff;
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+}
 /* all progress bars */
 #kcalProgressBar {
     width: 0%;
