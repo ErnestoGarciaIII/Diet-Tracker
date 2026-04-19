@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify, send_from_directory, render_template, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date, timedelta, timezone
+from time import time
+import requests
 import sqlite3
 import secrets
 import sys
@@ -399,6 +401,34 @@ def reset_password():
 
 ######### API METHODS #########
 
+# Quotes
+cached_quote = None
+last_fetch = 0
+@app.route('/api/daily-quote')
+def daily_quote():
+    global cached_quote, last_fetch
+
+    if cached_quote and time() - last_fetch < 900:  # 15 minutes
+        return jsonify(cached_quote)
+
+    try:
+        res = requests.get("https://zenquotes.io/api/random", timeout=3)
+        data = res.json()
+
+        cached_quote = {
+            "quote": data[0]["q"],
+            "author": data[0]["a"]
+        }
+        last_fetch = time()
+
+        return jsonify(cached_quote)
+
+    except Exception:
+        return jsonify({
+            "quote": "Stay consistent. Small steps compound into big results.",
+            "author": "Fallback"
+        })
+
 # Logout endpoint to clear session
 @app.route('/api/logout', methods=['POST'])
 def logout():
@@ -668,6 +698,37 @@ def update_goal():
     
     finally:
         conn.close()
+
+@app.route('/api/get-num-of-log-dates', methods=['GET'])
+def num_of_user_log_dates():
+    conn = None
+    try:
+        user_id = int(request.args.get('user_id'))
+        if not user_id:
+            return jsonify({'error': 'Missing user_id'}), 400
+        conn = connectDB()
+        cur = conn.cursor()
+
+        cur.execute("""
+             SELECT COUNT(DISTINCT dateLogged) 
+             FROM foodHistory            
+             WHERE userId = ?
+        """, (user_id,))
+
+        row = cur.fetchone()
+        print(f"Number of days the user has logged is {row[0]}")
+
+        if not row:
+            return jsonify({'error': 'User not found'}), 404
+
+        return jsonify({
+                'days': row,
+                'message': 'success'}), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
 
 # Upload profile avatar
 @app.route('/api/upload-avatar', methods=['POST'])

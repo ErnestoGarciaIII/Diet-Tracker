@@ -28,6 +28,13 @@ async function request(url, options = {}) {
 }
 
 // ==========================
+// QUOTES
+// ==========================
+export async function quotes() {
+    return request('/api/daily-quote');
+}
+
+// ==========================
 // AUTH
 // ==========================
 export async function login(email, password) {
@@ -227,6 +234,10 @@ export async function clearFoodHistory(userId) {
     return request(`/api/food-history/clear/${userId}`, {
         method: 'DELETE'
     });
+}
+
+export async function numberOfDaysFoodLogged(userId) {
+    return request(`/api/get-num-of-log-dates?user_id=${userId}`);
 }
 
 // ==========================
