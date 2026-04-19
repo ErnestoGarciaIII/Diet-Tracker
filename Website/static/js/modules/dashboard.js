@@ -72,10 +72,14 @@ function renderRestrictions(restrictions) {
 async function loadProgress() {
     try {
         const userId = State.getUserId();
-        const progress = await API.getConsumed(userId);
+        const [progress, genericProgress, dri] = await Promise.all([
+            API.getConsumed(userId),
+            API.getGenericProgress(userId),
+            API.calculateDRI(userId)
+        ]);
 
         State.setProgress(progress);
-        updateProgressUI(progress);
+        updateProgressUI(progress, genericProgress, dri);
 
     } catch (err) {
         console.error("Failed to load progress:", err);
@@ -124,9 +128,30 @@ function getProgressIcon(percent) {
     return '🛩️';
 }
 
+function parseGenericProgress(genericProgress) {
+    if (Array.isArray(genericProgress)) {
+        return {
+            microPercent: toNumber(genericProgress[0]),
+            macroPercent: toNumber(genericProgress[1]),
+            caloriePercent: toNumber(genericProgress[2])
+        };
+    }
+
+    return {
+        microPercent: toNumber(genericProgress?.micros ?? genericProgress?.micro ?? 0),
+        macroPercent: toNumber(genericProgress?.macros ?? genericProgress?.macro ?? 0),
+        caloriePercent: toNumber(genericProgress?.calories ?? genericProgress?.energy ?? 0)
+    };
+}
+
+function formatPercent(value) {
+    return `${Math.round(toNumber(value) * 10) / 10}%`;
+}
+
 // Update the progress bars and icons in the UI based on the user's progress
-function updateProgressUI(progress) {
+function updateProgressUI(progress, genericProgress, dri) {
     const { calories, macros, micros } = progressMetrics(progress);
+    const { caloriePercent, macroPercent, microPercent } = parseGenericProgress(genericProgress);
 
     const tiers = [
         { name: "Cessna", icon: "🛩️", goal: 500 },
@@ -142,36 +167,42 @@ function updateProgressUI(progress) {
         }
     }
 
-    const percent = Math.min((calories / activeTier.goal) * 100, 100);
+    const calorieBarPercent = Math.min(Math.max(caloriePercent, 0), 100);
 
     const bar = getElement('kcalProgressBar');
     const plane = getElement('planeIcon');
+    const kcalPercentLabel = getElement('kcalBarPercent');
     const macroBar = getElement('gProgressBar');
     const macroPlane = getElement('planeIcon1');
+    const macroPercentLabel = getElement('gBarPercent');
     const microBar = getElement('mgProgressBar');
     const microPlane = getElement('planeIcon2');
+    const microPercentLabel = getElement('mgBarPercent');
 
-    if (bar) bar.style.width = percent + "%";
+    if (bar) bar.style.width = `${calorieBarPercent}%`;
+    if (kcalPercentLabel) kcalPercentLabel.innerText = formatPercent(caloriePercent);
     if (macroBar) {
-        const macroPercent = Math.min((macros / 300) * 100, 100);
-        macroBar.style.width = `${macroPercent}%`;
+        const safeMacroPercent = Math.min(Math.max(macroPercent, 0), 100);
+        macroBar.style.width = `${safeMacroPercent}%`;
+        if (macroPercentLabel) macroPercentLabel.innerText = formatPercent(macroPercent);
         if (macroPlane) {
-            macroPlane.style.left = `${macroPercent}%`;
+            macroPlane.style.left = `${safeMacroPercent}%`;
             macroPlane.innerText = getProgressIcon(macroPercent);
         }
     }
 
     if (microBar) {
-        const microPercent = Math.min((micros / 1000) * 100, 100);
-        microBar.style.width = `${microPercent}%`;
+        const safeMicroPercent = Math.min(Math.max(microPercent, 0), 100);
+        microBar.style.width = `${safeMicroPercent}%`;
+        if (microPercentLabel) microPercentLabel.innerText = formatPercent(microPercent);
         if (microPlane) {
-            microPlane.style.left = `${microPercent}%`;
+            microPlane.style.left = `${safeMicroPercent}%`;
             microPlane.innerText = getProgressIcon(microPercent);
         }
     }
 
     if (plane) {
-        plane.style.left = percent + "%";
+        plane.style.left = `${calorieBarPercent}%`;
         plane.innerText = activeTier.icon;
 
         // animation
@@ -181,9 +212,10 @@ function updateProgressUI(progress) {
         }, 800);
     }
 
+    const recommendedKcal = dri && dri.TDEE ? Math.round(dri.TDEE) : activeTier.goal;
     if (getElement('planeRank')) getElement('planeRank').innerText = activeTier.name;
     if (getElement('currentTotal')) getElement('currentTotal').innerText = Math.round(calories);
-    if (getElement('goalNum')) getElement('goalNum').innerText = activeTier.goal;
+    if (getElement('goalNum')) getElement('goalNum').innerText = recommendedKcal;
 }
 
 // ==========================
