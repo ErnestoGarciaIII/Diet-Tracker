@@ -1101,6 +1101,18 @@ p.change{
     display: block;
 }
 
+.moreNutrientsGraph .nutrientBarRow:nth-child(-n+2) .nutrientHoverTooltip {
+    top: calc(100% + 8px);
+    bottom: auto;
+}
+
+.moreNutrientsGraph .nutrientBarRow:nth-child(-n+2) .nutrientHoverTooltip::after {
+    top: auto;
+    bottom: 100%;
+    border-top-color: transparent;
+    border-bottom-color: rgba(30, 30, 30, 0.92);
+}
+
 .moreNutrientsDropdown {
     margin-top: 18px;
     border: 1px solid rgba(15, 23, 42, 0.12);
