@@ -118,7 +118,7 @@ def rate_food(food_nutrients, consumed_nutrients, dri, upper_limits):
         remaining = max(0, dri[nutrient] - consumed_nutrients[nutrient])
         deficit = remaining / dri[nutrient]
         fill = min(food_amount, remaining)
-        benefit = (deficit ** 2) * ((fill + 0.01) / dri[nutrient])
+        benefit = (deficit ** 3) * ((fill + 0.01) / dri[nutrient])
 
         weight = NUTRIENT_WEIGHTS.get(nutrient, 1.0)
         benefit *= weight

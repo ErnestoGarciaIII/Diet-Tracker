@@ -268,7 +268,7 @@ def recommendation_algorithm(user_id):
 
         user_object.setDRI()
         
-        standardized_consumed, _ = get_nutrient_progress(user_id, conn)
+        standardized_consumed, _, _ = get_nutrient_progress(user_id, conn)
         
         user_filter_ids = list(active_user_filters.get(str(user_id), set()))
         print(user_filter_ids)
@@ -1093,7 +1093,9 @@ def get_consumed(user_id):
     try:
         conn = connectDB()
         selected_date = request.args.get('date')
+        print("Getting progress")
         progress = consumed_progress(user_id, conn, selected_date)
+        print("Finished getting progress")
         return jsonify(progress), 200
 
     except Exception as e:
