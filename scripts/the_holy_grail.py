@@ -34,19 +34,31 @@ CATEGORY_SERVING_GRAMS = {
     27: 100.0,  # Quality Control         — N/A, fallback
     28: 355.0,  # Alcoholic Beverages     — 12 oz beer equivalent
 }
+
+NATURAL_CONCENTRATION_CAPS = {
+    # mcg or mg per gram — set to roughly the best natural whole food source
+    "Vitamin D":   0.025,   # ~2.5mcg/100g, good fatty fish
+    "Vitamin A":   0.008,   # beef liver is extreme, cap below it
+    "Folate":      0.0035,  # liver again
+    "Calcium":     0.012,   # dairy is fine, this just prevents outliers
+}
+
 NUTRIENT_WEIGHTS = {
-    "Vitamin D":        4.0,   
-    "Vitamin K":        2.5,   
-    "Vitamin E":        2.0,   
-    "Folate":           2.0,   
-    "Vitamin A":        5.0,  
-    "Calcium":          1.5,   
+    "Vitamin D":        2.0,   
+    "Vitamin K":        1.5,   
+    "Vitamin E":        1.5,   
+    "Folate":           1.5,   
+    "Vitamin A":        2.0,  
+    "Calcium":          1.3,   
     "Magnesium":        1.2,
     "Zinc":             1.2,
-    "Fiber":            1.5,
+    "Fiber":            1.3,
 }
+
 DEFAULT_SERVING_GRAMS = 100.0
+
 CALORIC_DENSITY_NUTRIENTS = {"Protein", "Carbs", "Fats"}
+
 NUTRIENT_ID_TO_NAME = {
     1003: "Protein",
     1004: "Fats",
@@ -105,36 +117,53 @@ def load_candidate_pool(conn, restriction_ids=None):
         nutrient_name = NUTRIENT_ID_TO_NAME.get(nutrient_id)
         if nutrient_name:
             pool[fdc_id]['nutrients'][nutrient_name] = amount_per_gram
-
+    for fdc_id, food in pool.items():
+        for nutrient, cap in NATURAL_CONCENTRATION_CAPS.items():
+            if nutrient in food['nutrients']:
+                food['nutrients'][nutrient] = min(food['nutrients'][nutrient], cap)
+    
     return pool
 
 
 def rate_food(food_nutrients, consumed_nutrients, dri, upper_limits):
-    score = 0.0
+    micro_score = 0.0
+    macro_penalty = 0.0
+
+    MACROS = {"Protein", "Carbs", "Fats", "Fiber", "Energy"}
+
     for nutrient, food_amount in food_nutrients.items():
         if nutrient not in dri:
             continue
 
-        remaining = max(0, dri[nutrient] - consumed_nutrients[nutrient])
-        deficit = remaining / dri[nutrient]
-        fill = min(food_amount, remaining)
-        benefit = (deficit ** 3) * ((fill + 0.01) / dri[nutrient])
+        dri_val = dri[nutrient]
+        consumed = consumed_nutrients.get(nutrient, 0)
+        remaining = max(0, dri_val - consumed)
+        deficit = remaining / dri_val  # 0.0 = already met, 1.0 = nothing consumed
 
-        weight = NUTRIENT_WEIGHTS.get(nutrient, 1.0)
-        benefit *= weight
+        if nutrient in MACROS:
+            if nutrient in upper_limits:
+                ul_value, severity = upper_limits[nutrient]
+                if ul_value is not None:
+                    projected = consumed + food_amount
+                    if projected > ul_value:
+                        over = (projected - ul_value) / ul_value
+                        macro_penalty += severity * (over ** 2)
+        else:
+            fill = min(food_amount, remaining)
+            fill_fraction = fill / (remaining + 0.01)
+            benefit = deficit * fill_fraction 
+            weight = NUTRIENT_WEIGHTS.get(nutrient, 1.0)
+            micro_score += benefit * weight
 
-        over_consumption_penalty = 0.0
-        if nutrient in upper_limits:
-            ul_value, severity = upper_limits[nutrient]
-            if ul_value is not None:
-                projected = consumed_nutrients[nutrient] + food_amount
-                if projected > ul_value:
-                    over_consumption_percent = (projected - ul_value) / ul_value
-                    over_consumption_penalty = severity * (over_consumption_percent ** 2)
+            if nutrient in upper_limits:
+                ul_value, severity = upper_limits[nutrient]
+                if ul_value is not None:
+                    projected = consumed + food_amount
+                    if projected > ul_value:
+                        over = (projected - ul_value) / ul_value
+                        macro_penalty += severity * (over ** 2)
 
-        score += benefit - over_consumption_penalty
-    return score
-
+    return micro_score - macro_penalty
 
 def recommend_foods(user, conn, consumed, iterations=5, restriction_ids=None):
     pool = load_candidate_pool(conn, restriction_ids=restriction_ids)
@@ -167,9 +196,9 @@ def recommend_foods(user, conn, consumed, iterations=5, restriction_ids=None):
                 default=0.0
             )
             if macro_density > 0.5:
-                serving_grams = min(serving_grams, 15.0)
+                serving_grams = min(serving_grams, 50.0)
             elif macro_density > 0.15:
-                serving_grams = min(serving_grams, 30.0)
+                serving_grams = min(serving_grams, 85.0)
             else:
                 serving_grams = min(serving_grams, 100.0)
 

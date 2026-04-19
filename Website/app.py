@@ -187,12 +187,12 @@ def get_nutrient_progress(user_id, conn, target_date=None):
     aggregate_progress = normalize_progress(standardized_consumed, user_object)
     
     user_nutrients = {}
-    print(f"For target date: {'Today' if target_date is None else target_date}")
     for index in standardized_consumed:
         user_nutrients[index] = user_object.getNutrientInfo(index)
-        print(f"{index}: {user_nutrients[index]}") # Daily Recommended
-        print(f"{index}: {standardized_consumed[index]}") # Actual consumed
-        print(f"{index}: {round((aggregate_progress[index]*100), 1)}% Daily Value") # Percent value
+        #print(f"{index}: {user_nutrients[index]}") # Daily Recommended
+        #print(f"{index}: {standardized_consumed[index]}") # Actual consumed
+        if (round((aggregate_progress[index]*100), 1) < 100.0):
+            print(f"{index}: {round((aggregate_progress[index]*100), 1)}% Daily Value") # Percent value
 
     return standardized_consumed, aggregate_progress, user_nutrients
 
@@ -280,8 +280,6 @@ def recommendation_algorithm(user_id):
             # name: 'Garlic, raw' -> "Garlic, raw"
             print(f"{item['iteration']}. {item['name']} Suggested Serving: {item['suggested_serving_oz']} oz (Match Score: {item['score']})")
             print("--------------------------------\n")
-        
-        print(standardized_consumed)
         
         return recommendations
 
