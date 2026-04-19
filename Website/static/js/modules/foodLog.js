@@ -1,12 +1,10 @@
-import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getProgress } from '../api.js';
+import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getConsumed } from '../api.js';
 import { getUserId, getElement, getInputValue, showError, showSuccess, getActiveFilters, addFilterToActiveFilters, removeActiveFilter } from '../utils.js';
 import { getUser, updateProgress } from '../state.js';
 
 const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
 const MEAL_TAGS = ['Snack', 'Breakfast', 'Lunch', 'Dinner']
-
-let foodCart = []
-
+let foodCart = [];
 export function initFoodLog() {
     loadProfilePicture();
     loadUserRestrictions();
@@ -94,7 +92,7 @@ async function loadUserRestrictions() {
 async function setUserRestrictions(restriction, callApplyFilterAPI) {
     if (callApplyFilterAPI) {
         try {
-            await apply_Filter(restriction);
+            await applyFilter(restriction);
             addFilterToActiveFilters(restriction);
         } catch (err) {
             console.error("[ERROR] Could not load user restrictions");
@@ -276,7 +274,7 @@ async function loadProgressPreview() {
         const userId = getUserId();
         if (!userId) return;
 
-        const progressData = await getProgress(userId);
+        const progressData = await getConsumed(userId);
         const metrics = progressMetrics(progressData);
 
         updateProgress(metrics);
