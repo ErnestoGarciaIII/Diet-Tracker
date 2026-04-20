@@ -172,7 +172,7 @@ def rate_food(food_nutrients, consumed_nutrients, dri, upper_limits):
     
     return efficiency - macro_penalty
 
-def recommend_foods(user, conn, consumed, rounds=5, options_per_round=3, restriction_ids=None):
+def recommend_foods(user, conn, consumed, rounds=5, options_per_round=5, restriction_ids=None):
     pool = load_candidate_pool(conn, restriction_ids=restriction_ids)
     dri = {**user.macros, **user.micros}
     results = []
