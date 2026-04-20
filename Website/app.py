@@ -54,7 +54,7 @@ def make_user(user_id, conn):
         )
 
         user_info = query_db_for_user_info(user_id=user_id, returnJSON=False)
-        print(user_info)
+        #print(user_info)
         user_object = ppuser(
             w=convert_lbs_to_kg(user_info[5]),
             h=convert_inches_to_cm(user_info[4]),
@@ -195,9 +195,9 @@ def get_nutrient_progress(user_id, conn, target_date=None):
     print(f"For target date: {'Today' if target_date is None else target_date}")
     for index in standardized_consumed:
         user_nutrients[index] = user_object.getNutrientInfo(index)
-        print(f"{index}: {user_nutrients[index]}") # Daily Recommended
-        print(f"{index}: {standardized_consumed[index]}") # Actual consumed
-        print(f"{index}: {round((aggregate_progress[index]*100), 1)}% Daily Value") # Percent value'''
+        #print(f"{index}: {user_nutrients[index]}") # Daily Recommended
+        #print(f"{index}: {standardized_consumed[index]}") # Actual consumed
+        #print(f"{index}: {round((aggregate_progress[index]*100), 1)}% Daily Value") # Percent value'''
 
     return standardized_consumed, aggregate_progress, user_nutrients
 
@@ -283,10 +283,10 @@ def recommendation_algorithm(user_id):
         for item in recommendations:
             # iteration: 1 -> "1."
             # name: 'Garlic, raw' -> "Garlic, raw"
-            print(f"{item['iteration']}. {item['name']} Suggested Serving: {item['suggested_serving_oz']} oz (Match Score: {item['score']})")
+            print(f"{item['round']}.{item['option']} {item['name']} Suggested Serving: {item['suggested_serving_oz']} oz (Match Score: {item['score']})")
             print("--------------------------------\n")
         
-        print(standardized_consumed)
+        #print(standardized_consumed)
         
         return recommendations
 
