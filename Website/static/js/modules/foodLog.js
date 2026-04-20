@@ -1,6 +1,6 @@
-import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getConsumed, getGenericProgress, getNutrientProgress } from '../api.js';
+import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getConsumed, getGenericProgress,getNutrientProgress, numberOfDaysFoodLogged } from '../api.js';
 import { getUserId, getElement, getInputValue, showError, showSuccess, getActiveFilters, addFilterToActiveFilters, removeActiveFilter } from '../utils.js';
-import { getUser, updateProgress } from '../state.js';
+import { getUser, updateProgress, getBadge, setBadge } from '../state.js';
 
 const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
 const MEAL_TAGS = ['Snack', 'Breakfast', 'Lunch', 'Dinner']
@@ -167,6 +167,9 @@ async function handleLogCart() {
             displayCart();
             await loadProgressPreview();
             showSuccess('Foods logged successfully.');
+
+            checkUserBadgeAwards(userId);
+
             // Display recommendations if present
             if (response && response.recommendations) {
                 displayRecommendations(response.recommendations);
@@ -176,6 +179,28 @@ async function handleLogCart() {
             showError(err.message);
         }
 }
+
+function checkUserBadgeAwards(userId) {
+    numberOfDaysFoodLogged(getUserId()).then(response => {
+        const days = response.days;
+        console.log(days);
+        const badge = getBadge();
+
+        if (days == 1 && badge != 'FirstLog') {
+            //first log
+            setBadge("FirstLog");
+        }
+        else if (days == 3 && badge != 'ThreeDayLog') {
+            //3 days
+            setBadge("ThreeDayLog");
+        }
+        else if (days == 5 && badge != 'FiveDayLog') {
+            //5 days
+            setBadge("FiveDayLog");
+        }
+    });
+}
+
 // all this for progress bars
 function toNumber(value) {
     const n = Number(value);

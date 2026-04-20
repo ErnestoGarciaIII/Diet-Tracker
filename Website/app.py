@@ -722,13 +722,12 @@ def num_of_user_log_dates():
             return jsonify({'error': 'User not found'}), 404
 
         return jsonify({
-                'days': row,
+                'days': row[0],
                 'message': 'success'}), 200
 
     except Exception as e:
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
-
 
 # Upload profile avatar
 @app.route('/api/upload-avatar', methods=['POST'])
