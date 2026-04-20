@@ -876,7 +876,7 @@ p.change{
     margin-left: 80px;
     padding: 40px;
     width: 100%;
-    max-width: 900px;
+    max-width: 1380px;
 }
 
 
@@ -896,8 +896,14 @@ p.change{
 
 .statsPanel {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: minmax(340px, 1.1fr) minmax(320px, 0.9fr);
     gap: 30px;
+    align-items: start;
+}
+
+.leftCol,
+.rightCol {
+    min-width: 0;
 }
 
 .statCard {
@@ -916,23 +922,27 @@ p.change{
     margin-bottom: 25px;
 }
 
+.card h4 {
+    text-align: left;
+    font-weight: bold;
+    color: #34495e;
+}
+
 .trackerCard {
     text-align: center;
 }
 
 .chartContainer{
-    width: 65%;
     display: flex; 
-    justify-content: left;
+    justify-content: flex-start;
 }
 
 .chartCard{
-    flex: 2;
-    min-width: 600px;
-    width: 50%;
-    max-width: 1000px; /* Limits how wide it gets on giant monitors */
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    max-width: none;
+    background: #ffffff;
     border-radius: 20px;
     padding: 25px;
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -956,6 +966,11 @@ p.change{
 /* For mobile: Stack the sidebar on top */
 @media (max-width: 900px) {
     .dashContent {
+        padding: 24px 16px;
+        margin-left: 0;
+    }
+
+    .statsPanel {
         grid-template-columns: 1fr;
     }
 }
@@ -983,6 +998,144 @@ p.change{
     height: 2px;
     border-top: 2px dashed rgba(255,255,255,0.6);
     z-index: 1;
+}
+
+.progressInlinePercent {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    color: #ffffff;
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+}
+/* --------------------- History nutrient bar rows --------------------------- */
+.nutrientBarRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.nutrientBarLabel {
+    min-width: 110px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #374151;
+    flex-shrink: 0;
+    text-align: right;
+}
+.nutrientMiniBarWrap {
+    flex: 1;
+    height: 26px;
+    background: linear-gradient(to bottom, #87ceeb, #ffffff);
+    border-radius: 13px;
+    position: relative;
+    border: 2px solid #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: visible;
+    cursor: pointer;
+}
+.nutrientMiniBarWrap::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    right: 10px;
+    height: 1px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.6);
+    z-index: 1;
+}
+.nutrientMiniBar {
+    height: 100%;
+    background: rgba(22, 163, 74, 0.65);
+    border-radius: 13px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+}
+.nutrientBarPct {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+    white-space: nowrap;
+}
+.nutrientHoverTooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(30, 30, 30, 0.92);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+}
+.nutrientHoverTooltip p {
+    margin: 2px 0;
+}
+.nutrientHoverTooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(30, 30, 30, 0.92);
+}
+.nutrientMiniBarWrap:hover .nutrientHoverTooltip {
+    display: block;
+}
+
+.moreNutrientsGraph .nutrientBarRow:nth-child(-n+2) .nutrientHoverTooltip {
+    top: calc(100% + 8px);
+    bottom: auto;
+}
+
+.moreNutrientsGraph .nutrientBarRow:nth-child(-n+2) .nutrientHoverTooltip::after {
+    top: auto;
+    bottom: 100%;
+    border-top-color: transparent;
+    border-bottom-color: rgba(30, 30, 30, 0.92);
+}
+
+.moreNutrientsDropdown {
+    margin-top: 18px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 10px 12px;
+}
+
+.moreNutrientsDropdown > summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: #1f2937;
+    outline: none;
+}
+
+.moreNutrientsDropdown[open] > summary {
+    margin-bottom: 10px;
+}
+
+.moreNutrientsGraph {
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 6px;
 }
 /* all progress bars */
 #kcalProgressBar {
@@ -1099,21 +1252,8 @@ p.change{
 /* ---------------------- quote section ------------- */
 .motivationalQuote{
 	margin-top: 25px;
-}
-
-/* ----------------------Meals when added----------------------------------*/
-/* AI recommendation section */
-.mealGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-}
-
-/* Meal Cards */
-.mealItem {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 15px 20px; border-radius: 18px; margin-bottom: 12px;
-    font-weight: 600;
+    font-weight: bold;
+    color: #34495e;
 }
 
 /* ---------------------- food logging page -------------- */
@@ -1145,10 +1285,6 @@ p.change{
 .foodLogCard,
 .foodSummaryCard, .foodRecoCard {
     margin-bottom: 0;
-}
-
-.contRight{
-    background-color: #16a34a;
 }
 
 .resultContent{
@@ -1232,34 +1368,6 @@ li {
     font-size: 0.9rem;
     display: flex;
     justify-content: space-between;
-}
-
-.viewLink {
-    display: block;
-    text-align: center;
-    margin-top: 1.5rem;
-    color: #3498db;
-    text-decoration: none;
-    font-size: 0.9rem;
-}
-
-.nutritionInfo{
-    display: flex;
-    align-items: center;
-    padding: 15px 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    cursor: pointer;
-}
-
-.nutritionInfo .label {
-	width: 150px;
-	color: #888;
-	font-size: 14px;
-}
-.nutritionInfo .value {
-	flex: 1;
-	color: #333; 
-	font-weight: 500; 
 }
 
 @media (max-width: 1024px) {

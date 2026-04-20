@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify, send_from_directory, render_template, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date, timedelta, timezone
+from time import time
+import requests
 import sqlite3
 import secrets
 import sys
@@ -24,6 +26,8 @@ app.secret_key = secrets.token_urlsafe(32)  # Needed for session support
 
 active_user_filters = {}
 
+# Helpers
+
 def migrate_db():
     conn = None
     try:
@@ -42,7 +46,28 @@ def migrate_db():
 
 migrate_db()
 
-def calculate_daily_progress(user_id, conn, target_date=None):
+def make_user(user_id, conn):
+    try:
+        (_, _, age, sex, height_in, weight_lbs,
+         goal, activity_level, _, _, _) = query_db_for_user_info(
+            user_id=user_id, returnJSON=False
+        )
+
+        user_info = query_db_for_user_info(user_id=user_id, returnJSON=False)
+        print(user_info)
+        user_object = ppuser(
+            w=convert_lbs_to_kg(user_info[5]),
+            h=convert_inches_to_cm(user_info[4]),
+            a=int(user_info[2]),
+            s=str(user_info[3]),
+            al=int(user_info[7]),
+            g=int(user_info[6])
+        )
+        return user_object
+    except Exception as e:
+        print(f"Error: {e}")
+
+def consumed_progress(user_id, conn, target_date=None):
     cursor = conn.cursor()
     selected_date = target_date or datetime.now().strftime('%a %b %d %Y')
 
@@ -101,8 +126,8 @@ def calculate_daily_progress(user_id, conn, target_date=None):
     cursor.execute(nutrient_query)
     nutrient_rows = cursor.fetchall()
     
-    for row in nutrient_rows:
-        print(row)
+    #for row in nutrient_rows: debug nutrient query printing
+        #print(row)
 
     progress = {"Energy": 0.0}
     for row in nutrient_rows:
@@ -117,8 +142,158 @@ def calculate_daily_progress(user_id, conn, target_date=None):
 
     return progress
 
+def get_nutrient_progress(user_id, conn, target_date=None):
+        
+    translation_map = {
+        "Protein": "Protein",
+        "Total lipid (fat)": "Fats",
+        "Carbohydrate, by difference": "Carbs",
+        "Fiber, total dietary": "Fiber",
+        "Calcium, Ca": "Calcium",
+        "Iron, Fe": "Iron",
+        "Magnesium, Mg": "Magnesium",
+        "Phosphorus, P": "Phosphorus",
+        "Potassium, K": "Potassium",
+        "Sodium, Na": "Sodium",
+        "Zinc, Zn": "Zinc",
+        "Copper, Cu": "Copper",
+        "Manganese, Mn": "Manganese",
+        "Selenium, Se": "Selenium",
+        "Vitamin A, RAE": "Vitamin A",
+        "Vitamin E (alpha-tocopherol)": "Vitamin E",
+        "Vitamin D (D2 + D3)": "Vitamin D",
+        "Vitamin C, total ascorbic acid": "Vitamin C",
+        "Thiamin": "Thiamin",
+        "Riboflavin": "Riboflavin",
+        "Niacin": "Niacin",
+        "Pantothenic acid": "Pantothenic acid",
+        "Vitamin B-6": "Vitamin B-6",
+        "Folate, total": "Folate",
+        "Vitamin B-12": "Vitamin B-12",
+        "Choline, total": "Choline",
+        "Vitamin K (phylloquinone)": "Vitamin K"
+    }
 
-# Helpers
+    standardized_consumed = {}
+
+    consumed_data = consumed_progress(user_id, conn, target_date)
+    for fdc_name, value in consumed_data.items():
+        # Use the map to get the short name; default to fdc_name if not found
+        clean_name = translation_map.get(fdc_name, fdc_name)
+        standardized_consumed[clean_name] = value
+    
+    user_object = make_user(user_id, conn)
+    print(user_object)
+    user_object.setDRI()
+    
+    aggregate_progress = normalize_progress(standardized_consumed, user_object)
+    
+    user_nutrients = {}
+    print(f"For target date: {'Today' if target_date is None else target_date}")
+    for index in standardized_consumed:
+        user_nutrients[index] = user_object.getNutrientInfo(index)
+        print(f"{index}: {user_nutrients[index]}") # Daily Recommended
+        print(f"{index}: {standardized_consumed[index]}") # Actual consumed
+        print(f"{index}: {round((aggregate_progress[index]*100), 1)}% Daily Value") # Percent value
+
+    return standardized_consumed, aggregate_progress, user_nutrients
+
+def normalize_progress(progress, user_object):
+    aggregate_progress = {}
+    for index in progress:
+        aggregate_progress[index] = progress[index] / user_object.getNutrientInfo(index)
+
+    return aggregate_progress
+
+def aggregate_totals(aggregate_progress, user_object):
+    micros_count = 0
+    macros_count = 0
+    total_micros = 0
+    total_macros = 0
+
+    for index in aggregate_progress:
+        if index in user_object.micros:
+            micros_count += 1
+            total_micros += min(1, aggregate_progress[index])
+        elif index in user_object.macros:
+            macros_count += 1
+            total_macros += min(1, aggregate_progress[index])
+   
+    if micros_count == 0 or macros_count == 0:
+        print(f"Something happened, the macros or micros count variable is 0, which should not be possible for this function at this point")
+        print(f"Micros count = {micros_count}\nMacros count = {macros_count}")
+
+    total_micros = total_micros / max(micros_count, 1)
+    total_macros = total_macros / max(macros_count, 1)
+
+    return total_micros, total_macros
+
+def get_total_generic_progress(user_id, target_date=None):
+    conn = None
+    try:
+        conn = connectDB()
+
+        user_object = make_user(user_id, conn)
+
+        user_object.setDRI()
+        
+        standardized_consumed, aggregate_progress, _ = get_nutrient_progress(user_id, conn, target_date)
+        
+        total_micros, total_macros = aggregate_totals(aggregate_progress, user_object)
+
+        total_micros = round((total_micros*100), 1)
+        total_macros = round((total_macros*100), 1)
+        total_caloric_progress = round((standardized_consumed["Energy"]/user_object.getNutrientInfo("Energy"))*100, 1)
+        
+        print(f"For target date: {'Today' if target_date is None else target_date}")
+        print(f"Total Micronutrient Progress: {total_micros}%")
+        print(f"Total Macronutrient Progress: {total_macros}%")
+        print(f"Total Caloric Progress:       {total_caloric_progress}%")
+
+        return total_micros, total_macros, total_caloric_progress, standardized_consumed
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return 0
+
+    finally:
+        if conn: conn.close()
+
+def recommendation_algorithm(user_id):
+    
+    conn = None
+
+    try:
+        conn = connectDB()
+
+        user_object = make_user(user_id, conn)
+
+        user_object.setDRI()
+        
+        standardized_consumed, _, _ = get_nutrient_progress(user_id, conn)
+        
+        user_filter_ids = list(active_user_filters.get(str(user_id), set()))
+        print(user_filter_ids)
+
+        recommendations = recommend_foods(user_object, conn, standardized_consumed, restriction_ids=user_filter_ids)
+        print("\nDebug Recommendation \n------------------------------")
+        for item in recommendations:
+            # iteration: 1 -> "1."
+            # name: 'Garlic, raw' -> "Garlic, raw"
+            print(f"{item['iteration']}. {item['name']} Suggested Serving: {item['suggested_serving_oz']} oz (Match Score: {item['score']})")
+            print("--------------------------------\n")
+        
+        print(standardized_consumed)
+        
+        return recommendations
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return 0
+
+    finally:
+        if conn: conn.close()
+
 def generate_reset_token():
     return secrets.token_urlsafe(32)
 
@@ -208,7 +383,6 @@ def query_db_for_user_info(user_id, returnJSON=True):
     finally:
        if conn: conn.close()
 
-
 #Deliver HTML
 @app.route('/')
 def index():
@@ -220,8 +394,78 @@ def html_urls(filename):
         return "Not Found", 404
     return render_template(filename)
 
+@app.route('/reset-password', methods=['GET'])
+def reset_password():
+    token = request.args.get('token')
+    return render_template('resetPassword.html', token=token)
 
 ######### API METHODS #########
+
+# Quotes
+cached_quote = None
+last_fetch = 0
+@app.route('/api/daily-quote')
+def daily_quote():
+    global cached_quote, last_fetch
+
+    if cached_quote and time() - last_fetch < 900:  # 15 minutes
+        return jsonify(cached_quote)
+
+    try:
+        res = requests.get("https://zenquotes.io/api/random", timeout=3)
+        data = res.json()
+
+        cached_quote = {
+            "quote": data[0]["q"],
+            "author": data[0]["a"]
+        }
+        last_fetch = time()
+
+        return jsonify(cached_quote)
+
+    except Exception:
+        return jsonify({
+            "quote": "Stay consistent. Small steps compound into big results.",
+            "author": "Fallback"
+        })
+
+# Logout endpoint to clear session
+@app.route('/api/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return jsonify({'message': 'Logged out'}), 200
+
+# user login
+@app.route('/api/login', methods=['POST'])
+def login_user():
+    data = request.get_json()
+
+    try:
+        email = data.get('email')
+        password = data.get('password')
+
+        conn = connectDB()
+        cur = conn.cursor()
+
+        cur.execute("SELECT userId, password FROM users WHERE email = ?", (email,))
+        user = cur.fetchone()
+
+        if user and check_password_hash(user[1], password):
+            session['user_id'] = user[0]
+            session['logged_in'] = True
+            return jsonify({
+                'message': 'Login successful',
+                'user_id': user[0]
+            }), 200
+        else:
+            return jsonify({'error': 'Invalid email or password'}), 401
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+    
+    finally:
+        conn.close()
 
 # Register
 @app.route('/api/register', methods=['POST'])
@@ -270,10 +514,103 @@ def register_user():
         if conn:
             conn.close()
 
-@app.route('/reset-password', methods=['GET'])
-def reset_password():
-    token = request.args.get('token')
-    return render_template('resetPassword.html', token=token)
+# Reset password
+@app.route('/api/forgot-password', methods=['POST'])
+def forgot_password():
+    conn = None
+    try:
+        data = request.json
+        email = data.get('email')
+
+        conn = connectDB()
+        cur = conn.cursor()
+        cur.execute("SELECT userId FROM users WHERE email = ?", (email,))
+        userId = cur.fetchone()
+
+        # Always return same message (security best practice)
+        if not userId:
+            return jsonify({'message': 'If an account exists, a reset link has been sent'}), 200
+
+        resetToken = generate_reset_token()
+        expiry = get_expiry(30)
+
+        cur.execute("""
+            UPDATE users
+            SET reset_token = ?, reset_token_expiry = ?
+            WHERE email = ?
+        """, (resetToken, expiry, email))
+
+        conn.commit()
+
+        resetLink = f"http://localhost:5000/reset-password?token={resetToken}"
+        send_reset_email(email, resetLink)
+        print("RESET LINK:", resetLink)
+
+        return jsonify({'message': 'If an account exists, a reset link has been sent'}), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        if conn: conn.close()
+
+@app.route('/api/reset-password', methods=['POST'])
+def reset_password_api():
+    conn = None
+    try:
+        data = request.json
+        resetToken = data.get('token')
+        newPassword = data.get('newPassword')
+
+        conn = connectDB()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT userId, reset_token_expiry FROM Users
+            WHERE reset_token = ?
+        """, (resetToken,))
+
+        user = cursor.fetchone()
+
+        if not user:
+            return jsonify({'message': 'Invalid token'}), 400
+
+        user_id, expiry = user
+
+        if not expiry:
+            return jsonify({'message': 'Token expired'}), 400
+
+        hashedPassword = hash_password(newPassword)
+
+        cursor.execute("""
+            UPDATE Users
+            SET password = ?, reset_token = NULL, reset_token_expiry = NULL
+            WHERE userId = ?
+        """, (hashedPassword, user_id))
+
+        conn.commit()
+
+        return jsonify({'message': 'Password reset successful'}), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        if conn: conn.close()
+
+#get user info 
+@app.route('/api/get-user-info', methods=['GET'])
+def get_user_info():
+    try:
+        user_id = int(request.args.get('user_id'))
+        if not user_id:
+            return jsonify({'error': 'Missing user_id'}), 400
+        return query_db_for_user_info(user_id=user_id, returnJSON=True)
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
 
 #update user info
 @app.route('/api/update_user', methods=['POST'])
@@ -362,6 +699,37 @@ def update_goal():
     finally:
         conn.close()
 
+@app.route('/api/get-num-of-log-dates', methods=['GET'])
+def num_of_user_log_dates():
+    conn = None
+    try:
+        user_id = int(request.args.get('user_id'))
+        if not user_id:
+            return jsonify({'error': 'Missing user_id'}), 400
+        conn = connectDB()
+        cur = conn.cursor()
+
+        cur.execute("""
+             SELECT COUNT(DISTINCT dateLogged) 
+             FROM foodHistory            
+             WHERE userId = ?
+        """, (user_id,))
+
+        row = cur.fetchone()
+        print(f"Number of days the user has logged is {row[0]}")
+
+        if not row:
+            return jsonify({'error': 'User not found'}), 404
+
+        return jsonify({
+                'days': row,
+                'message': 'success'}), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
+
 # Upload profile avatar
 @app.route('/api/upload-avatar', methods=['POST'])
 def upload_avatar():
@@ -395,92 +763,6 @@ def upload_avatar():
     except Exception as e:
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/forgot-password', methods=['POST'])
-def forgot_password():
-    conn = None
-    try:
-        data = request.json
-        email = data.get('email')
-
-        conn = connectDB()
-        cur = conn.cursor()
-        cur.execute("SELECT userId FROM users WHERE email = ?", (email,))
-        userId = cur.fetchone()
-
-        # Always return same message (security best practice)
-        if not userId:
-            return jsonify({'message': 'If an account exists, a reset link has been sent'}), 200
-
-        resetToken = generate_reset_token()
-        expiry = get_expiry(30)
-
-        cur.execute("""
-            UPDATE users
-            SET reset_token = ?, reset_token_expiry = ?
-            WHERE email = ?
-        """, (resetToken, expiry, email))
-
-        conn.commit()
-
-        resetLink = f"http://localhost:5000/reset-password?token={resetToken}"
-        send_reset_email(email, resetLink)
-        print("RESET LINK:", resetLink)
-
-        return jsonify({'message': 'If an account exists, a reset link has been sent'}), 200
-
-    except Exception as e:
-        print("[ERROR]: ", e)
-        return jsonify({'error': str(e)}), 500
-
-    finally:
-        if conn: conn.close()
-
-@app.route('/api/reset-password', methods=['POST'])
-def reset_password_api():
-    conn = None
-    try:
-        data = request.json
-        resetToken = data.get('token')
-        newPassword = data.get('newPassword')
-
-        conn = connectDB()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT userId, reset_token_expiry FROM Users
-            WHERE reset_token = ?
-        """, (resetToken,))
-
-        user = cursor.fetchone()
-
-        if not user:
-            return jsonify({'message': 'Invalid token'}), 400
-
-        user_id, expiry = user
-
-        if not expiry:
-            return jsonify({'message': 'Token expired'}), 400
-
-        hashedPassword = hash_password(newPassword)
-
-        cursor.execute("""
-            UPDATE Users
-            SET password = ?, reset_token = NULL, reset_token_expiry = NULL
-            WHERE userId = ?
-        """, (hashedPassword, user_id))
-
-        conn.commit()
-
-        return jsonify({'message': 'Password reset successful'}), 200
-
-    except Exception as e:
-        print("[ERROR]: ", e)
-        return jsonify({'error': str(e)}), 500
-
-    finally:
-        if conn: conn.close()
 
 #update user restrictions
 @app.route("/set-restrictions", methods=["POST"])
@@ -550,52 +832,6 @@ def set_restrictions():
     finally:
         conn.close()
 
-#get user info 
-@app.route('/api/get-user-info', methods=['GET'])
-def get_user_info():
-    try:
-        user_id = int(request.args.get('user_id'))
-        if not user_id:
-            return jsonify({'error': 'Missing user_id'}), 400
-        return query_db_for_user_info(user_id=user_id, returnJSON=True)
-    except Exception as e:
-        print("[ERROR]: ", e)
-        return jsonify({'error': str(e)}), 500
-
-
-# user login
-@app.route('/api/login', methods=['POST'])
-def login_user():
-    data = request.get_json()
-
-    try:
-        email = data.get('email')
-        password = data.get('password')
-
-        conn = connectDB()
-        cur = conn.cursor()
-
-        cur.execute("SELECT userId, password FROM users WHERE email = ?", (email,))
-        user = cur.fetchone()
-
-        if user and check_password_hash(user[1], password):
-            session['user_id'] = user[0]
-            session['logged_in'] = True
-            return jsonify({
-                'message': 'Login successful',
-                'user_id': user[0]
-            }), 200
-        else:
-            return jsonify({'error': 'Invalid email or password'}), 401
-
-    except Exception as e:
-        print("[ERROR]: ", e)
-        return jsonify({'error': str(e)}), 500
-    
-    finally:
-        conn.close()
-
-
 # API to check session status
 @app.route('/api/session', methods=['GET'])
 def check_session():
@@ -633,12 +869,6 @@ def calculate_dri():
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 400
     
-# Logout endpoint to clear session
-@app.route('/api/logout', methods=['POST'])
-def logout():
-    session.clear()
-    return jsonify({'message': 'Logged out'}), 200
-
 # Food Search
 NUTRIENT_IDS = [
     1106, 1162, 1114, 1175, 1158, 1079, 1109, 1185, 1165, 1178,
@@ -688,7 +918,6 @@ def get_filters():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/api/apply-filter', methods=['POST'])
 def apply_that_filter():
     data = request.get_json()
@@ -728,7 +957,6 @@ def apply_that_filter():
     except Exception as e:
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 400
-
 
 @app.route('/api/search-engine', methods=['GET'])
 def execute_search_engine():
@@ -788,7 +1016,6 @@ def get_modifiers():
     finally:
         if conn:
             conn.close()
-
 
 # Get Nutrients of Food
 @app.route('/api/get-nutrients', methods=['GET'])
@@ -920,14 +1147,14 @@ def get_food_history(user_id):
     finally:
         if conn: conn.close()
 
-# Get Progress
-@app.route('/api/progress/<user_id>', methods=['GET'])
-def get_progress(user_id):
+# Get total consumed for a given day
+@app.route('/api/consumed/<user_id>', methods=['GET'])
+def get_consumed(user_id):
     conn = None
     try:
         conn = connectDB()
         selected_date = request.args.get('date')
-        progress = calculate_daily_progress(user_id, conn, selected_date)
+        progress = consumed_progress(user_id, conn, selected_date)
         return jsonify(progress), 200
 
     except Exception as e:
@@ -936,6 +1163,35 @@ def get_progress(user_id):
 
     finally:
         if conn: conn.close()
+
+# Get Nutrient Progress
+@app.route('/api/nutrient-progress/<user_id>', methods=['GET'])
+def nutrient_progress(user_id):
+    conn = None
+    try:
+        conn = connectDB()
+        selected_date = request.args.get('date')
+        progress = get_nutrient_progress(user_id, conn, selected_date)
+        return jsonify(progress), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        if conn: conn.close()
+
+# Get generic progress (macros, micros, caloric totals)
+@app.route('/api/generic-progress/<user_id>', methods=['GET'])
+def get_generic_progress(user_id):
+    try:
+        selected_date = request.args.get('date')
+        progress = get_total_generic_progress(user_id, selected_date)
+        return jsonify(progress), 200
+
+    except Exception as e:
+        print("[ERROR]: ", e)
+        return jsonify({'error': str(e)}), 500
 
 # Update Food Entry
 @app.route('/api/food-history/<int:entry_id>', methods=['PUT'])
@@ -1061,93 +1317,6 @@ def clear_food_history(user_id):
 
     finally:
         if conn: conn.close()
-
-def recommendation_algorithm(user_id):
-    
-    conn = None
-
-    try:
-        conn = connectDB()
-        (_, _, age, sex, height_in, weight_lbs,
-         goal, activity_level, _, _, _) = query_db_for_user_info(
-            user_id=user_id, returnJSON=False
-        )
-
-        user_info = query_db_for_user_info(user_id=user_id, returnJSON=False)
-        print(user_info)
-        user_object = ppuser(
-            w=convert_lbs_to_kg(user_info[5]),
-            h=convert_inches_to_cm(user_info[4]),
-            a=int(user_info[2]),
-            s=str(user_info[3]),
-            al=int(user_info[7]),
-            g=int(user_info[6])
-        )
-        user_object.setDRI()
-        
-        translation_map = {
-            "Protein": "Protein",
-            "Total lipid (fat)": "Fats",
-            "Carbohydrate, by difference": "Carbs",
-            "Fiber, total dietary": "Fiber",
-            "Calcium, Ca": "Calcium",
-            "Iron, Fe": "Iron",
-            "Magnesium, Mg": "Magnesium",
-            "Phosphorus, P": "Phosphorus",
-            "Potassium, K": "Potassium",
-            "Sodium, Na": "Sodium",
-            "Zinc, Zn": "Zinc",
-            "Copper, Cu": "Copper",
-            "Manganese, Mn": "Manganese",
-            "Selenium, Se": "Selenium",
-            "Vitamin A, RAE": "Vitamin A",
-            "Vitamin E (alpha-tocopherol)": "Vitamin E",
-            "Vitamin D (D2 + D3)": "Vitamin D",
-            "Vitamin C, total ascorbic acid": "Vitamin C",
-            "Thiamin": "Thiamin",
-            "Riboflavin": "Riboflavin",
-            "Niacin": "Niacin",
-            "Pantothenic acid": "Pantothenic acid",
-            "Vitamin B-6": "Vitamin B-6",
-            "Folate, total": "Folate",
-            "Vitamin B-12": "Vitamin B-12",
-            "Choline, total": "Choline",
-            "Vitamin K (phylloquinone)": "Vitamin K"
-        }
-        standardized_consumed = {}
-        
-        consumed_data = calculate_daily_progress(user_id, conn)
-
-        for fdc_name, value in consumed_data.items():
-            # Use the map to get the short name; default to fdc_name if not found
-            clean_name = translation_map.get(fdc_name, fdc_name)
-            standardized_consumed[clean_name] = value
-        
-        for index in standardized_consumed:
-            user_object.getNutrientInfo(index)
-            print(f"{index}: {standardized_consumed[index]}")
-
-        user_filter_ids = list(active_user_filters.get(str(user_id), set()))
-        
-        recommendations = recommend_foods(user_object, conn, standardized_consumed, restriction_ids=user_filter_ids)
-        print("\nDebug Recommendation \n------------------------------")
-        for item in recommendations:
-            # iteration: 1 -> "1."
-            # name: 'Garlic, raw' -> "Garlic, raw"
-            print(f"{item['iteration']}. {item['name']} Suggested Serving: {item['suggested_serving_oz']} oz (Match Score: {item['score']})")
-            print("--------------------------------\n")
-        
-        print(standardized_consumed)
-        
-        return recommendations
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return 0
-
-    finally:
-        if conn: conn.close()
-
 
 if __name__ == '__main__':
     print("PlatePilot server running at http://localhost:5000")

@@ -12,6 +12,7 @@ AND f.description NOT LIKE '%dried%'
 AND (f.description NOT LIKE '%dry%' OR f.description NOT LIKE '%cheese%')
 AND f.description NOT LIKE '%powder%'
 AND f.description NOT LIKE '%flour%'
+AND f.description NOT LIKE '%cheese%american%'
 AND f.description NOT LIKE '%restaurant%'
 AND f.description NOT LIKE '%cooked%'
 AND f.description NOT LIKE '%fortified%'

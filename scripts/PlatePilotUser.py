@@ -84,7 +84,7 @@ class ppuser():
             "Manganese":        (11,    2.0),
             "Selenium":         (400,   3.0),
             "Vitamin A":        (3000,  5.0),
-            "Vitamin D":        (0.1,   3.0),
+            "Vitamin D":        (100,   1.5),
             "Vitamin E":        (1000,  1.5),
             "Vitamin K":        (None,  0.0),
             "Vitamin C":        (2000,  1.0),
@@ -102,62 +102,62 @@ class ppuser():
         self.ERR = 0
     
     def calcMacros(self):
-        self.upper_limits["Protein"] = ((self.TDEE * 0.35) / 4, 2.0)
-        self.upper_limits["Fats"] = ((self.TDEE * 0.35) / 9, 3.0)
+        self.upper_limits["Protein"] = ((self.TDEE * 0.35) / 4, 1.0)
+        self.upper_limits["Fats"] = ((self.TDEE * 0.35) / 9, 0.3)
         if (self.sex == "MALE"):
             match self.goal:
                 case 1: #Standard maintain
                     self.macros["Protein"] = (self.TDEE * 0.21)/4
                     self.macros["Carbs"] = (self.TDEE * 0.56)/4
                     self.macros["Fats"] = (self.TDEE * 0.23)/9
-                    self.upper_limits["Energy"] = (self.TDEE, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE, 0.7)
                 case 2: #Weight loss
                     self.macros["Protein"] = (self.TDEE * 0.23*0.95)/4
                     self.macros["Carbs"] = (self.TDEE * 0.56*0.85)/4
                     self.macros["Fats"] = (self.TDEE * 0.21*0.95)/9
-                    self.upper_limits["Energy"] = (self.TDEE*0.90, 6.0)
+                    self.upper_limits["Energy"] = (self.TDEE*0.90, 0.4)
                 case 3: #Muscle building
                     self.macros["Protein"] = (self.TDEE * 0.25)/4
                     self.macros["Carbs"] = (self.TDEE * 0.60)/4
                     self.macros["Fats"] = (self.TDEE * 0.25)/9
-                    self.upper_limits["Energy"] = (self.TDEE*1.1, 3.0)
+                    self.upper_limits["Energy"] = (self.TDEE*1.1, 1.0)
                 case 4: #Weight lifter, maintain
                     self.macros["Protein"] = (self.TDEE * 0.23)/4
                     self.macros["Carbs"] = (self.TDEE * 0.55)/4
                     self.macros["Fats"] = (self.TDEE * 0.22)/9
-                    self.upper_limits["Energy"] = (self.TDEE*1.05, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE*1.05, 0.9)
                 case 5: #Weight lifter, weight loss
                     self.macros["Protein"] = (self.TDEE * 0.25 * 0.95)/4
                     self.macros["Carbs"] = (self.TDEE * 0.53 * 0.85)/4
                     self.macros["Fats"] = (self.TDEE * 0.22 * 0.95)/9
-                    self.upper_limits["Energy"] = (self.TDEE*0.95, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE*0.95, 0.7)
         else:
             match self.goal:
                 case 1: #Standard maintain
                     self.macros["Protein"] = (self.TDEE * 0.19)/4
                     self.macros["Carbs"] = (self.TDEE * 0.56)/4
                     self.macros["Fats"] = (self.TDEE * 0.25)/9
-                    self.upper_limits["Energy"] = (self.TDEE, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE, 0.7)
                 case 2: #Weight loss
                     self.macros["Protein"] = (self.TDEE * 0.23*0.95)/4
                     self.macros["Carbs"] = (self.TDEE * 0.52*0.85)/4
                     self.macros["Fats"] = (self.TDEE * 0.25*0.95)/9
-                    self.upper_limits["Energy"] = (self.TDEE*0.90, 6.0)
+                    self.upper_limits["Energy"] = (self.TDEE*0.90, 0.4)
                 case 3: #Muscle building
                     self.macros["Protein"] = (self.TDEE * 0.22)/4
                     self.macros["Carbs"] = (self.TDEE * 0.62)/4
                     self.macros["Fats"] = (self.TDEE * 0.27)/9
-                    self.upper_limits["Energy"] = (self.TDEE*1.1, 3.0)
+                    self.upper_limits["Energy"] = (self.TDEE*1.1, 1.0)
                 case 4: #Weight lifter, maintain
                     self.macros["Protein"] = (self.TDEE * 0.20)/4
                     self.macros["Carbs"] = (self.TDEE * 0.55)/4
                     self.macros["Fats"] = (self.TDEE * 0.25)/9
-                    self.upper_limits["Energy"] = (self.TDEE*1.05, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE*1.05, 0.9)
                 case 5: #Weight lifter, weight loss
                     self.macros["Protein"] = (self.TDEE * 0.25 * 0.95)/4
                     self.macros["Carbs"] = (self.TDEE * 0.51 * 0.85)/4
                     self.macros["Fats"] = (self.TDEE * 0.24 * 0.95)/9
-                    self.upper_limits["Energy"] = (self.TDEE*0.95, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE*0.95, 0.7)
         if self.sex == "MALE":
             if 19 <= self.age <= 50:
                 self.macros["Fiber"] = 38
@@ -172,11 +172,11 @@ class ppuser():
 
     def getNutrientInfo(self, index):
         if index in self.micros:
-            print(f"{index}: {self.micros[index]}")
+            return self.micros[index]
         elif index in self.macros:
-            print(f"{index}: {self.macros[index]}")
+            return self.macros[index]
         elif index == "Energy":
-            print(f"Calories: {self.TDEE}")
+            return self.TDEE
 
 
     def setDRI(self):
