@@ -68,96 +68,96 @@ class ppuser():
                 "Vitamin K":0
                 }
         self.upper_limits = {
-            "Energy":           (None,  0.0),
-            "Protein":          (None,  0.0),
-            "Carbs":            (None,  0.0),
-            "Fats":             (None,  5.0),
-            "Fiber":            (None,  0.0),
-            "Calcium":          (2500,  2.0),
-            "Iron":             (45,    3.0),
-            "Magnesium":        (350,   1.5),
-            "Phosphorus":       (4000,  1.0),
-            "Potassium":        (None,  0.0),
-            "Sodium":           (2300,  2.0),
-            "Zinc":             (40,    2.5),
-            "Copper":           (10,    3.0),
-            "Manganese":        (11,    2.0),
-            "Selenium":         (400,   3.0),
-            "Vitamin A":        (3000,  5.0),
-            "Vitamin D":        (0.1,   3.0),
-            "Vitamin E":        (1000,  1.5),
-            "Vitamin K":        (None,  0.0),
-            "Vitamin C":        (2000,  1.0),
-            "Thiamin":          (None,  0.0),
-            "Riboflavin":       (None,  0.0),
-            "Niacin":           (35,    3.0),
-            "Pantothenic acid": (None,  0.0),
-            "Vitamin B-6":      (100,   2.0),
-            "Folate":           (1000,  2.0),
-            "Vitamin B-12":     (None,  0.0),
-            "Choline":          (3500,  1.5),
+            "Energy":           (None,   0.0),
+            "Protein":          (None,   0.0),
+            "Carbs":            (None,   0.0),
+            "Fats":             (None,   0.0),
+            "Fiber":            (None,   0.0),
+            "Calcium":          (2500,   0.3),  # lower severity — food calcium rarely toxic
+            "Iron":             (45,     0.5),  # keep some — iron overload is real
+            "Magnesium":        (350,    0.2),  # lower — dietary Mg rarely hits UL dangerously
+            "Phosphorus":       (4000,   0.1),
+            "Potassium":        (None,   0.0),
+            "Sodium":           (2300,   1.5),  # keep high — sodium overconsumption matters
+            "Zinc":             (40,     0.5),
+            "Copper":           (10,     0.5),
+            "Manganese":        (11,     0.3),  # lower — dietary manganese toxicity rare
+            "Selenium":         (400,    2.0),  # keep high — selenium toxicity is real
+            "Vitamin A":        (3000,   2.0),  # keep — preformed Vitamin A can be toxic
+            "Vitamin D":        (100,    1.0),
+            "Vitamin E":        (1000,   0.5),
+            "Vitamin K":        (None,   0.0),
+            "Vitamin C":        (2000,   0.3),  # lower — dietary C overconsumption minor
+            "Thiamin":          (None,   0.0),
+            "Riboflavin":       (None,   0.0),
+            "Niacin":           (35,     1.5),  # keep — niacin flush/toxicity real
+            "Pantothenic acid": (None,   0.0),
+            "Vitamin B-6":      (100,    1.0),
+            "Folate":           (1000,   0.5),
+            "Vitamin B-12":     (None,   0.0),
+            "Choline":          (3500,   0.3),
         }
         self.BMR = 0
         self.TDEE = 0
         self.ERR = 0
     
     def calcMacros(self):
-        self.upper_limits["Protein"] = ((self.TDEE * 0.35) / 4, 2.0)
-        self.upper_limits["Fats"] = ((self.TDEE * 0.35) / 9, 3.0)
+        self.upper_limits["Protein"] = ((self.TDEE * 0.35) / 4, 1.0)
+        self.upper_limits["Fats"] = ((self.TDEE * 0.35) / 9, 1.5)
         if (self.sex == "MALE"):
             match self.goal:
                 case 1: #Standard maintain
                     self.macros["Protein"] = (self.TDEE * 0.21)/4
                     self.macros["Carbs"] = (self.TDEE * 0.56)/4
                     self.macros["Fats"] = (self.TDEE * 0.23)/9
-                    self.upper_limits["Energy"] = (self.TDEE, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE, 1.0)
                 case 2: #Weight loss
                     self.macros["Protein"] = (self.TDEE * 0.23*0.95)/4
                     self.macros["Carbs"] = (self.TDEE * 0.56*0.85)/4
                     self.macros["Fats"] = (self.TDEE * 0.21*0.95)/9
-                    self.upper_limits["Energy"] = (self.TDEE*0.90, 6.0)
+                    self.upper_limits["Energy"] = (self.TDEE*0.90, 1.5)
                 case 3: #Muscle building
                     self.macros["Protein"] = (self.TDEE * 0.25)/4
                     self.macros["Carbs"] = (self.TDEE * 0.60)/4
                     self.macros["Fats"] = (self.TDEE * 0.25)/9
-                    self.upper_limits["Energy"] = (self.TDEE*1.1, 3.0)
+                    self.upper_limits["Energy"] = (self.TDEE*1.1, 0.7)
                 case 4: #Weight lifter, maintain
                     self.macros["Protein"] = (self.TDEE * 0.23)/4
                     self.macros["Carbs"] = (self.TDEE * 0.55)/4
                     self.macros["Fats"] = (self.TDEE * 0.22)/9
-                    self.upper_limits["Energy"] = (self.TDEE*1.05, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE*1.05, 1.0)
                 case 5: #Weight lifter, weight loss
                     self.macros["Protein"] = (self.TDEE * 0.25 * 0.95)/4
                     self.macros["Carbs"] = (self.TDEE * 0.53 * 0.85)/4
                     self.macros["Fats"] = (self.TDEE * 0.22 * 0.95)/9
-                    self.upper_limits["Energy"] = (self.TDEE*0.95, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE*0.95, 1.5)
         else:
             match self.goal:
                 case 1: #Standard maintain
                     self.macros["Protein"] = (self.TDEE * 0.19)/4
                     self.macros["Carbs"] = (self.TDEE * 0.56)/4
                     self.macros["Fats"] = (self.TDEE * 0.25)/9
-                    self.upper_limits["Energy"] = (self.TDEE, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE, 1.0)
                 case 2: #Weight loss
                     self.macros["Protein"] = (self.TDEE * 0.23*0.95)/4
                     self.macros["Carbs"] = (self.TDEE * 0.52*0.85)/4
                     self.macros["Fats"] = (self.TDEE * 0.25*0.95)/9
-                    self.upper_limits["Energy"] = (self.TDEE*0.90, 6.0)
+                    self.upper_limits["Energy"] = (self.TDEE*0.90, 1.5)
                 case 3: #Muscle building
                     self.macros["Protein"] = (self.TDEE * 0.22)/4
                     self.macros["Carbs"] = (self.TDEE * 0.62)/4
                     self.macros["Fats"] = (self.TDEE * 0.27)/9
-                    self.upper_limits["Energy"] = (self.TDEE*1.1, 3.0)
+                    self.upper_limits["Energy"] = (self.TDEE*1.1, 0.7)
                 case 4: #Weight lifter, maintain
                     self.macros["Protein"] = (self.TDEE * 0.20)/4
                     self.macros["Carbs"] = (self.TDEE * 0.55)/4
                     self.macros["Fats"] = (self.TDEE * 0.25)/9
-                    self.upper_limits["Energy"] = (self.TDEE*1.05, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE*1.05, 1.0)
                 case 5: #Weight lifter, weight loss
                     self.macros["Protein"] = (self.TDEE * 0.25 * 0.95)/4
                     self.macros["Carbs"] = (self.TDEE * 0.51 * 0.85)/4
                     self.macros["Fats"] = (self.TDEE * 0.24 * 0.95)/9
-                    self.upper_limits["Energy"] = (self.TDEE*0.95, 5.0)
+                    self.upper_limits["Energy"] = (self.TDEE*0.95, 1.5)
         if self.sex == "MALE":
             if 19 <= self.age <= 50:
                 self.macros["Fiber"] = 38
@@ -172,11 +172,11 @@ class ppuser():
 
     def getNutrientInfo(self, index):
         if index in self.micros:
-            print(f"{index}: {self.micros[index]}")
+            return self.micros[index]
         elif index in self.macros:
-            print(f"{index}: {self.macros[index]}")
+            return self.macros[index]
         elif index == "Energy":
-            print(f"Calories: {self.TDEE}")
+            return self.TDEE
 
 
     def setDRI(self):
@@ -187,6 +187,7 @@ class ppuser():
 
         self.TDEE = self.BMR*self.activity_factor[self.activity_level - 1]
         self.calcMacros()
+        self.upper_limits["Fiber"] = (self.macros["Fiber"] * 2, 1.0)
         if self.sex == "MALE":
             if 19 <= self.age <= 30:
                 self.ERR = 662 - (9.53 * self.age) + self.activity_level * ((9.36 * self.weight) + (539.6 * self.height * 2.5 / 100))
@@ -202,7 +203,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 900
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15
                 self.micros["Vitamin C"] = 90
                 self.micros["Thiamin"] = 1.2
                 self.micros["Riboflavin"] = 1.3
@@ -226,7 +227,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 900
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15
                 self.micros["Vitamin C"] = 90
                 self.micros["Thiamin"] = 1.2
                 self.micros["Riboflavin"] = 1.3
@@ -251,7 +252,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 900
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15 #mcg
                 self.micros["Vitamin C"] = 90
                 self.micros["Thiamin"] = 1.2
                 self.micros["Riboflavin"] = 1.3
@@ -278,7 +279,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 700
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15 #mcg
                 self.micros["Vitamin C"] = 75
                 self.micros["Thiamin"] = 1.1
                 self.micros["Riboflavin"] = 1.1
@@ -304,7 +305,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 700
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15
                 self.micros["Vitamin C"] = 75
                 self.micros["Thiamin"] = 1.1
                 self.micros["Riboflavin"] = 1.1
@@ -330,7 +331,7 @@ class ppuser():
                 self.micros["Selenium"] = 55
                 self.micros["Vitamin A"] = 700
                 self.micros["Vitamin E"] = 15
-                self.micros["Vitamin D"] = 0.015
+                self.micros["Vitamin D"] = 15
                 self.micros["Vitamin C"] = 75
                 self.micros["Thiamin"] = 1.1
                 self.micros["Riboflavin"] = 1.1

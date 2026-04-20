@@ -14,6 +14,7 @@ export async function initDashboard() {
         renderRestrictions(user.restrictions || []);
 
         await loadProgress();
+        await loadMoreDetails();
         await renderActivityChart();
         await updateDailyQuote();
 
@@ -72,18 +73,136 @@ function renderRestrictions(restrictions) {
 async function loadProgress() {
     try {
         const userId = State.getUserId();
-        const progress = await API.getProgress(userId);
+        const [progress, genericProgress, dri] = await Promise.all([
+            API.getConsumed(userId),
+            API.getGenericProgress(userId),
+            API.calculateDRI(userId)
+        ]);
 
         State.setProgress(progress);
-        updateProgressUI(progress);
+        updateProgressUI(progress, genericProgress, dri);
 
     } catch (err) {
         console.error("Failed to load progress:", err);
     }
 }
 
-function updateProgressUI(progress) {
-    const calories = progress.calories || 0;
+//all for progress bars and activity chart
+function toNumber(value) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+}
+
+//
+function progressMetrics(progress) {
+    const calories = toNumber(progress?.calories ?? progress?.Energy ?? 0);
+    const protein = toNumber(progress?.Protein ?? progress?.protein ?? 0);
+    const carbs = toNumber(
+        progress?.Carbs ?? progress?.carbs ?? progress?.Carbohydrate ?? progress?.['Carbohydrate, by difference'] ?? 0
+    );
+    const fats = toNumber(
+        progress?.Fats ?? progress?.fats ?? progress?.Fat ?? progress?.['Total lipid (fat)'] ?? 0
+    );
+    const macros = toNumber(progress?.macros ?? (protein + carbs + fats));
+
+    let micros = toNumber(progress?.micros ?? 0);
+    if (!micros) {
+        const excludedKeys = new Set([
+            'calories', 'energy', 'protein', 'carbs', 'carbohydrate', 'carbohydrate, by difference',
+            'fats', 'fat', 'total lipid (fat)', 'macros', 'micros'
+        ]);
+
+        micros = Object.entries(progress || {}).reduce((sum, [key, value]) => {
+            if (excludedKeys.has(String(key).toLowerCase())) return sum;
+            return sum + toNumber(value);
+        }, 0);
+    }
+
+    return { calories, macros, micros };
+}
+
+// Determine the appropriate icon based on progress percentage
+function getProgressIcon(percent) {
+    if (percent >= 100) return '🛸';
+    if (percent >= 70) return '🚀';
+    if (percent >= 35) return '✈️';
+    return '🛩️';
+}
+
+function parseGenericProgress(genericProgress) {
+    if (Array.isArray(genericProgress)) {
+        return {
+            microPercent: toNumber(genericProgress[0]),
+            macroPercent: toNumber(genericProgress[1]),
+            caloriePercent: toNumber(genericProgress[2])
+        };
+    }
+
+    return {
+        microPercent: toNumber(genericProgress?.micros ?? genericProgress?.micro ?? 0),
+        macroPercent: toNumber(genericProgress?.macros ?? genericProgress?.macro ?? 0),
+        caloriePercent: toNumber(genericProgress?.calories ?? genericProgress?.energy ?? 0)
+    };
+}
+
+function formatPercent(value) {
+    return `${Math.round(toNumber(value) * 10) / 10}%`;
+}
+
+function createNutrientBarRow(nutrient, pct, consumed, recommended) {
+    const clampedPct = Math.min(Math.max(pct, 0), 100);
+    const row = document.createElement('div');
+    row.className = 'nutrientBarRow';
+    row.innerHTML = `
+        <span class="nutrientBarLabel">${nutrient}</span>
+        <div class="nutrientMiniBarWrap">
+            <div class="nutrientMiniBar" style="width: ${clampedPct}%"></div>
+            <span class="nutrientBarPct">${pct}%</span>
+            <div class="nutrientHoverTooltip">
+                <p><strong>Consumed:</strong> ${consumed}</p>
+                <p><strong>Recommended:</strong> ${recommended}</p>
+            </div>
+        </div>
+    `;
+
+    return row;
+}
+
+async function loadMoreDetails() {
+    const graphContainer = getElement('dashboardMoreDetailsGraph');
+    if (!graphContainer) return;
+
+    try {
+        const userId = State.getUserId();
+        if (!userId) return;
+
+        const nutrientProgress = await API.getNutrientProgress(userId, new Date().toDateString());
+        const actualConsumed = nutrientProgress?.[0] || {};
+        const percentConsumed = nutrientProgress?.[1] || {};
+        const dailyRecommended = nutrientProgress?.[2] || {};
+
+        graphContainer.innerHTML = '';
+
+        Object.keys(actualConsumed).forEach((nutrient) => {
+            const pct = Math.round(parseFloat(percentConsumed[nutrient]) * 1000) / 10;
+            const consumed = Math.round(toNumber(actualConsumed[nutrient]) * 10) / 10;
+            const recommended = Math.round(toNumber(dailyRecommended[nutrient]) * 10) / 10;
+            graphContainer.appendChild(createNutrientBarRow(nutrient, pct, consumed, recommended));
+        });
+
+        if (!graphContainer.children.length) {
+            graphContainer.innerHTML = '<p class="text-muted">No nutrient details available yet.</p>';
+        }
+    } catch (err) {
+        console.warn('Failed to load dashboard nutrient details:', err);
+        graphContainer.innerHTML = '<p class="text-muted">Unable to load nutrient details.</p>';
+    }
+}
+
+// Update the progress bars and icons in the UI based on the user's progress
+function updateProgressUI(progress, genericProgress, dri) {
+    const { calories, macros, micros } = progressMetrics(progress);
+    const { caloriePercent, macroPercent, microPercent } = parseGenericProgress(genericProgress);
 
     const tiers = [
         { name: "Cessna", icon: "🛩️", goal: 500 },
@@ -99,15 +218,42 @@ function updateProgressUI(progress) {
         }
     }
 
-    const percent = Math.min((calories / activeTier.goal) * 100, 100);
+    const calorieBarPercent = Math.min(Math.max(caloriePercent, 0), 100);
 
     const bar = getElement('kcalProgressBar');
     const plane = getElement('planeIcon');
+    const kcalPercentLabel = getElement('kcalBarPercent');
+    const macroBar = getElement('gProgressBar');
+    const macroPlane = getElement('planeIcon1');
+    const macroPercentLabel = getElement('gBarPercent');
+    const microBar = getElement('mgProgressBar');
+    const microPlane = getElement('planeIcon2');
+    const microPercentLabel = getElement('mgBarPercent');
 
-    if (bar) bar.style.width = percent + "%";
+    if (bar) bar.style.width = `${calorieBarPercent}%`;
+    if (kcalPercentLabel) kcalPercentLabel.innerText = formatPercent(caloriePercent);
+    if (macroBar) {
+        const safeMacroPercent = Math.min(Math.max(macroPercent, 0), 100);
+        macroBar.style.width = `${safeMacroPercent}%`;
+        if (macroPercentLabel) macroPercentLabel.innerText = formatPercent(macroPercent);
+        if (macroPlane) {
+            macroPlane.style.left = `${safeMacroPercent}%`;
+            macroPlane.innerText = getProgressIcon(macroPercent);
+        }
+    }
+
+    if (microBar) {
+        const safeMicroPercent = Math.min(Math.max(microPercent, 0), 100);
+        microBar.style.width = `${safeMicroPercent}%`;
+        if (microPercentLabel) microPercentLabel.innerText = formatPercent(microPercent);
+        if (microPlane) {
+            microPlane.style.left = `${safeMicroPercent}%`;
+            microPlane.innerText = getProgressIcon(microPercent);
+        }
+    }
 
     if (plane) {
-        plane.style.left = percent + "%";
+        plane.style.left = `${calorieBarPercent}%`;
         plane.innerText = activeTier.icon;
 
         // animation
@@ -117,9 +263,10 @@ function updateProgressUI(progress) {
         }, 800);
     }
 
+    const recommendedKcal = dri && dri.TDEE ? Math.round(dri.TDEE) : activeTier.goal;
     if (getElement('planeRank')) getElement('planeRank').innerText = activeTier.name;
-    if (getElement('currentTotal')) getElement('currentTotal').innerText = calories;
-    if (getElement('goalNum')) getElement('goalNum').innerText = activeTier.goal;
+    if (getElement('currentTotal')) getElement('currentTotal').innerText = Math.round(calories);
+    if (getElement('goalNum')) getElement('goalNum').innerText = recommendedKcal;
 }
 
 // ==========================
@@ -129,17 +276,22 @@ async function updateDailyQuote() {
     const el = document.getElementById('motivational');
     if (!el) return;
 
-    el.innerText = "Loading...";
-
     try {
-        const res = await fetch('https://api.allorigins.win/get?url=' +
-            encodeURIComponent('https://zenquotes.io/api/random'));
-        const data = await res.json();
-        const quote = JSON.parse(data.contents)[0];
+        const res = await fetch('/api/daily-quote');
+        if (!res.ok) {
+            throw new Error(`Quote API failed: ${res.status}`);
+        }
 
-        el.innerText = `"${quote.q}" — ${quote.a}`;
+        const data = await res.json();
+        const author = data.author ? ` — ${data.author}` : '';
+        if (data?.quote) {
+            el.innerText = `"${data.quote}"${author}`;
+            return;
+        }
+
+        throw new Error('Invalid quote payload');
     } catch {
-        el.innerText = `"Small steps lead to big changes."`;
+        el.innerText = 'Loading....';
     }
 }
 
@@ -152,13 +304,13 @@ export async function renderActivityChart() {
 
     try {
         const userId = State.getUserId();
-        const history = await API.getFoodHistory(userId);
 
         const days = 7;
         const labels = [];
-        const caloriesData = [];
-        const macrosData = [];
-        const microsData = [];
+        const caloriesPercentData = [];
+        const macrosPercentData = [];
+        const microsPercentData = [];
+        const dateStrings = [];
 
         for (let i = days - 1; i >= 0; i--) {
             const d = new Date();
@@ -166,21 +318,27 @@ export async function renderActivityChart() {
 
             const label = formatDate(d);
             labels.push(label);
-
-            const dateStr = d.toDateString();
-            const dayLogs = history.filter(item => item.date === dateStr);
-
-            const total = dayLogs.reduce((sum, item) => sum + item.kcal, 0);
-            caloriesData.push(total);
+            dateStrings.push(d.toDateString());
         }
+
+        const dailyProgressList = await Promise.all(
+            dateStrings.map(dateStr => API.getGenericProgress(userId, dateStr))
+        );
+
+        dailyProgressList.forEach(progress => {
+            const { caloriePercent, macroPercent, microPercent } = parseGenericProgress(progress || {});
+            caloriesPercentData.push(Math.round(caloriePercent * 10) / 10);
+            macrosPercentData.push(Math.round(macroPercent * 10) / 10);
+            microsPercentData.push(Math.round(microPercent * 10) / 10);
+        });
 
         new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Calories (kcal)',
-                    data: caloriesData,
+                    label: 'Calories (%)',
+                    data: caloriesPercentData,
                     backgroundColor: 'rgba(22, 163, 74, 0.6)',
                     borderColor: '#16a34a',
                     borderWidth: 2,
@@ -189,20 +347,20 @@ export async function renderActivityChart() {
                     categoryPercentage: 0.7
                 },
                 {
-                    label: 'Macros',
-                    data: macrosData,
+                    label: 'Macros (%)',
+                    data: macrosPercentData,
                     backgroundColor: '#3498db',
-                    borderColor: '',
+                    borderColor: '#3498db',
                     borderWidth: 2,
                     borderRadius: 4,
                     barPercentage: 0.8,
                     categoryPercentage: 0.7
                 },
                 {
-                    label: 'Micros',
-                    data: microsData,
+                    label: 'Micros (%)',
+                    data: microsPercentData,
                     backgroundColor: '#f1c40f',
-                    borderColor: '',
+                    borderColor: '#f1c40f',
                     borderWidth: 2,
                     borderRadius: 4,
                     barPercentage: 0.8,
@@ -211,10 +369,14 @@ export async function renderActivityChart() {
             },
             options: {
                 responsive: true,
-			    maintainAspectRatio: false,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: (value) => `${value}%`
+                        },
                         grid: {color: 'rgba(0,0,0,0.05)'}
                     },
                     x: {

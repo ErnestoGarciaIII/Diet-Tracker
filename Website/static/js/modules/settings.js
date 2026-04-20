@@ -1,4 +1,4 @@
-import { getUserInfo, updateUser, uploadAvatar, setRestrictions } from '../api.js';
+﻿import { getUserInfo, updateUser, uploadAvatar, setRestrictions } from '../api.js';
 import { getUserId, getElement, showError, showSuccess, showMessage } from '../utils.js';
 
 let currentUser = null;
@@ -6,6 +6,8 @@ let selected = [];
 export function initSettings() {
     loadUser();
     setupAvatarControls();
+    setupMoreInfoCollapse();
+    window.toggleSexDisclaimer = toggleSexDisclaimer;
 
     document.querySelectorAll('.tag').forEach(tag => {
         tag.addEventListener('click', () => toggleTag(tag));
@@ -13,6 +15,40 @@ export function initSettings() {
 
     const submitBtn = getElement('submitBtn');
     if (submitBtn) submitBtn.addEventListener('click', saveRestrictions);
+}
+
+function toggleSexDisclaimer(event) {
+    event.preventDefault();
+    const disclaimer = document.getElementById('sexDisclaimer');
+    if (!disclaimer) return;
+
+    if (disclaimer.style.display === 'none') {
+        disclaimer.style.display = 'block';
+    } else {
+        disclaimer.style.display = 'none';
+    }
+}
+
+function setupMoreInfoCollapse() {
+    const toggleBtn = getElement('moreInfoToggle');
+    const infoBody = getElement('moreInfoBody');
+    if (!toggleBtn || !infoBody) return;
+
+    toggleBtn.addEventListener('click', () => {
+        const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+        const nextState = !isExpanded;
+
+        toggleBtn.setAttribute('aria-expanded', String(nextState));
+        toggleBtn.textContent = nextState ? 'Hide' : 'Show';
+
+        const icon = document.createElement('span');
+        icon.className = 'infoToggleIcon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = '▾';
+        toggleBtn.appendChild(icon);
+
+        infoBody.classList.toggle('is-collapsed', !nextState);
+    });
 }
       //grabs goal value
 function goalIdToLabel(goalId) {

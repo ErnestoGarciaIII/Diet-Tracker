@@ -28,6 +28,13 @@ async function request(url, options = {}) {
 }
 
 // ==========================
+// QUOTES
+// ==========================
+export async function quotes() {
+    return request('/api/daily-quote');
+}
+
+// ==========================
 // AUTH
 // ==========================
 export async function login(email, password) {
@@ -35,6 +42,10 @@ export async function login(email, password) {
         method: 'POST',
         body: JSON.stringify({ email, password })
     });
+}
+
+export async function logout() {
+    return request('/api/logout', { method: 'POST' });
 }
 
 export async function register(name, email, password) {
@@ -179,8 +190,19 @@ export async function getModifiers(fdcId) {
 // ==========================
 // PROGRESS
 // ==========================
-export async function getProgress(userId) {
-    return request(`/api/progress/${userId}`);
+export async function getConsumed(userId, date = null) {
+    const dateQuery = date ? `?date=${encodeURIComponent(date)}` : '';
+    return request(`/api/consumed/${userId}${dateQuery}`);
+}
+
+export async function getNutrientProgress(userId, date = null) {
+    const dateQuery = date ? `?date=${encodeURIComponent(date)}` : '';
+    return request(`/api/nutrient-progress/${userId}${dateQuery}`);
+}
+
+export async function getGenericProgress(userId, date = null) {
+    const dateQuery = date ? `?date=${encodeURIComponent(date)}` : '';
+    return request(`/api/generic-progress/${userId}${dateQuery}`);
 }
 
 // ==========================
@@ -216,4 +238,15 @@ export async function clearFoodHistory(userId) {
     return request(`/api/food-history/clear/${userId}`, {
         method: 'DELETE'
     });
+}
+
+export async function numberOfDaysFoodLogged(userId) {
+    return request(`/api/get-num-of-log-dates?user_id=${userId}`);
+}
+
+// ==========================
+// RECOMMENDATIONS
+// ==========================
+export async function getRecommendations(userId) {
+    return request(`/api/recommendations?user_id=${userId}`);
 }

@@ -1,5 +1,6 @@
 import { clearUser } from '../utils.js';
 import { resetState } from '../state.js';
+import { logout } from '../api.js';
 
 export function initLogout() {
     const countdownEl = document.getElementById('logoutCountdown');
@@ -14,9 +15,13 @@ export function initLogout() {
 
         if (secondsRemaining <= 0) {
             clearInterval(intervalId);
-            clearUser();
-            resetState();
-            window.location.href = 'home.html';
+            // Clear server-side session
+            logout()
+                .finally(() => {
+                    clearUser();
+                    resetState();
+                    window.location.href = 'home.html';
+                });
         }
     }, 1000);
 }

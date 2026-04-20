@@ -61,58 +61,60 @@
                     <!-- plane progress bar-->
                     <div class="statCard">
                         <span>Rank: <span id="planeRank">Cessna</span></span>
-                        <span>Goal: <span id="currentTotal">0</span> / <span id="goalNum">500</span> kcal</span>
+                        <span>Goal: <span id="currentTotal"></span> / <span id="goalNum"></span> kcal</span>
                     </div>
                     <!-- calories progress bar-->
+                    <h4>Calories</h4>
                     <div class="progressWrapper">
                         <div id="kcalProgressBar"></div>
+                        <span id="kcalBarPercent" class="progressInlinePercent">0%</span>
                         <div id="planeIcon">🛩️</div>
                     </div>
                     <!-- macros progress bar-->
+                    <h4>Macros</h4>
                     <div class ="progressWrapper">
                         <div id="gProgressBar"> </div>
+                        <span id="gBarPercent" class="progressInlinePercent">0%</span>
                         <div id="planeIcon1">🛩️</div>
                     </div>
                     <!-- micros progress bar-->
+                    <h4>Micros</h4>
                     <div class ="progressWrapper">
                         <div id="mgProgressBar"> </div>
+                        <span id="mgBarPercent" class="progressInlinePercent">0%</span>
                         <div id="planeIcon2">🛩️</div>
                     </div>
                     <!-- motivational quotes -->
-                    <div id="motivational"class="motivationalQuote">
-                        "Loading today's inspiration..."
+                    <div id="motivational" class="motivationalQuote">
                     </div>
                     <!-- link to food log -->
                     <a href="{{ url_for('html_urls', filename='foodLog.html') }}" class="navLink">
                         <i class="fa-solid fa-arrow-left fa-xlg" style="color: #3498db;"></i>
                         Go to Food Logging
                     </a>
+                    <details id="dashboardMoreDetailsDropdown" class="moreNutrientsDropdown">
+                        <summary>More Details</summary>
+                        <div id="dashboardMoreDetailsGraph" class="moreNutrientsGraph"></div>
+                    </details>
                 </div>
-            </div> 
-        </div>
-        <!-- activity chart-->
-        <div class="chartContainer">
-            <div class="card chartCard">
-                <h3>7-Day Activity Level</h3>
-                <div class="canvasWrapper">
-                    <canvas id="activityChart"></canvas>
+            </div>
+            <div class="rightCol">
+                <div class="chartContainer">
+                    <div class="card chartCard">
+                        <h3>7-Day Activity Level</h3>
+                        <div class="canvasWrapper">
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <section class="mealPlan">
-            <h2>Today's Recommendations</h2>
-            <div class="mealGrid" id="mealGrid">
-                <div class="loading">Generating Al's recommended food items...</div>
-            </div>
-        </section>
-
     </main>
 	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 <footer>
     <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
-    <p class="homeFooterTxt">Privacy Policy | Terms of Service</p>
-    <p class="homeFooterTxt">Contact Us: <a href="mailto:berkscott998@outlook.com">Email</a></p>
+    <p class="homeFooterTxt"><a href="{{ url_for('html_urls', filename='privacy.html') }}">Privacy Policy</a> | <a href="{{ url_for('html_urls', filename='terms.html') }}">Terms of Service</a></p>
+    <p class="homeFooterTxt"><a href="mailto:berkscott998@outlook.com">Contact Us</a></p>
 </footer>
 </html>

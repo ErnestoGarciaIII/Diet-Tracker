@@ -111,9 +111,8 @@
         <section class="card trackerCard foodRecoCard">
             <h2> Al's Recommendations</h2>
             <p class="formSubtitle">Based on your log, here are some food suggestions.</p>
-            <div id="reccoList"></div>
-                <div class="resultContent" id="recContent">
-                    <h3>Recommendation Results:</h3>
+            <div class="resultContent" id="recContent">
+                <h3>Recommendation Results:</h3>
                 <div id="recommendList"></div>
             </div>
         </section>
@@ -123,20 +122,30 @@
             <p class="formSubtitle">A visual breakdown of your logged nutrients.</p>
             <div id="nutrientBreakdown"></div>
                     <!-- calories progress bar-->
+                    <h4>Calories</h4>
                     <div class="progressWrapper">
-                        <div id="kcalProgressBar"></div>
+                        <div id="kcalProgressPreview"></div>
+                        <span id="kcalPreviewPercent" class="progressInlinePercent">0%</span>
                         <div id="planeIcon">🛩️</div>
                     </div>
                     <!-- macros progress bar-->
+                    <h4>Macros</h4>
                     <div class ="progressWrapper">
-                        <div id="gProgressBar"> </div>
+                        <div id="gProgressPreview"> </div>
+                        <span id="gPreviewPercent" class="progressInlinePercent">0%</span>
                         <div id="planeIcon1">🛩️</div>
                     </div>
                     <!-- micros progress bar-->
+                    <h4>Micros</h4>
                     <div class ="progressWrapper">
-                        <div id="mgProgressBar"> </div>
+                        <div id="mgProgressPreview"> </div>
+                        <span id="mgPreviewPercent" class="progressInlinePercent">0%</span>
                         <div id="planeIcon2">🛩️</div>
                     </div>
+                    <details id="moreNutrientsDropdown" class="moreNutrientsDropdown">
+                        <summary>More Nutrients</summary>
+                        <div id="moreNutrientsGraph" class="moreNutrientsGraph"></div>
+                    </details>
         </section>
     </main>
 
@@ -144,7 +153,7 @@
 </body>
 <footer>
     <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>
-    <p class="homeFooterTxt">Privacy Policy | Terms of Service</p>
-    <p class="homeFooterTxt">Contact Us: <a href="mailto:berkscott998@outlook.com">Email</a></p>
+    <p class="homeFooterTxt"><a href="{{ url_for('html_urls', filename='privacy.html') }}">Privacy Policy</a> | <a href="{{ url_for('html_urls', filename='terms.html') }}">Terms of Service</a></p>
+    <p class="homeFooterTxt"><a href="mailto:berkscott998@outlook.com">Contact Us</a></p>
 </footer>
 </html>
