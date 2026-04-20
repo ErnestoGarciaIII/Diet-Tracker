@@ -465,7 +465,51 @@ function displaySearchResults(results) {
 }
 
 //display recommendations
+
 function displayRecommendations(recResults) {
+    const recommendList = getElement('recommendList');
+    if (!recommendList) return;
+    recommendList.innerHTML = '';
+
+    if (!Array.isArray(recResults) || recResults.length === 0) {
+        recommendList.innerHTML = '<p>No recommendations available for today.</p>';
+        return;
+    }
+
+    // Group by round
+    const rounds = {};
+    recResults.forEach(result => {
+        const round = result.round || 1;
+        if (!rounds[round]) rounds[round] = [];
+        rounds[round].push(result);
+    });
+
+    Object.entries(rounds).forEach(([roundNum, options]) => {
+        // Round header
+        const header = document.createElement('p');
+        header.className = 'recRoundHeader';
+        header.textContent = `Option ${roundNum}`;
+        recommendList.appendChild(header);
+
+        // Options within this round
+        options.forEach((result, idx) => {
+            const recItem = document.createElement('div');
+            recItem.className = `resultItem ${idx === 0 ? 'recTop' : 'recAlternate'}`;
+            recItem.dataset.fdcId = String(result.fdc_id);
+            recItem.innerHTML = `
+                <div class="resultTopRow">
+                    <div class="resultName">${result.name}</div>
+                    ${result.suggested_serving_oz ? `<span class="servingSize"><strong>Suggested:</strong> ${result.suggested_serving_oz} oz</span>` : ''}
+                </div>
+                <div class="resultCategory">${idx === 0 ? '⭐ Best pick' : `Alternative ${idx}`}</div>
+            `;
+            recItem.addEventListener('click', () => selectFood(result.name, result.fdc_id));
+            recommendList.appendChild(recItem);
+        });
+    });
+}
+
+function displayRecommendations2(recResults) {
     const recommendList = getElement('recommendList');
     if (!recommendList) return;
 
