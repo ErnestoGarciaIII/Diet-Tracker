@@ -44,6 +44,10 @@ export async function login(email, password) {
     });
 }
 
+export async function logout() {
+    return request('/api/logout', { method: 'POST' });
+}
+
 export async function register(name, email, password) {
     return request('/api/register', {
         method: 'POST',

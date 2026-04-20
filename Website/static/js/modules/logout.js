@@ -1,5 +1,6 @@
 import { clearUser } from '../utils.js';
 import { resetState } from '../state.js';
+import { logout } from '../api.js';
 
 export function initLogout() {
     const countdownEl = document.getElementById('logoutCountdown');
@@ -15,7 +16,7 @@ export function initLogout() {
         if (secondsRemaining <= 0) {
             clearInterval(intervalId);
             // Clear server-side session
-            fetch('/api/logout', { method: 'POST' })
+            logout()
                 .finally(() => {
                     clearUser();
                     resetState();

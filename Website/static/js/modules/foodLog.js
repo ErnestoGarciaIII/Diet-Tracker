@@ -1,6 +1,6 @@
-import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getConsumed, getGenericProgress, getNutrientProgress } from '../api.js';
-import { getUserId, getElement, getInputValue, showError, showSuccess, getActiveFilters, addFilterToActiveFilters, removeActiveFilter } from '../utils.js';
-import { getUser, updateProgress } from '../state.js';
+import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getConsumed, getGenericProgress,getNutrientProgress, numberOfDaysFoodLogged } from '../api.js';
+import { getUserId, getElement, getInputValue, showError, showSuccess, getActiveFilters, addFilterToActiveFilters, removeActiveFilter, clearActiveFilters } from '../utils.js';
+import { getUser, updateProgress, getBadge, setBadge } from '../state.js';
 
 const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
 const MEAL_TAGS = ['Snack', 'Breakfast', 'Lunch', 'Dinner']
@@ -74,17 +74,30 @@ async function loadProfilePicture() {
 async function loadUserRestrictions() {
     try {
         const currentUser = await getUserInfo(getUserId());
-        if (currentUser.restrictions.includes('None')) { return; }
-        const activeFilters = getActiveFilters();
+        if (currentUser.restrictions.includes('None')) {
+            clearActiveFilters();
+            return;
+        }
+
+        const activeFilters = getActiveFilters() || [];
+
         if (activeFilters.length === 0) {
-            currentUser.restrictions.forEach(res => {
-                setUserRestrictions(res, true);
-            });
-            console.log("[INFO] User predefined filters successfully applied for food search.");
+            for (const res of currentUser.restrictions) {
+                await setUserRestrictions(res, true);
+            }
+            console.log("[INFO] User predefined filters applied.");
         }
         else {
-            activeFilters.forEach(res => setUserRestrictions(res, false));
-            console.log("[INFO] User predefined filters are sustained for food search.");
+            for (const res of currentUser.restrictions) {
+                if (!activeFilters.includes(res)) {
+                    await setUserRestrictions(res, true); // apply missing ones
+                }
+            }
+
+            activeFilters.forEach(res => {
+                setUserRestrictions(res, false);
+            });
+            console.log("[INFO] User predefined filters synced.");
         }
     } catch (err) {
         console.warn("Failed to load user filters: ", err);
@@ -167,6 +180,9 @@ async function handleLogCart() {
             displayCart();
             await loadProgressPreview();
             showSuccess('Foods logged successfully.');
+
+            checkUserBadgeAwards(userId);
+
             // Display recommendations if present
             if (response && response.recommendations) {
                 displayRecommendations(response.recommendations);
@@ -176,6 +192,28 @@ async function handleLogCart() {
             showError(err.message);
         }
 }
+
+function checkUserBadgeAwards(userId) {
+    numberOfDaysFoodLogged(getUserId()).then(response => {
+        const days = response.days;
+        console.log(days);
+        const badge = getBadge();
+
+        if (days == 1 && badge != 'FirstLog') {
+            //first log
+            setBadge("FirstLog");
+        }
+        else if (days == 3 && badge != 'ThreeDayLog') {
+            //3 days
+            setBadge("ThreeDayLog");
+        }
+        else if (days == 5 && badge != 'FiveDayLog') {
+            //5 days
+            setBadge("FiveDayLog");
+        }
+    });
+}
+
 // all this for progress bars
 function toNumber(value) {
     const n = Number(value);
@@ -440,7 +478,51 @@ function displaySearchResults(results) {
 }
 
 //display recommendations
+
 function displayRecommendations(recResults) {
+    const recommendList = getElement('recommendList');
+    if (!recommendList) return;
+    recommendList.innerHTML = '';
+
+    if (!Array.isArray(recResults) || recResults.length === 0) {
+        recommendList.innerHTML = '<p>No recommendations available for today.</p>';
+        return;
+    }
+
+    // Group by round
+    const rounds = {};
+    recResults.forEach(result => {
+        const round = result.round || 1;
+        if (!rounds[round]) rounds[round] = [];
+        rounds[round].push(result);
+    });
+
+    Object.entries(rounds).forEach(([roundNum, options]) => {
+        // Round header
+        const header = document.createElement('p');
+        header.className = 'recRoundHeader';
+        header.textContent = `Option ${roundNum}`;
+        recommendList.appendChild(header);
+
+        // Options within this round
+        options.forEach((result, idx) => {
+            const recItem = document.createElement('div');
+            recItem.className = `resultItem ${idx === 0 ? 'recTop' : 'recAlternate'}`;
+            recItem.dataset.fdcId = String(result.fdc_id);
+            recItem.innerHTML = `
+                <div class="resultTopRow">
+                    <div class="resultName">${result.name}</div>
+                    ${result.suggested_serving_oz ? `<span class="servingSize"><strong>Suggested:</strong> ${result.suggested_serving_oz} oz</span>` : ''}
+                </div>
+                <div class="resultCategory">${idx === 0 ? '⭐ Best pick' : `Alternative ${idx}`}</div>
+            `;
+            recItem.addEventListener('click', () => selectFood(result.name, result.fdc_id));
+            recommendList.appendChild(recItem);
+        });
+    });
+}
+
+function displayRecommendations2(recResults) {
     const recommendList = getElement('recommendList');
     if (!recommendList) return;
 

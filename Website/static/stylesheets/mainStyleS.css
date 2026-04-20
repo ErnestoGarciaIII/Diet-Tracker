@@ -2128,3 +2128,58 @@ li {
 .removeBtn i {
     font-size: 0.8rem;
 }
+
+/* ------------------------------------ Recommendation Rounds ------------------------------------ */
+.recRoundHeader {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 10px 16px 4px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.recRoundHeader:first-child {
+    border-top: none;
+}
+
+/* Top pick — full opacity, green left accent like selected items */
+.resultItem.recTop {
+    border-left: 3px solid #16a34a;
+    padding-left: 13px;
+    background-color: #f0fdf4;
+}
+
+.resultItem.recTop .resultName {
+    color: #166534;
+}
+
+/* Alternatives — slightly muted, indented to show hierarchy */
+.resultItem.recAlternate {
+    padding-left: 28px;
+    opacity: 0.75;
+    background-color: #ffffff;
+    border-left: 2px solid #e5e7eb;
+}
+
+.resultItem.recAlternate:hover {
+    opacity: 1;
+    background-color: #f8f9fa;
+}
+
+.resultItem.recAlternate .resultName {
+    font-weight: 500;
+    font-size: 0.92rem;
+}
+
+/* Serving size badge on recommendations */
+.servingSize {
+    font-size: 0.75rem;
+    color: #6b7280;
+    white-space: nowrap;
+    background: #f3f4f6;
+    border-radius: 999px;
+    padding: 2px 8px;
+}
