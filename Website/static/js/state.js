@@ -1,3 +1,4 @@
+import { showMessage } from './utils.js';
 // ==========================
 // PRIVATE STATE
 // ==========================
@@ -36,6 +37,38 @@ export function getUser() {
 
 export function updateUser(updates) {
     user = { ...user, ...updates };
+}
+
+export function setBadge(badge = null) {
+    switch (badge) {
+        case "FirstLog":
+            localStorage.setItem('FirstLog', 'true');
+            showMessage("Congratulations!! You received your first award: 'First Logged Item'");
+            break;
+
+        case "ThreeDayLog":
+            localStorage.setItem('ThreeDayLog', 'true');
+            showMessage("Congratulations!! You received your second award: 'Three days logged'");
+            break;
+
+        case "FiveDayLog":
+            localStorage.setItem('FiveDayLog', 'true');
+            showMessage("Congratulations!! You received your third award: 'Five days logged'");
+            break;
+    }
+}
+
+export function getBadge() {
+    if (localStorage.getItem('FiveDayLog') === 'true') {
+        return 'FiveDayLog';
+    }
+    if (localStorage.getItem('ThreeDayLog') === 'true') {
+        return 'ThreeDayLog';
+    }
+    if (localStorage.getItem('FirstLog') === 'true') {
+        return 'FirstLog';
+    }
+    return null;
 }
 
 // ==========================
