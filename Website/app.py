@@ -80,8 +80,13 @@ def consumed_progress(user_id, conn, target_date=None):
     history_rows = cursor.fetchall()
     if not history_rows:
         return {}
+    
+    total_grams_map = {}
 
-    total_grams_map = {row[0]: (row[1] * row[2]) for row in history_rows}
+    for row in history_rows:
+        fdc_id, portion, gram_weight = row[0], row[1], row[2]
+        total_grams_map[fdc_id] = total_grams_map.get(fdc_id, 0.0) + (portion * gram_weight)
+
     fdc_ids = list(total_grams_map.keys())
     portions = {row[0]: row[1] for row in history_rows}
 
@@ -192,9 +197,9 @@ def get_nutrient_progress(user_id, conn, target_date=None):
     print(f"For target date: {'Today' if target_date is None else target_date}")
     for index in standardized_consumed:
         user_nutrients[index] = user_object.getNutrientInfo(index)
-        print(f"{index}: {user_nutrients[index]}") # Daily Recommended
-        print(f"{index}: {standardized_consumed[index]}") # Actual consumed
-        print(f"{index}: {round((aggregate_progress[index]*100), 1)}% Daily Value") # Percent value
+        #print(f"{index}: {user_nutrients[index]}") # Daily Recommended
+        #print(f"{index}: {standardized_consumed[index]}") # Actual consumed
+        #print(f"{index}: {round((aggregate_progress[index]*100), 1)}% Daily Value") # Percent value
 
     return standardized_consumed, aggregate_progress, user_nutrients
 
@@ -283,7 +288,7 @@ def recommendation_algorithm(user_id):
             print(f"{item['iteration']}. {item['name']} Suggested Serving: {item['suggested_serving_oz']} oz (Match Score: {item['score']})")
             print("--------------------------------\n")
         
-        print(standardized_consumed)
+        #print(standardized_consumed)
         
         return recommendations
 

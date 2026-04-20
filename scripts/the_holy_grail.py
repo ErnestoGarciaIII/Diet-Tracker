@@ -44,8 +44,8 @@ NATURAL_CONCENTRATION_CAPS = {
 
 NUTRIENT_WEIGHTS = {
     "Vitamin D":        2.0,   
-    "Vitamin A":        2.0,  
-    "Vitamin K":        1.5,   
+    "Vitamin A":        3.5,  
+    "Vitamin K":        3.0,   
     "Vitamin E":        1.5,   
     "Folate":           1.5,   
     "Calcium":          1.3,   
@@ -150,7 +150,8 @@ def rate_food(food_nutrients, consumed_nutrients, dri, upper_limits):
                 if ul_value is not None:
                     projected = consumed + food_amount
                     if projected > ul_value:
-                        over = (projected - ul_value) / ul_value
+                        over = (food_amount - max(0, ul_value - consumed)) / ul_value
+                        over = max(0, over)
                         macro_penalty += severity * (over ** 2)
         else:
             fill = min(food_amount, remaining)
@@ -164,6 +165,8 @@ def rate_food(food_nutrients, consumed_nutrients, dri, upper_limits):
                 if ul_value is not None:
                     projected = consumed + food_amount
                     if projected > ul_value:
+                        over = (food_amount - max(0, ul_value - consumed)) / ul_value
+                        over = max(0, over)
                         over = (projected - ul_value) / ul_value
                         macro_penalty += severity * (over ** 2)
 
@@ -171,89 +174,30 @@ def rate_food(food_nutrients, consumed_nutrients, dri, upper_limits):
     
     return efficiency - macro_penalty
 
-def rate_food2(food_nutrients, consumed_nutrients, dri, upper_limits):
-    micro_score = 0.0
-    macro_penalty = 0.0
-
-    MACROS = {"Protein", "Carbs", "Fats", "Fiber", "Energy"}
-
-    for nutrient, food_amount in food_nutrients.items():
-        if nutrient not in dri:
-            continue
-
-        dri_val = dri[nutrient]
-        consumed = consumed_nutrients.get(nutrient, 0)
-        remaining = max(0, dri_val - consumed)
-        deficit = remaining / dri_val  # 0.0 = already met, 1.0 = nothing consumed
-
-        if nutrient in MACROS:
-            if nutrient in upper_limits:
-                ul_value, severity = upper_limits[nutrient]
-                if ul_value is not None:
-                    projected = consumed + food_amount
-                    if projected > ul_value:
-                        over = (projected - ul_value) / ul_value
-                        macro_penalty += severity * (over ** 2)
-        else:
-            fill = min(food_amount, remaining)
-            fill_fraction = fill / (remaining + 0.01)
-            benefit = deficit * fill_fraction 
-            weight = NUTRIENT_WEIGHTS.get(nutrient, 1.0)
-            micro_score += benefit * weight
-
-            if nutrient in upper_limits:
-                ul_value, severity = upper_limits[nutrient]
-                if ul_value is not None:
-                    projected = consumed + food_amount
-                    if projected > ul_value:
-                        over = (projected - ul_value) / ul_value
-                        macro_penalty += severity * (over ** 2)
-
-    return micro_score - macro_penalty
-
-
 
 def recommend_foods(user, conn, consumed, iterations=5, restriction_ids=None):
     pool = load_candidate_pool(conn, restriction_ids=restriction_ids)
-
     dri = {**user.macros, **user.micros}
-
     recommendations = []
-    
     already_recommended = set()
-
-    seen_categories = {}       
-    recommendation_counts = {} 
-
-    MAX_DAILY_SERVINGS = {
-        14: 2, 16: 2, 9: 3, 11: 4, 1: 2, 15: 2,
-    }
-    DEFAULT_MAX_SERVINGS = 2
 
     for i in range(iterations):
         best_fdc_id = None
         best_score = -float('inf')
         best_name = None
-        
+
         for fdc_id, food in pool.items():
             if fdc_id in already_recommended:
                 continue
 
-            cat_id = food.get('category_id')
-            cat_max = MAX_DAILY_SERVINGS.get(cat_id, DEFAULT_MAX_SERVINGS)
-            if seen_categories.get(cat_id, 0) >= cat_max:
-                continue
-
-
             serving_grams = CATEGORY_SERVING_GRAMS.get(
-            	food.get('category_id'), DEFAULT_SERVING_GRAMS
+                food.get('category_id'), DEFAULT_SERVING_GRAMS
             )
-
             macro_density = max(
                 (
                     (food['nutrients'].get(n, 0) * 100) / dri.get(n, 1)
                     for n in CALORIC_DENSITY_NUTRIENTS
-                        if n in food['nutrients']  and dri.get(n, 0) > 0
+                    if n in food['nutrients'] and dri.get(n, 0) > 0
                 ),
                 default=0.0
             )
@@ -269,9 +213,6 @@ def recommend_foods(user, conn, consumed, iterations=5, restriction_ids=None):
                 for nutrient, amount in food['nutrients'].items()
             }
             score = rate_food(scaled_nutrients, consumed, dri, user.upper_limits)
-            
-            category_count = seen_categories.get(cat_id, 0)
-            score -= 0.1 * category_count
 
             if score > best_score:
                 best_score = score
@@ -280,16 +221,12 @@ def recommend_foods(user, conn, consumed, iterations=5, restriction_ids=None):
 
         if best_fdc_id is None:
             break
-        
+
         already_recommended.add(best_fdc_id)
-
-        winner_cat = pool[best_fdc_id].get('category_id')
-        seen_categories[winner_cat] = seen_categories.get(winner_cat, 0) + 1
-
         winner = pool[best_fdc_id]
         winner_serving = CATEGORY_SERVING_GRAMS.get(
             winner.get('category_id'), DEFAULT_SERVING_GRAMS
-            )
+        )
         for nutrient, amount in winner['nutrients'].items():
             if nutrient in consumed:
                 consumed[nutrient] += amount * winner_serving

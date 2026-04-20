@@ -68,34 +68,34 @@ class ppuser():
                 "Vitamin K":0
                 }
         self.upper_limits = {
-            "Energy":           (None,  0.0),
-            "Protein":          (None,  0.0),
-            "Carbs":            (None,  0.0),
-            "Fats":             (None,  5.0),
-            "Fiber":            (None,  0.0),
-            "Calcium":          (2500,  2.0),
-            "Iron":             (45,    3.0),
-            "Magnesium":        (350,   1.5),
-            "Phosphorus":       (4000,  1.0),
-            "Potassium":        (None,  0.0),
-            "Sodium":           (2300,  2.0),
-            "Zinc":             (40,    2.5),
-            "Copper":           (10,    3.0),
-            "Manganese":        (11,    2.0),
-            "Selenium":         (400,   3.0),
-            "Vitamin A":        (3000,  5.0),
-            "Vitamin D":        (100,   1.5),
-            "Vitamin E":        (1000,  1.5),
-            "Vitamin K":        (None,  0.0),
-            "Vitamin C":        (2000,  1.0),
-            "Thiamin":          (None,  0.0),
-            "Riboflavin":       (None,  0.0),
-            "Niacin":           (35,    3.0),
-            "Pantothenic acid": (None,  0.0),
-            "Vitamin B-6":      (100,   2.0),
-            "Folate":           (1000,  2.0),
-            "Vitamin B-12":     (None,  0.0),
-            "Choline":          (3500,  1.5),
+            "Energy":           (None,   0.0),
+            "Protein":          (None,   0.0),
+            "Carbs":            (None,   0.0),
+            "Fats":             (None,   0.0),
+            "Fiber":            (None,   0.0),
+            "Calcium":          (2500,   0.3),  # lower severity — food calcium rarely toxic
+            "Iron":             (45,     0.5),  # keep some — iron overload is real
+            "Magnesium":        (350,    0.2),  # lower — dietary Mg rarely hits UL dangerously
+            "Phosphorus":       (4000,   0.1),
+            "Potassium":        (None,   0.0),
+            "Sodium":           (2300,   1.5),  # keep high — sodium overconsumption matters
+            "Zinc":             (40,     0.5),
+            "Copper":           (10,     0.5),
+            "Manganese":        (11,     0.3),  # lower — dietary manganese toxicity rare
+            "Selenium":         (400,    2.0),  # keep high — selenium toxicity is real
+            "Vitamin A":        (3000,   2.0),  # keep — preformed Vitamin A can be toxic
+            "Vitamin D":        (100,    1.0),
+            "Vitamin E":        (1000,   0.5),
+            "Vitamin K":        (None,   0.0),
+            "Vitamin C":        (2000,   0.3),  # lower — dietary C overconsumption minor
+            "Thiamin":          (None,   0.0),
+            "Riboflavin":       (None,   0.0),
+            "Niacin":           (35,     1.5),  # keep — niacin flush/toxicity real
+            "Pantothenic acid": (None,   0.0),
+            "Vitamin B-6":      (100,    1.0),
+            "Folate":           (1000,   0.5),
+            "Vitamin B-12":     (None,   0.0),
+            "Choline":          (3500,   0.3),
         }
         self.BMR = 0
         self.TDEE = 0
