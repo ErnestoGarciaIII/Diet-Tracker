@@ -1,5 +1,5 @@
 import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getConsumed, getGenericProgress,getNutrientProgress, numberOfDaysFoodLogged } from '../api.js';
-import { getUserId, getElement, getInputValue, showError, showSuccess, getActiveFilters, addFilterToActiveFilters, removeActiveFilter } from '../utils.js';
+import { getUserId, getElement, getInputValue, showError, showSuccess, getActiveFilters, addFilterToActiveFilters, removeActiveFilter, clearActiveFilters } from '../utils.js';
 import { getUser, updateProgress, getBadge, setBadge } from '../state.js';
 
 const SERVING_UNITS = ['Serving', 'cup', 'oz', 'tbsp', 'tsp', 'g', 'ml'];
@@ -74,17 +74,30 @@ async function loadProfilePicture() {
 async function loadUserRestrictions() {
     try {
         const currentUser = await getUserInfo(getUserId());
-        if (currentUser.restrictions.includes('None')) { return; }
-        const activeFilters = getActiveFilters();
+        if (currentUser.restrictions.includes('None')) {
+            clearActiveFilters();
+            return;
+        }
+
+        const activeFilters = getActiveFilters() || [];
+
         if (activeFilters.length === 0) {
-            currentUser.restrictions.forEach(res => {
-                setUserRestrictions(res, true);
-            });
-            console.log("[INFO] User predefined filters successfully applied for food search.");
+            for (const res of currentUser.restrictions) {
+                await setUserRestrictions(res, true);
+            }
+            console.log("[INFO] User predefined filters applied.");
         }
         else {
-            activeFilters.forEach(res => setUserRestrictions(res, false));
-            console.log("[INFO] User predefined filters are sustained for food search.");
+            for (const res of currentUser.restrictions) {
+                if (!activeFilters.includes(res)) {
+                    await setUserRestrictions(res, true); // apply missing ones
+                }
+            }
+
+            activeFilters.forEach(res => {
+                setUserRestrictions(res, false);
+            });
+            console.log("[INFO] User predefined filters synced.");
         }
     } catch (err) {
         console.warn("Failed to load user filters: ", err);

@@ -81,10 +81,13 @@ def consumed_progress(user_id, conn, target_date=None):
     if not history_rows:
         return {}
 
-    total_grams_map = {row[0]: (row[1] * row[2]) for row in history_rows}
+    total_grams_map = {}
+    for row in history_rows:
+        fdc_id, portion, gram_weight = row[0], row[1], row[2]
+        total_grams_map[fdc_id] = total_grams_map.get(fdc_id, 0.0) + (portion * gram_weight)    
+
     fdc_ids = list(total_grams_map.keys())
     portions = {row[0]: row[1] for row in history_rows}
-
     fdc_placeholders = ",".join(map(str, fdc_ids))
 
     nutrient_query = f"""
@@ -194,7 +197,7 @@ def get_nutrient_progress(user_id, conn, target_date=None):
         user_nutrients[index] = user_object.getNutrientInfo(index)
         print(f"{index}: {user_nutrients[index]}") # Daily Recommended
         print(f"{index}: {standardized_consumed[index]}") # Actual consumed
-        print(f"{index}: {round((aggregate_progress[index]*100), 1)}% Daily Value") # Percent value
+        print(f"{index}: {round((aggregate_progress[index]*100), 1)}% Daily Value") # Percent value'''
 
     return standardized_consumed, aggregate_progress, user_nutrients
 
