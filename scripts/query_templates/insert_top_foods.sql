@@ -12,11 +12,15 @@ AND f.description NOT LIKE '%dried%'
 AND (f.description NOT LIKE '%dry%' OR f.description NOT LIKE '%cheese%')
 AND f.description NOT LIKE '%powder%'
 AND f.description NOT LIKE '%flour%'
+AND f.description NOT LIKE '%sorghum%'
 AND f.description NOT LIKE '%cheese%american%'
+AND f.description NOT LIKE '%Milk%added%'
+AND f.description NOT LIKE '%egg%frozen%paste%'
 AND f.description NOT LIKE '%restaurant%'
 AND f.description NOT LIKE '%cooked%'
 AND f.description NOT LIKE '%fortified%'
 AND f.description NOT LIKE '%dehydrated%'
+AND f.description NOT LIKE '%fortified%'
 AND f.description NOT LIKE '%concentrate%'
 AND fn.amount > 0
 AND fn.nutrient_id IN (1003,1053,1005,1050,1072,2039,1004,1049,1085,1257,
