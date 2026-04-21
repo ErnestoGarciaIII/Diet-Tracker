@@ -110,4 +110,5 @@ export function resetState() {
     ui = {
         loading: false
     };
+    localStorage.clear();
 }
