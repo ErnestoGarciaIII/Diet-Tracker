@@ -181,9 +181,9 @@ class ppuser():
 
     def setDRI(self):
         if self.sex == "MALE":
-            self.BMR = ((10*self.weight) + (6.25 * self.height) - (5 * self.age) + 5)
+            self.BMR = (88.362 + (13.397*self.weight) + (4.799 * self.height/2.54) - (5.677 * self.age))
         else:
-            self.BMR = ((10*self.weight) + (6.25 * self.height) - (5 * self.age) - 161)
+            self.BMR = (447.593 + (9.247*self.weight) + (3.098 * self.height/2.54) - (4.33 * self.age))
 
         self.TDEE = self.BMR*self.activity_factor[self.activity_level - 1]
         self.calcMacros()

@@ -39,6 +39,7 @@ export function initFoodLog() {
                 }
 
                 filterBtn.classList.toggle('active');
+    		loadRecommendations();
             }
         });
     });
