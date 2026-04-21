@@ -43,6 +43,6 @@ AND f.fdc_id IN (
         AND fn2.amount > 0
         GROUP BY f2.description, fn2.nutrient_id
     )
-    WHERE rank <= 150
+    WHERE rank <= 250
 )
 GROUP BY f.description, fn.nutrient_id;
