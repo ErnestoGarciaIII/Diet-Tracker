@@ -1744,9 +1744,13 @@ li {
     margin-top: 10px;
 }
 
-.edControls{
-    display: none !important;
+.edControls {
+    display: none;
     gap: 10px;
+}
+
+.edControls.visible {
+    display: flex;
 }
 
 .settingsFooter{
@@ -1759,10 +1763,14 @@ li {
 .deleteSection{
 	margin-top: 30px;
 }
+
 /* account settings buttons */
 .deleteBtn {
 	margin-left: 245px;
-	
+}
+
+deleteBtn.hidden {
+    display: none;
 }
 
 .cancelBtn{
@@ -1857,6 +1865,70 @@ li {
 .infoLinkDivider {
     color: #9ca3af;
 }
+
+.passwordResetLink {
+    color: #16a34a;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.passwordResetLink:hover {
+    text-decoration: underline;
+}
+
+/*-------account deletion confirmation--------*/
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modalContent {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.modalActions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+    width: auto; 
+    align-self: center; 
+}
+
+.modalBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    min-width: 120px;
+    font-weight: 600;
+}
+
+.modalBtn-secondary {
+    background: #d1d5db;
+    color: #111;
+}
+
+.modalBtn-danger {
+    background: #e11d48;
+    color: white;
+}
+
 /* ------------------------------ privacy & terms links --------------------------------- */
 
 .privacySectionsWrapper {

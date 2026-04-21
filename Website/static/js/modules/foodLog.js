@@ -19,7 +19,7 @@ export function initFoodLog() {
 
     const addFoodBtn = getElement('addFoodBtn');
     if (addFoodBtn) {
-	addFoodBtn.addEventListener('click', foodSearch);
+        addFoodBtn.addEventListener('click', foodSearch);
     }
 
     const filtersContainer = document.querySelector('.filterButtons');

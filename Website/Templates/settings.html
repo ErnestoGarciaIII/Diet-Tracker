@@ -10,7 +10,7 @@
 <body id="settingsPage">
     <!-- Navigation Bar -->
     <nav class="navbar">
-        <img id="profilePreview" class="navAvatar">
+        <img id="profilePreviewNavBar" class="navAvatar">
         <div>
             <a href="{{ url_for('html_urls', filename='dashboard.html') }}">
                 <div class="navIcon">
@@ -53,12 +53,12 @@
         <div class="card settingsCard">
             <h1 class="trackerCard">Account Settings</h1>
             <p class="formSubtitle">Manage your account information.</p>
-            <div> 
+            <div>
                 <h2> Basic info</h2>
                 <div class="profilePicRow">
                     <span class="profileLabel"> Profile Picture</span>
                     <div class="avatarEdit">
-                        <img src="{{ url_for('static', filename='images/defaultProfile.jpg') }}" id="profilePreview" class="mainAvatar">
+                        <img src="{{ url_for('static', filename='images/defaultProfile.jpg') }}" id="profilePreviewSettings" class="mainAvatar">
                         <div class="avatarControls">
                             <span class="upload" id="uploadTrigger">Upload new picture</span>
                             <span class="remove" id="removePic">Remove</span>
@@ -69,52 +69,46 @@
             </div>
             <div class="infoList" id="biometricsList">
                 <!-- Name -->
-                <div class="infoItem" onclick="enterEditMode('userNameDisplay', 'fullName')">
+                <div class="infoItem" data-edit="fullName" data-target="userNameDisplay">
                     <span class="label">Name:</span>
                     <span class="value" id="userNameDisplay"></span>
                     <span class="arrow">></span>
                 </div>
                 <!-- Gender -->
-                <div class="infoItem" onclick="enterEditMode('userGenderDisplay', 'sex')">
+                <div class="infoItem" data-edit="sex" data-target="userGenderDisplay">
                     <span class="label">Sex:</span>
                     <span class="value" id="userGenderDisplay"></span>
                     <span class="arrow">></span>
                 </div>
                 <!-- DOB -->
-                <div class="infoItem" onclick="enterEditMode('userDobDisplay', 'date_of_birth')">
+                <div class="infoItem" data-edit="date_of_birth" data-target="userDobDisplay">
                     <span class="label">Date of Birth:</span>
                     <span class="value" id="userDobDisplay"></span>
                     <span class="arrow">></span>
                 </div>
-                <!-- Age -->
-                <div class="infoItem">
-                    <span class="label">Age:</span>
-                    <span class="value" id="userAgeDisplay"></span>
-                    <span class="arrow">></span>
-                </div>
                 <!-- Weight -->
-                <div class="infoItem" onclick="enterEditMode('userWeightDisplay', 'Weight')">
+                <div class="infoItem" data-edit="Weight" data-target="userWeightDisplay">
                     <span class="label">Weight (Lbs):</span>
                     <span class="value" id="userWeightDisplay"></span>
                     <span class="arrow">></span>
                 </div>
                 <!-- Height -->
-                <div class="infoItem" onclick="enterEditMode('userHeightDisplay', 'Height')">
+                <div class="infoItem" data-edit="Height" data-target="userHeightDisplay">
                     <span class="label">Height (In):</span>
                     <span class="value" id="userHeightDisplay"></span>
                     <span class="arrow">></span>
                 </div>
                 <!-- Activity Level -->
-                <div class="infoItem" onclick="enterEditMode('userActivityDisplay', 'activityLevel')">
-                        <span class="label">Activity Level:</span>
-                        <span class="value" id="userActivityDisplay"></span>
-                        <span class="arrow">></span>
+                <div class="infoItem" data-edit="activityLevel" data-target="userActivityDisplay">
+                    <span class="label">Activity Level:</span>
+                    <span class="value" id="userActivityDisplay"></span>
+                    <span class="arrow">></span>
                 </div>
                 <!-- Goal -->
-                <div class="infoItem" onclick="enterEditMode('userGoalDisplay', 'goal')">
-                        <span class="label">Goal:</span>
-                        <span class="value" id="userGoalDisplay"></span>
-                        <span class="arrow">></span>
+                <div class="infoItem" data-edit="goal" data-target="userGoalDisplay">
+                    <span class="label">Goal:</span>
+                    <span class="value" id="userGoalDisplay"></span>
+                    <span class="arrow">></span>
                 </div>
             </div>
             <h3 class="accountTxt">Account Info</h3>
@@ -126,26 +120,29 @@
                     <span class="arrow">></span>
                 </div>
                 <!-- Email -->
-                <div class="infoItem" onclick="enterEditMode('userEmailDisplay', 'email')">
+                <div class="infoItem" data-edit="email" data-target="userEmailDisplay">
                     <span class="label">Email:</span>
                     <span class="value" id="userEmailDisplay"></span>
-                    <span ><a class="arrow">></a></span>
+                    <span><a class="arrow">></a></span>
                 </div>
                 <!-- Password -->
-                <div class="infoItem" onclick="enterEditMode('userPassword', 'password')">
+                <div class="infoItem">
                     <span class="label">Password:</span>
-                    <span class="value" id="userPassword">••••••••</span>
-                    <span class="arrow">></span>
+                    <span class="value" >
+                        <a href="{{ url_for('html_urls', filename='forgotPassword.html') }}" class="passwordResetLink">
+                            Click here to reset your password →
+                        </a>
+                    </span>
                 </div>
             </div>
-            
+
             <!-- card footer -->
             <footer class="settingsFooter">
                 <div id="editControls" class="edControls">
-                    <button class="RUGRbtn cancelBtn" onclick="exitEditMode(false)">Cancel</button>
-                    <button class="RUGRbtn pagesBtn-primary" onclick="exitEditMode(true)">Save Changes</button>
+                    <button class="RUGRbtn cancelBtn" id="cancelEdit">Cancel</button>
+                    <button class="RUGRbtn pagesBtn-primary" id="saveEdit">Save Changes</button>
                 </div>
-                <button class="RUGRbtn deleteBtn" id="deleteAccountBtn" onclick="deleteAccount()">Delete Account</button>
+                <button class="RUGRbtn deleteBtn" id="deleteAccountBtn">Delete Account</button>
             </footer>
         </div>
 
@@ -174,8 +171,8 @@
                 <div class="infoCardHeader">
                     <h2 class="infoHeader">More Information</h2>
                     <button id="moreInfoToggle" class="infoCollapseToggle" type="button" aria-expanded="false" aria-controls="moreInfoBody">
-                        Show
-                        <span class="infoToggleIcon" aria-hidden="true">▾</span>
+                        <span class="label">Show</span>
+                        <span class="infoToggleIcon">▾</span>
                     </button>
                 </div>
                 <div id="moreInfoBody" class="infoCollapseBody is-collapsed">
@@ -184,7 +181,7 @@
                         <div>
                             <div class="infoItem">
                                 <span class="label">Sex</span>
-                                <button type="button" class="infoBtn" onclick="toggleSexDisclaimer(event)" style="background: none; border: none; padding: 0; cursor: pointer;">
+                                <button type="button" class="infoBtn" id="sexInfoBtn" style="background: none; border: none; padding: 0; cursor: pointer;">
                                     <i class="fa-solid fa-info fa-s" style="color: #16a34a;"></i>
                                 </button>
                                 <span class="infoText">Which one should I choose?</span>
@@ -221,7 +218,22 @@
             </div>
         </div>
     </main>
-	<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <div id="deleteModal" class="modal hidden">
+        <div class="modalContent">
+            <h2>Delete Account</h2>
+            <p>Are you sure you want to permanently delete your account? This action cannot be undone.</p>
+
+            <div class="modalActions">
+                <button id="cancelDelete" class="modalBtn modalBtn-secondary">
+                    Cancel
+                </button>
+                <button id="confirmDelete" class="modalBtn modalBtn-danger">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 <footer>
     <p class="homeFooterTxt">© 2026 PlatePilot. All rights reserved.</p>

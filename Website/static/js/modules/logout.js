@@ -1,4 +1,4 @@
-import { clearUser } from '../utils.js';
+import { clearUserSessionData } from '../utils.js';
 import { resetState } from '../state.js';
 import { logout } from '../api.js';
 
@@ -18,7 +18,7 @@ export function initLogout() {
             // Clear server-side session
             logout()
                 .finally(() => {
-                    clearUser();
+                    clearUserSessionData();
                     resetState();
                     window.location.href = 'home.html';
                 });
