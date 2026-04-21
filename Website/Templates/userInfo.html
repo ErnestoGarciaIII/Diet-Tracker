@@ -26,8 +26,14 @@
                 </div>
                 <!-- form elements i.e weight -->
                 <div class="inputGroup">
-                    <label for="weight">Weight (lbs)</label>
-                    <input type="number" id="userWeightDisplay" placeholder="e.g. 130" required>
+                    <label for="weight">Weight</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="userWeightDisplay" placeholder="e.g. 130" required style="flex: 2;">
+                        <select id="weightUnit" class="unitSelect" style="flex: 1;">
+                            <option value="lbs">lbs</option>
+                            <option value="kg">kg</option>
+                        </select>
+                    </div>
                 </div>
                 <!-- form elements i.e gender -->
                 <div>
@@ -55,8 +61,22 @@
                 </div>
                 <!-- form elements i.e height -->
                 <div class="inputGroup">
-                    <label for="height">Height (in)</label>
-                    <input type="number" id="userHeightDisplay" placeholder="e.g. 67" required>
+                    <label for="height">Height</label>
+                    <div id="heightInputContainer">
+                        <div id="standardHeight" style="display: flex; gap: 10px;">
+                            <input type="number" id="userHeightDisplay" placeholder="Inches" required style="flex: 2;">
+                            <select id="heightUnit" class="unitSelect" style="flex: 1;">
+                                <option value="in">in</option>
+                                <option value="ftin">ft' in"</option>
+                                <option value="cm">cm</option>
+                                <option value="m">m</option>
+                            </select>
+                        </div>
+                        <div id="ftInHeight" style="display: none; gap: 10px; margin-top: 5px;">
+                            <input type="number" id="heightFt" placeholder="ft" style="width: 45%;">
+                            <input type="number" id="heightIn" placeholder="in" style="width: 45%;">
+                        </div>
+                    </div>
                 </div>
                 <!-- form elements i.e. activity level -->
                 <div>
