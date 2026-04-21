@@ -1,4 +1,4 @@
-import { updateUser, uploadAvatar } from '../api.js';
+import { updateUserInDB, uploadAvatar } from '../api.js';
 import { getUserId, getInputValue, getCheckedValue, showError, showSuccess } from '../utils.js';
 
 export function initUserInfo() {
@@ -140,7 +140,7 @@ async function handleSubmit(e, selectedProfilePicture) {
     }
 
     try {
-        await updateUser(user);
+        await updateUserInDB(user);
         showSuccess("Profile saved!");
 
         const btn = document.getElementById('continueBtn');
