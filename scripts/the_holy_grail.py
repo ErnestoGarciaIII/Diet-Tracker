@@ -97,7 +97,7 @@ def load_candidate_pool(conn, restriction_ids=None):
         cursor.execute(f"""
 	    SELECT tf.fdc_id, tf.description, tf.nutrient_id, tf.amount_per_gram, tf.food_category_id
 	    FROM TopFoods tf
-	    WHERE tf.fdc_id NOT IN (
+	    WHERE tf.fdc_id IN (
 	        SELECT fdc_id FROM FoodRestrictions
 		WHERE restrictionId IN ({placeholders})
 	    )
