@@ -39,6 +39,11 @@ export function initFoodLog() {
                 }
 
                 filterBtn.classList.toggle('active');
+<<<<<<< HEAD
+    		loadRecommendations();
+=======
+                loadRecommendations();
+>>>>>>> bcfaff20f7bdf627be605065ec11a03efe1cf4ba
             }
         });
     });
@@ -74,23 +79,24 @@ async function loadProfilePicture() {
 async function loadUserRestrictions() {
     try {
         const currentUser = await getUserInfo(getUserId());
-        if (currentUser.restrictions.includes('None')) {
+        const activeFilters = getActiveFilters() || [];
+        if (currentUser.restrictions.includes('None') && activeFilters.length === 0) {
             clearActiveFilters();
             return;
         }
 
-        const activeFilters = getActiveFilters() || [];
-
         if (activeFilters.length === 0) {
             for (const res of currentUser.restrictions) {
-                await setUserRestrictions(res, true);
+                if (res != 'None') {
+                    await setUserRestrictions(res, true);
+                }
             }
             console.log("[INFO] User predefined filters applied.");
         }
         else {
             for (const res of currentUser.restrictions) {
-                if (!activeFilters.includes(res)) {
-                    await setUserRestrictions(res, true); // apply missing ones
+                if (res != 'None') {
+                    await setUserRestrictions(res, true);
                 }
             }
 
