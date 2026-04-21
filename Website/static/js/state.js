@@ -2,8 +2,16 @@ import { showMessage } from './utils.js';
 // ==========================
 // PRIVATE STATE
 // ==========================
-let user = null;
-let userId = null;
+let user = {
+    user_id: null,
+    DOB: null,
+    weight_lbs: null,
+    height_in: null,
+    sex: null,
+    activity_level: null,
+    goal: null,
+    profile_picture: null
+};
 
 let progress = {
     calories: 0,
@@ -18,25 +26,48 @@ let ui = {
 // ==========================
 // USER STATE
 // ==========================
-export function setUserId(user_id) {
-    localStorage.setItem('user_id', user_id);
-    userId = user_id;
-}
 export function getUserId() {
-    if (!userId)
-        userId = localStorage.getItem('user_id'); //try to get a user id
-    return userId;  //userId can be null
+    const localUserId = localStorage.getItem('user_id');
+    if (user.user_id) {
+        return user.user_id;
+    }
+
+    if (localUserId) {
+        user.user_id = localUserId;
+        return localUserId;
+    }
+
+    return null;
+}
+
+export function setUserId(id) {
+    localStorage.setItem('user_id', id);
+    user.user_id = id;
 }
 export function setUser(userData) {
-    user = userData;
+    user = { ...userData };
 }
 
 export function getUser() {
     return user;
 }
 
-export function updateUser(updates) {
+export function updateUserObject(updates) {
     user = { ...user, ...updates };
+}
+
+export function clearUser() {
+    localStorage.removeItem('user_id');
+    user = {
+        user_id: null,
+        DOB: null,
+        weight_lbs: null,
+        height_in: null,
+        sex: null,
+        activity_level: null,
+        goal: null,
+        profile_picture: null
+    };
 }
 
 export function setBadge(badge = null) {

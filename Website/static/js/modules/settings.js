@@ -1,294 +1,244 @@
-﻿import { getUserInfo, updateUser, uploadAvatar, setRestrictions } from '../api.js';
-import { getUserId, getElement, showError, showSuccess, showMessage } from '../utils.js';
+﻿import { getUserInfo, updateUserInDB, uploadAvatar, setRestrictions, delete_account } from '../api.js';
+import { getUserId, getElement, showError, showSuccess } from '../utils.js';
+import { updateUserObject } from '../state.js';
 
 let currentUser = null;
 let selected = [];
+let isEditing = false;
+let draftUser = null;
+
+const activityOptions = [
+    { value: 1, label: "Sedentary" },
+    { value: 2, label: "Lightly Active" },
+    { value: 3, label: "Moderately Active" },
+    { value: 4, label: "Very Active" }
+];
+
 export function initSettings() {
     loadUser();
     setupAvatarControls();
     setupMoreInfoCollapse();
-    window.toggleSexDisclaimer = toggleSexDisclaimer;
-
-    document.querySelectorAll('.tag').forEach(tag => {
-        tag.addEventListener('click', () => toggleTag(tag));
-    });
+    setupEventListeners();
+    restrictionsListener();
 
     const submitBtn = getElement('submitBtn');
     if (submitBtn) submitBtn.addEventListener('click', saveRestrictions);
 }
 
-function toggleSexDisclaimer(event) {
-    event.preventDefault();
-    const disclaimer = document.getElementById('sexDisclaimer');
-    if (!disclaimer) return;
+function setupEventListeners() {
+    const biometricsList = getElement('biometricsList');
+    const emailElement = getElement('userEmailDisplay');
 
-    if (disclaimer.style.display === 'none') {
-        disclaimer.style.display = 'block';
-    } else {
-        disclaimer.style.display = 'none';
+    if (biometricsList) {
+        biometricsList.addEventListener('click', (e) => {
+            const item = e.target.closest('.infoItem[data-edit]');
+            if (!item || isEditing) return;
+
+            enterEditMode();
+        });
     }
-}
 
-function setupMoreInfoCollapse() {
-    const toggleBtn = getElement('moreInfoToggle');
-    const infoBody = getElement('moreInfoBody');
-    if (!toggleBtn || !infoBody) return;
+    if (emailElement) {
+        emailElement.addEventListener('click', (e) => {
+            if ( isEditing) return;
+            enterEditMode();
+        });
 
-    toggleBtn.addEventListener('click', () => {
-        const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
-        const nextState = !isExpanded;
+    }
 
-        toggleBtn.setAttribute('aria-expanded', String(nextState));
-        toggleBtn.textContent = nextState ? 'Hide' : 'Show';
+    getElement('cancelEdit')?.addEventListener('click', cancelEdit);
+    getElement('saveEdit')?.addEventListener('click', saveAllEdits);
 
-        const icon = document.createElement('span');
-        icon.className = 'infoToggleIcon';
-        icon.setAttribute('aria-hidden', 'true');
-        icon.textContent = '▾';
-        toggleBtn.appendChild(icon);
-
-        infoBody.classList.toggle('is-collapsed', !nextState);
-    });
-}
-      //grabs goal value
-function goalIdToLabel(goalId) {
-    const map = {
-        1: 'Weight Loss',
-        2: 'Maintain',
-        3: 'Muscle Build'
-    };
-    return map[Number(goalId)] || '';
+    getElement('deleteAccountBtn')?.addEventListener('click', deleteAccount);
+    getElement('sexInfoBtn')?.addEventListener('click', toggleSexDisclaimer);
 }
 
 async function loadUser() {
     try {
         currentUser = await getUserInfo(getUserId());
-        currentUser.restrictions.forEach(loadUserRestrictions)
-        // Converts from UTC to users local time
-        const accountDate = new Date(currentUser.account_creation_date_utc).toLocaleDateString();
-        // Populate display elements
-        getElement('userNameDisplay').textContent = currentUser.name || '';
-        getElement('userGenderDisplay').textContent = currentUser.sex || '';
-        getElement('userDobDisplay').textContent = currentUser.date_of_birth || '';
-        getElement('userAgeDisplay').textContent = currentUser.age || '';
-        getElement('userWeightDisplay').textContent = currentUser.weight_lbs || '';
-        getElement('userHeightDisplay').textContent = currentUser.height_in || '';
-        getElement('userEmailDisplay').textContent = currentUser.email || '';
-        getElement('userActivityDisplay').textContent = currentUser.activity_level || '';
-        getElement('userGoalDisplay').textContent = goalIdToLabel(currentUser.goal);
-        getElement('userAccCreatedDisplay').textContent = accountDate || '';
-        // Load profile picture
-        if (currentUser.profile_picture) {
-            const profileImages = document.querySelectorAll('#profilePreview');
-            profileImages.forEach(img => {
-                img.src = currentUser.profile_picture;
-            });
-        }
 
-    } catch (err) {
+        selected = [];
+        currentUser.restrictions.forEach(loadUserRestrictions);
+
+        renderUser(currentUser);
+    } catch {
         showError("Failed to load user.");
     }
 }
 
-function loadUserRestrictions(restriction) {
-    switch (restriction) {
-        case "None":
-            selected.push(restriction);
-            getElement('None').classList.add('tag-active');
-            break;
-        case "Vegetarian":
-            selected.push(restriction);
-            getElement('Vegetarian').classList.add('tag-active');
-            break;
-        case "Vegan":
-            selected.push(restriction);
-            getElement('Vegan').classList.add('tag-active');
-            break;
-        case "Nut-Allergy":
-            selected.push(restriction);
-            getElement('Nut-Allergy').classList.add('tag-active');
-            break;
-        case "Egg-Allergy":
-            selected.push(restriction);
-            getElement('Egg-Allergy').classList.add('tag-active');
-            break;
-        case "Shellfish-Allergy":
-            selected.push(restriction);
-            getElement('Shellfish-Allergy').classList.add('tag-active');
-            break;
-        case "Soy-Allergy":
-            selected.push(restriction);
-            getElement('Soy-Allergy').classList.add('tag-active');
-            break;
-        case "Dairy-Free":
-            selected.push(restriction);
-            getElement('Dairy-Free').classList.add('tag-active');
-            break;
-        case "Pescatarian":
-            selected.push(restriction);
-            getElement('Pescatarian').classList.add('tag-active');
-            break;
-        case "Keto":
-            selected.push(restriction);
-            getElement('Keto').classList.add('tag-active');
-            break;
+function renderUser(user) {
+    const accountDate = new Date(user.account_creation_date_utc).toLocaleDateString();
 
-        default:
-            return showError("Failed to load user restrictions.")
-    }
-}
+    getElement('userNameDisplay').textContent = user.name || '';
+    getElement('userGenderDisplay').textContent = user.sex || '';
+    getElement('userDobDisplay').textContent = user.date_of_birth || '';
+    getElement('userWeightDisplay').textContent = user.weight_lbs || '';
+    getElement('userHeightDisplay').textContent = user.height_in || '';
+    getElement('userEmailDisplay').textContent = user.email || '';
+    getElement('userActivityDisplay').textContent = activityLevelToLabel(user.activity_level) || '';
+    getElement('userGoalDisplay').textContent = goalIdToLabel(user.goal);
+    getElement('userAccCreatedDisplay').textContent = accountDate || '';
 
-function setupAvatarControls() {
-    const uploadTrigger = getElement('uploadTrigger');
-    const fileInput = getElement('hiddenFileInput');
-    const removePic = getElement('removePic');
-
-    if (uploadTrigger && fileInput) {
-        uploadTrigger.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        fileInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                showError("Please select an image file.");
-                return;
-            }
-
-            // Validate file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                showError("File is too large. Maximum 5MB.");
-                return;
-            }
-
-            try {
-                const result = await uploadAvatar(getUserId(), file);
-                currentUser.profile_picture = result.profile_picture;
-                
-                // Update preview images
-                const profileImages = document.querySelectorAll('#profilePreview');
-                profileImages.forEach(img => {
-                    img.src = result.profile_picture;
-                });
-
-                showSuccess("Profile picture updated!");
-            } catch (err) {
-                showError("Failed to upload image: " + err.message);
-            }
-
-            // Reset file input
-            fileInput.value = '';
-        });
-    }
-
-    if (removePic) {
-        removePic.addEventListener('click', async () => {
-            if (!currentUser.profile_picture) {
-                showError("No picture to remove.");
-                return;
-            }
-
-            try {
-                // Update user with null profile_picture
-                currentUser.profile_picture = null;
-                await updateUser(currentUser);
-
-                // Reset to default avatar
-                const defaultAvatar = '/static/images/avatar.jpg';
-                const profileImages = document.querySelectorAll('#profilePreview');
-                profileImages.forEach(img => {
-                    img.src = defaultAvatar;
-                });
-
-                showSuccess("Profile picture removed!");
-            } catch (err) {
-                showError("Failed to remove picture: " + err.message);
-            }
+    if (user.profile_picture) {
+        ['profilePreviewNavBar', 'profilePreviewSettings'].forEach(id => {
+            const el = getElement(id);
+            if (el) el.src = user.profile_picture;
         });
     }
 }
 
-function toggleTag(tag) {
-    const value = tag.dataset.value;
+function enterEditMode() {
+    if (isEditing) return;
+    isEditing = true;
 
-    if (value === 'None') {
-        // If "None" is selected, clear all other selections
-        if (!selected.includes(value)) {
-            // Clear all other tags
-            document.querySelectorAll('.tag').forEach(t => {
-                if (t !== tag) {
-                    t.classList.remove('tag-active');
-                }
+    if (!currentUser) return;
+    draftUser = structuredClone(currentUser);
+    draftUser.user_id = getUserId();
+
+    document.querySelectorAll('.infoItem[data-edit]').forEach(item => {
+        const field = item.dataset.edit;
+        const targetId = item.dataset.target;
+
+        const displayElement = getElement(targetId);
+        if (!displayElement) return;
+
+        const currentValue =
+            field === 'activityLevel'
+                ? Number(currentUser.activity_level)
+                : currentUser[mapField(field)];
+
+        const input = createInput(field, currentValue);
+        input.classList.add('editInput');
+
+        input.addEventListener('input', () => {
+            const apiField = mapField(field);
+            if (!draftUser) return;
+            draftUser[apiField] = parseValue(apiField, input.value);
+        });
+
+        displayElement.replaceWith(input); 
+    });
+
+    showEditControls();
+    document.addEventListener('keydown', handleEditKeys);
+}
+
+function exitEditMode() {
+    isEditing = false;
+    draftUser = null;
+
+    document.removeEventListener('keydown', handleEditKeys);
+
+    document.querySelectorAll('.editInput').forEach(input => {
+        const parent = input.closest('.infoItem');
+
+        const span = document.createElement('span');
+        span.className = 'value';
+        span.id = parent.dataset.target;
+
+        const field = parent.dataset.edit;
+
+        span.textContent = formatField(field, draftUser ?? currentUser);
+
+        if (span.id === 'userEmailDisplay') {
+            span.addEventListener('click', () => {
+                if (!isEditing) enterEditMode();
             });
-            selected = ['None'];
-            tag.classList.add('tag-active');
-        } else {
-            // Deselecting "None"
-            selected = selected.filter(v => v !== value);
-            tag.classList.remove('tag-active');
-        }
-    } else {
-        // For other restrictions, if "None" is selected, deselect it first
-        if (selected.includes('None')) {
-            const noneTag = document.querySelector('.tag[data-value="None"]');
-            if (noneTag) {
-                noneTag.classList.remove('tag-active');
-            }
-            selected = selected.filter(v => v !== 'None');
         }
 
-        // Toggle the current tag
-        if (selected.includes(value)) {
-            selected = selected.filter(v => v !== value);
-            tag.classList.remove('tag-active');
-        } else {
-            selected.push(value);
-            tag.classList.add('tag-active');
-        }
+        input.replaceWith(span);
+    });
+
+    hideEditControls();
+}
+
+function handleEditKeys(e) {
+    if (!isEditing) return;
+
+    if (e.key === 'Escape') {
+        cancelEdit();
+    }
+
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        saveAllEdits();
+    }
+}
+function formatField(field, user) {
+    switch (field) {
+        case 'activityLevel':
+            return activityLevelToLabel(user.activity_level);
+        case 'goal':
+            return goalIdToLabel(user.goal);
+        default:
+            return user[mapField(field)] ?? '';
     }
 }
 
-async function saveRestrictions() {
-    const user_id = getUserId();
-    if (!user_id) return showError("User not found.");
-    if (!selected) return showError("If you do not want any restrictions, please select 'none'.");
+function cancelEdit() {
+    exitEditMode();
+}
+
+async function saveAllEdits() {
     try {
-        await setRestrictions(user_id, selected);
-        showSuccess("Restrictions saved!");
-        const submitBtnData = getElement("submitBtn").dataset;
+        if (!draftUser) {
+            showError("Nothing to save.");
+            return;
+        }
+
+        const payload = {
+            user_id: draftUser.user_id,
+            name: draftUser.name,
+            date_of_birth: draftUser.date_of_birth,
+            weight_lbs: draftUser.weight_lbs,
+            height_in: draftUser.height_in,
+            sex: draftUser.sex,
+            activity_level: draftUser.activity_level,
+            goal: draftUser.goal,
+            email: draftUser.email,
+            profile_picture: draftUser.profile_picture,
+            restrictions: selected
+        };
+
+        console.log("Sending to API:", payload);
+
+        await updateUserInDB(payload);
+
+        // update global state
+        updateUserObject(payload);
+        currentUser = structuredClone(draftUser);
+
+        exitEditMode();
+        showSuccess("Profile updated!");
     } catch (err) {
         showError(err.message);
     }
 }
 
-// Make this function global so HTML can call it
-window.enterEditMode = function(displayId, fieldName) {
-    const displayElement = getElement(displayId);
-    if (!displayElement) return;
-
-    const currentValue = displayElement.textContent;
+function createInput(fieldName, currentValue) {
     let input;
+
     if (fieldName === 'activityLevel') {
         input = document.createElement('select');
-        input.className = 'editInput';
-        [
-            { value: 'Sedentary', label: 'Sedentary' },
-            { value: 'Light', label: 'Lightly Active' },
-            { value: 'Moderate', label: 'Moderately Active' },
-            { value: 'Very', label: 'Very Active' }
-        ].forEach(opt => {
+
+        activityOptions.forEach(opt => {
             const option = document.createElement('option');
-            option.value = opt.value;
+            option.value = String(opt.value);
             option.textContent = opt.label;
-            if (opt.value === currentValue) option.selected = true;
+
+            if (Number(currentValue) === opt.value) {
+                option.selected = true;
+            }
+
             input.appendChild(option);
         });
-    } else if (fieldName === 'goal') {
+
+        return input;
+    }
+
+    if (fieldName === 'goal') {
         input = document.createElement('select');
-        input.className = 'editInput';
+
         [
             { value: '1', label: 'Weight Loss' },
             { value: '2', label: 'Maintain' },
@@ -297,112 +247,221 @@ window.enterEditMode = function(displayId, fieldName) {
             const option = document.createElement('option');
             option.value = opt.value;
             option.textContent = opt.label;
-            if (String(currentUser.goal || '') === opt.value) option.selected = true;
+
+            const source = isEditing ? draftUser : currentUser;
+            if (!source) return input; 
+
+            if (String(currentValue) === opt.value) {
+                option.selected = true;
+            }
+
             input.appendChild(option);
         });
-    } else {
-        input = document.createElement('input');
-        input.type = fieldName === 'date_of_birth' ? 'date' : 'text';
-        input.value = currentValue;
-        input.className = 'editInput';
+
+        return input;
     }
 
-    // Replaces the span with an input
-    displayElement.parentNode.replaceChild(input, displayElement);
+    input = document.createElement('input');
+    input.classList.add('editInput');
+    input.type = fieldName === 'date_of_birth' ? 'date' : 'text';
+    input.value = currentValue;
 
-    // Focuses the input
-    input.focus();
+    return input;
+}
 
-    // On blur or enter, save
-    let isSaving = false;
-    const revertToDisplay = () => {
-        if (input.parentNode) {
-            input.parentNode.replaceChild(displayElement, input);
-        }
+function mapField(field) {
+    const map = {
+        fullName: 'name',
+        Weight: 'weight_lbs',
+        Height: 'height_in',
+        email: 'email',
+        activityLevel: 'activity_level',
+        goal: 'goal',
+        date_of_birth: 'date_of_birth',
+        sex: 'sex'
+    };
+    return map[field] || field;
+}
+
+function parseValue(field, value) {
+    if (field === 'activity_level') {
+        return Number(value); 
+    }
+
+    if (['weight_lbs', 'height_in'].includes(field)) {
+        const num = parseFloat(value);
+        if (isNaN(num)) return null;
+        return num;
+    }
+
+    if (field === 'goal') {
+        return parseInt(value, 10);
+    }
+
+    return value;
+}
+
+function showEditControls() {
+    getElement('editControls')?.classList.add('visible');
+    getElement('deleteAccountBtn')?.classList.add('hidden');
+}
+
+function hideEditControls() {
+    getElement('editControls')?.classList.remove('visible');
+    getElement('deleteAccountBtn')?.classList.remove('hidden');
+}
+
+function restrictionsListener() {
+    const tagsContainer = document.querySelector('.tagsGrid');
+    if (!tagsContainer) return;
+
+    tagsContainer.addEventListener('click', (e) => {
+        const tag = e.target.closest('.tag');
+        if (!tag || !tagsContainer.contains(tag)) return;
+
+        toggleTag(tag, tagsContainer);
+    });
+}
+
+function loadUserRestrictions(restriction) {
+    const el = getElement(restriction);
+    if (!el) return;
+
+    selected.push(restriction);
+    el.classList.add('tag-active');
+}
+
+async function saveRestrictions() {
+    const user_id = getUserId();
+    if (!user_id) return showError("User not found.");
+    if (selected.length === 0) return showError("Please select 'none'.");
+
+    try {
+        await setRestrictions(user_id, selected);
+        showSuccess("Restrictions saved!");
+    } catch (err) {
+        showError(err.message);
+    }
+}
+
+function goalIdToLabel(goalId) {
+    return {
+        1: 'Weight Loss',
+        2: 'Maintain',
+        3: 'Muscle Build'
+    }[goalId] || '';
+}
+
+function toggleSexDisclaimer(e) {
+    e.preventDefault();
+    const el = getElement('sexDisclaimer');
+    if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+function activityLevelToLabel(value) {
+    const option = activityOptions.find(o => o.value === Number(value));
+    return option ? option.label : '';
+}
+
+function deleteAccount() {
+    const modal = getElement('deleteModal');
+    modal.classList.remove('hidden');
+
+    const cancelBtn = getElement('cancelDelete');
+    const confirmBtn = getElement('confirmDelete');
+
+    cancelBtn.onclick = () => {
+        modal.classList.add('hidden');
     };
 
-    const save = async () => {
-        if (isSaving) return;
-        isSaving = true;
-
-        const newValue = input.value.trim();
-        const originalComparableValue = fieldName === 'goal' ? String(currentUser.goal || '') : currentValue;
-        if (newValue === originalComparableValue) {
-            revertToDisplay();
-            isSaving = false;
-            return;
-        }
-
-        // Updates the currentUser
-        const fieldMap = {
-            'fullName': 'name',
-            'Weight': 'weight_lbs',
-            'Height': 'height_in',
-            'email': 'email',
-            'activityLevel': 'activity_level',
-            'goal': 'goal'
-        };
-        const apiField = fieldMap[fieldName] || fieldName.toLowerCase();
-        
-        let parsedValue = newValue;
-        if (['age', 'weight_lbs', 'height_in'].includes(apiField)) {
-            parsedValue = parseFloat(newValue);
-            if (isNaN(parsedValue)) {
-                showError("Invalid number");
-                revertToDisplay();
-                isSaving = false;
-                return;
-            }
-        }
-        
+    confirmBtn.onclick = async () => {
         try {
-            if (apiField === 'goal') {
-                const goalId = parseInt(newValue, 10);
-                if (![1, 2, 3].includes(goalId)) {
-                    showError('Invalid goal selected');
-                    revertToDisplay();
-                    isSaving = false;
-                    return;
-                }
+            const userId = getUserId();
 
-                await updateGoal(getUserId(), goalId);
-                await calculateDRI(getUserId());
-                currentUser.goal = goalId;
-                displayElement.textContent = goalIdToLabel(goalId);
-            } else {
-                currentUser[apiField] = parsedValue;
-                if (apiField === 'date_of_birth') {
-                    currentUser.age = calculateAge(newValue);
-                }
-
-                await updateUser(currentUser);
-                displayElement.textContent = newValue;
+            const del = await delete_account(userId);
+            if (del.message) {
+                showSuccess("Account deleted.");
+                window.location.href = "/logout.html";
             }
-
-            revertToDisplay();
-
-        if (apiField === 'date_of_birth') {
-                const ageDisplay = getElement('userAgeDisplay');
-                if (ageDisplay) {
-                    ageDisplay.textContent = currentUser.age;
-                }
+            else {
+                showError("No user Id could be found. Please log out and log back in to try again.")
             }
-
-            showSuccess("Updated successfully!");
         } catch (err) {
-            showError("Failed to update: " + err.message);
-            revertToDisplay();
+            showError(err.message);
         }
-        isSaving = false;
     };
+}
 
-    input.addEventListener('blur', save);
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            save();
-        } else if (e.key === 'Escape') {
-            revertToDisplay();
+function setupAvatarControls() {
+    const uploadTrigger = getElement('uploadTrigger');
+    const fileInput = getElement('hiddenFileInput');
+    const removePic = getElement('removePic');
+
+    if (uploadTrigger && fileInput) {
+        uploadTrigger.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                return showError("Please select an image file.");
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                return showError("Max size is 5MB.");
+            }
+
+            try {
+                const result = await uploadAvatar(getUserId(), file);
+                currentUser.profile_picture = result.profile_picture;
+
+                document.querySelectorAll('#profilePreview').forEach(img => {
+                    img.src = result.profile_picture;
+                });
+
+                showSuccess("Profile picture updated!");
+            } catch (err) {
+                showError(err.message);
+            }
+
+            fileInput.value = '';
+        });
+    }
+
+    removePic?.addEventListener('click', async () => {
+        try {
+            currentUser.profile_picture = null;
+            await updateUserInDB(currentUser);
+
+            const defaultAvatar = '/static/images/avatar.jpg';
+
+            document.querySelectorAll('#profilePreview').forEach(img => {
+                img.src = defaultAvatar;
+            });
+
+            showSuccess("Profile picture removed!");
+        } catch (err) {
+            showError(err.message);
         }
     });
-};
+}
+
+function setupMoreInfoCollapse() {
+    const toggleBtn = getElement('moreInfoToggle');
+    const infoBody = getElement('moreInfoBody');
+
+    if (!toggleBtn || !infoBody) return;
+
+    toggleBtn.addEventListener('click', () => {
+        const expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+        const next = !expanded;
+
+        toggleBtn.setAttribute('aria-expanded', String(next));
+
+        const label = toggleBtn.querySelector('.label');
+        if (label) label.textContent = next ? 'Hide' : 'Show';
+
+        infoBody.classList.toggle('is-collapsed', !next);
+    });
+}

@@ -56,17 +56,24 @@ export async function register(name, email, password) {
 }
 
 export async function forgot_password(email) {
-	return request('/api/forgot-password', {
-		method: 'POST',
+    return request('/api/forgot-password', {
+        method: 'POST',
 		body: JSON.stringify({email: email})
-	});
+    });
 }
 
 export async function reset_password(token, newPassword) {
-	return request('/api/reset-password', {
-		method: 'POST',
-		body: JSON.stringify({token: token, newPassword: newPassword})
-	});
+    return request('/api/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ token: token, newPassword: newPassword })
+    });
+}
+
+export async function delete_account(userId) {
+    return request('/api/delete-account', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId })
+    });
 }
 
 // ==========================
@@ -79,7 +86,7 @@ export async function getUserInfo(userId) {
     return request(`/api/get-user-info?user_id=${userId}`);
 }
 
-export async function updateUser(user) {
+export async function updateUserInDB(user) {
     return request('/api/update_user', {
         method: 'POST',
         body: JSON.stringify(user)
