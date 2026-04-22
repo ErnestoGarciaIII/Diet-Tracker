@@ -1,3 +1,5 @@
+import { clearUser } from './state.js';
+
 // =================================
 // utils.js will hold helper methods 
 // =================================
@@ -90,10 +92,10 @@ export function setUserId(id) {
     localStorage.setItem('user_id', id);
 }
 
-export function clearUser() {
+export function clearUserSessionData() {
     clear_Filters(getUserId());
     clearActiveFilters();
-    localStorage.removeItem('user_id');
+    clearUser();
 }
 
 export function getActiveFilters() {
