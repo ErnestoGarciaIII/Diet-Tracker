@@ -39,11 +39,7 @@ export function initFoodLog() {
                 }
 
                 filterBtn.classList.toggle('active');
-<<<<<<< HEAD
-    		loadRecommendations();
-=======
                 loadRecommendations();
->>>>>>> bcfaff20f7bdf627be605065ec11a03efe1cf4ba
             }
         });
     });
