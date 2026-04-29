@@ -97,7 +97,7 @@ def load_candidate_pool(conn, restriction_ids=None):
         cursor.execute(f"""
 	    SELECT tf.fdc_id, tf.description, tf.nutrient_id, tf.amount_per_gram, tf.food_category_id
 	    FROM TopFoods tf
-	    WHERE tf.fdc_id NOT IN (
+	    WHERE tf.fdc_id IN (
 	        SELECT fdc_id FROM FoodRestrictions
 		WHERE restrictionId IN ({placeholders})
 	    )
@@ -238,14 +238,6 @@ def recommend_foods2(user, conn, consumed, iterations=5, restriction_ids=None):
     recommendations = []
     already_recommended = set()
 
-    seen_categories = {}       
-    recommendation_counts = {} 
-
-    MAX_DAILY_SERVINGS = {
-        14: 2, 16: 2, 9: 3, 11: 4, 1: 2, 15: 2,
-    }
-    DEFAULT_MAX_SERVINGS = 2
-
     for i in range(iterations):
         best_fdc_id = None
         best_score = -float('inf')
@@ -254,12 +246,6 @@ def recommend_foods2(user, conn, consumed, iterations=5, restriction_ids=None):
         for fdc_id, food in pool.items():
             if fdc_id in already_recommended:
                 continue
-
-            cat_id = food.get('category_id')
-            cat_max = MAX_DAILY_SERVINGS.get(cat_id, DEFAULT_MAX_SERVINGS)
-            if seen_categories.get(cat_id, 0) >= cat_max:
-                continue
-
 
             serving_grams = CATEGORY_SERVING_GRAMS.get(
                 food.get('category_id'), DEFAULT_SERVING_GRAMS
@@ -284,9 +270,6 @@ def recommend_foods2(user, conn, consumed, iterations=5, restriction_ids=None):
                 for nutrient, amount in food['nutrients'].items()
             }
             score = rate_food(scaled_nutrients, consumed, dri, user.upper_limits)
-            
-            category_count = seen_categories.get(cat_id, 0)
-            score -= 0.1 * category_count
 
             if score > best_score:
                 best_score = score

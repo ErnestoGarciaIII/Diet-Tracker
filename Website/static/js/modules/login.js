@@ -1,5 +1,6 @@
 import { login } from '../api.js';
 import { getElement, getInputValue, showError } from '../utils.js';
+import { setUserId, getUserId } from '../state.js';
 
 export function initLogin() {
     const form = getElement('loginForm');
@@ -19,7 +20,7 @@ export function initLogin() {
             const data = await login(email, password);
 
             // store ONLY user_id
-            localStorage.setItem('user_id', data.user_id);
+            setUserId(data.user_id);
 
             // redirect to dashboard
             const loginButtonData = getElement('loginButton').dataset;

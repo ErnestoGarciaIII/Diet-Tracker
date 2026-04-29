@@ -517,6 +517,49 @@ def register_user():
         if conn:
             conn.close()
 
+@app.route('/api/delete-account', methods=['POST'])
+def delete_account():
+    data = request.get_json()
+    conn = None
+
+    try:
+        user_id = data.get('user_id')
+
+        if not user_id:
+            print("[ERROR]: Missing user_id for '/api/delete-account' POST request!")
+            return jsonify({'error': 'Missing required user_id'}), 400
+
+        conn = connectDB()
+        cur = conn.cursor()
+
+        cur.execute("""
+            DELETE FROM Users WHERE userId = ?
+        """, (user_id,))
+
+        conn.commit()
+
+        if cur.rowcount == 0:
+            print("[ERROR]: No matching user found to delete")
+            return jsonify({
+                'error': 'User not found',
+                'user_id': user_id
+            }), 404
+
+        print(f"[INFO]: Deleted user {user_id}")
+
+        return jsonify({
+            'message': 'User deleted successfully',
+            'user_id': user_id
+        }), 200
+
+    except Exception as e:
+        print("[ERROR]:", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        if conn:
+            conn.close()
+
 # Reset password
 @app.route('/api/forgot-password', methods=['POST'])
 def forgot_password():

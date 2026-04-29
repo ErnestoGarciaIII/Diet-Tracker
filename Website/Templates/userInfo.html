@@ -26,8 +26,14 @@
                 </div>
                 <!-- form elements i.e weight -->
                 <div class="inputGroup">
-                    <label for="weight">Weight (lbs)</label>
-                    <input type="number" id="userWeightDisplay" placeholder="e.g. 130" required>
+                    <label for="weight">Weight</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="userWeightDisplay" placeholder="e.g. 130" required style="flex: 2;">
+                        <select id="weightUnit" class="unitSelect" style="flex: 1;">
+                            <option value="lbs">lbs</option>
+                            <option value="kg">kg</option>
+                        </select>
+                    </div>
                 </div>
                 <!-- form elements i.e gender -->
                 <div>
@@ -48,15 +54,30 @@
                     </div>
                     <!-- disclaimer section -->
                     <div id="sexDisclaimer" class="disclaimer">
-                        <p><strong>Why we ask:</strong> We use sex to calculate your metabolic needs, as there are different equations for men and women.</p>
-                        <p><strong>For transgender or non-binary individuals:</strong> If your gender identity differs from your sex assigned at birth and you haven't started gender-affirming medications, select your sex assigned at birth for accuracy. If you're taking gender-affirming medications, consult your doctor for the best selection for you.</p>
-                        <p>For best results, always consult with your healthcare provider about your nutritional needs.</p>
+                        <p><strong>Why we ask:</strong> Users' biological sex is used to calculate daily recommended needs</p>
+                        <p><strong>For transgender or non-binary individuals:</strong> This categorization of sex is for calculating daily recommended nutritional values. If you are currently undergoing or have gone through Hormone Replacement Therapy, please consult with your Doctor as these calculations may not accurately reflect your daily needs. Otherwise select your sex assigned at birth for the most accurate results.
+                        </p>
+                        <p>For best results, always consult with your healthcare provider for your nutritional needs.</p>
                     </div>
                 </div>
                 <!-- form elements i.e height -->
                 <div class="inputGroup">
-                    <label for="height">Height (in)</label>
-                    <input type="number" id="userHeightDisplay" placeholder="e.g. 67" required>
+                    <label for="height">Height</label>
+                    <div id="heightInputContainer">
+                        <div id="standardHeight" style="display: flex; gap: 10px;">
+                            <input type="number" id="userHeightDisplay" placeholder="Inches" required style="flex: 2;">
+                            <select id="heightUnit" class="unitSelect" style="flex: 1;">
+                                <option value="in">in</option>
+                                <option value="ftin">ft' in"</option>
+                                <option value="cm">cm</option>
+                                <option value="m">m</option>
+                            </select>
+                        </div>
+                        <div id="ftInHeight" style="display: none; gap: 10px; margin-top: 5px;">
+                            <input type="number" id="heightFt" placeholder="ft" style="width: 45%;">
+                            <input type="number" id="heightIn" placeholder="in" style="width: 45%;">
+                        </div>
+                    </div>
                 </div>
                 <!-- form elements i.e. activity level -->
                 <div>

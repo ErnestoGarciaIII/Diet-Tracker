@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Page</title>
+    <title>PlatePilot</title>
     <script src="https://kit.fontawesome.com/6487b0dbb2.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/mainStyleS.css') }}">
 </head>
@@ -18,7 +18,7 @@
     <!-- Welcome Section -->
     <header class="welcome">
         <h1 class="welTitle">Precision on<span class="accent"> your plate.</span></h1>
-        <p class="welSubtitle">Stop guessing what to eat. Our AI analyzes your information and goals to suggest foods you'll love.</p>
+        <p class="welSubtitle">Stop guessing what to eat. Our algorithm utilizes the extensive database provided by USDA to find and recommend nutritious foods to fill any deficits in your diet.</p>
         <div class="welBtns">
             <a href="{{ url_for('html_urls', filename='register.html') }}" class="homeBtns HBtnLink">
                 <button class="homeBtns HBtn-primary">Start your Free Plan</button>
@@ -41,18 +41,18 @@
         <div class="homeContainer">
             <div class="featureCard">
                 <div class="homeIcon">🥗<!-- input icon or if image add class featureIcon--></div>
-                <h2 class="featureTitle">Tailored Recipes</h2>
-                <p class="featureDesc">Recipes adjusted for your allergies and macro needs.</p>
+                <h2 class="featureTitle">Extensive Database</h2>
+                <p class="featureDesc">Vast database containing plethora of nutritional information for countless foods</p>
             </div>
             <div class="featureCard">
                 <div class="homeIcon">🤖<!-- input icon or if image add class featureIcon--></div>
-                <h2 class="featureTitle">AI coaching</h2>
-                <p class="featureDesc">Chat with your AI nutritionist anytime for food swaps.</p>
+                <h2 class="featureTitle">Personalized Recommendations</h2>
+                <p class="featureDesc">Get optimal recommendations of highly nutritious foods based off your dietary restrictions and food history.</p>
             </div>
             <div class="featureCard">
                 <div class="homeIcon">📉<!-- input icon or if image add class featureIcon--></div>
                 <h2 class="featureTitle">Progress Tracking</h2>
-                <p class="featureDesc">Visual charts that update based on your logged meals.</p>
+                <p class="featureDesc">Visual charts that update based on your logged food.</p>
             </div>
         </div>
     </section>
