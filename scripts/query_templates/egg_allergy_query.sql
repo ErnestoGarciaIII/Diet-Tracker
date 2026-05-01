@@ -1,3 +1,5 @@
+-- Created by: Ingrid Sanchez
+-- Purpose: Filters USDA food database to exclude foods that contain egg
 SELECT
         f.fdc_id,
         f.description,

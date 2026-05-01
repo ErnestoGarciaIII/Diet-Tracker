@@ -1,3 +1,6 @@
+-- Created by: Ingrid Sanchez
+-- Purpose: Filters USDA food database to exclude foods with dairy
+
 SELECT
     f.fdc_id,
     f.description,
