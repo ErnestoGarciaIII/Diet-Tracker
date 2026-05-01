@@ -1,3 +1,5 @@
+// This is all Jayce's code
+
 import { register } from '../api.js';
 import { getElement, getInputValue, showError, checkPasswordCriteria } from '../utils.js';
 import * as State from '../state.js';

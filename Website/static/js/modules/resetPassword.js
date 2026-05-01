@@ -1,3 +1,5 @@
+// This is all Jayce's code
+
 import { reset_password } from '../api.js';
 import { getElement, getInputValue, showError, showMessage, checkPasswordCriteria } from '../utils.js';
 

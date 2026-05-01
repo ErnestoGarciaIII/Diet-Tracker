@@ -9,6 +9,8 @@ import sys
 import os
 from uuid import uuid4
 
+############ BERKELEY'S CODE ##########################
+
 # Add the directory containing PlatePilotUser.py to path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -297,6 +299,9 @@ def recommendation_algorithm(user_id):
     finally:
         if conn: conn.close()
 
+############ END OF BERKELEY'S CODE ##########################
+
+############ JAYCE'S CODE ##########################
 def generate_reset_token():
     return secrets.token_urlsafe(32)
 
@@ -470,6 +475,10 @@ def login_user():
     finally:
         conn.close()
 
+############ END OF JAYCE'S CODE ##########################
+
+############ GAUDALUPE'S CODE ##########################
+
 # Register
 @app.route('/api/register', methods=['POST'])
 def register_user():
@@ -516,6 +525,8 @@ def register_user():
     finally:
         if conn:
             conn.close()
+
+############ JAYCE'S CODE ##########################
 
 @app.route('/api/delete-account', methods=['POST'])
 def delete_account():
@@ -775,6 +786,10 @@ def num_of_user_log_dates():
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
 
+############ END OF JAYCE'S CODE ##########################
+
+############ EDGAR'S CODE ##########################
+
 # Upload profile avatar
 @app.route('/api/upload-avatar', methods=['POST'])
 def upload_avatar():
@@ -808,6 +823,10 @@ def upload_avatar():
     except Exception as e:
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
+
+############ END OF EDGAR'S CODE ##########################
+
+############ JAYCE'S CODE ##########################
 
 #update user restrictions
 @app.route("/set-restrictions", methods=["POST"])
@@ -877,6 +896,10 @@ def set_restrictions():
     finally:
         conn.close()
 
+############ END OF JAYCE'S CODE ##########################
+
+############ BERKELEY'S CODE ##########################
+
 # API to check session status
 @app.route('/api/session', methods=['GET'])
 def check_session():
@@ -920,6 +943,10 @@ NUTRIENT_IDS = [
     1166, 1177, 1167, 1180, 1089, 1170, 1176, 1087, 1096, 1098,
     1099, 1100, 1238, 1090, 1101, 1102, 1091, 1092, 1103, 1093, 1095
 ]
+
+############ END OF BERKELEY'S CODE ##########################
+
+############ JAYCE'S CODE ##########################
 
 @app.route('/api/clear-filters', methods=['POST'])
 def clear_those_filters():
@@ -1002,6 +1029,10 @@ def apply_that_filter():
     except Exception as e:
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 400
+
+############ END OF JAYCE'S CODE ##########################
+
+############ BERKELY'S CODE ##########################
 
 @app.route('/api/search-engine', methods=['GET'])
 def execute_search_engine():
@@ -1192,6 +1223,10 @@ def get_food_history(user_id):
     finally:
         if conn: conn.close()
 
+############ END OF BERKELY'S CODE ##########################
+
+############ JAYCE'S CODE ##########################
+
 # Get total consumed for a given day
 @app.route('/api/consumed/<user_id>', methods=['GET'])
 def get_consumed(user_id):
@@ -1237,6 +1272,10 @@ def get_generic_progress(user_id):
     except Exception as e:
         print("[ERROR]: ", e)
         return jsonify({'error': str(e)}), 500
+
+############ END OF JAYCE'S CODE ##########################
+
+############ BERKELEY'S CODE ##########################
 
 # Update Food Entry
 @app.route('/api/food-history/<int:entry_id>', methods=['PUT'])
@@ -1363,6 +1402,13 @@ def clear_food_history(user_id):
     finally:
         if conn: conn.close()
 
+############ END OF BERKELEY'S CODE ##########################
+
+############ GUADALUPE'S CODE ##########################
+
 if __name__ == '__main__':
     print("PlatePilot server running at http://localhost:5000")
     app.run(debug=True, port=5000)
+
+############ END OF GUADALUPE'S CODE ##########################
+

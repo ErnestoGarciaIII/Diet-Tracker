@@ -1,3 +1,5 @@
+// This is all Jayce's code
+
 import { clearUserSessionData } from '../utils.js';
 import { resetState } from '../state.js';
 import { logout } from '../api.js';

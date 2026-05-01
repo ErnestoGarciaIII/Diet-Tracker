@@ -1,4 +1,6 @@
-﻿import { getUserInfo, updateUserInDB, uploadAvatar, setRestrictions, delete_account } from '../api.js';
+﻿// This is all Jayce's code
+
+import { getUserInfo, updateUserInDB, uploadAvatar, setRestrictions, delete_account } from '../api.js';
 import { getUserId, getElement, showError, showSuccess } from '../utils.js';
 import { updateUserObject } from '../state.js';
 

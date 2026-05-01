@@ -1,3 +1,5 @@
+// This is all Jayce's code
+
 import { login } from '../api.js';
 import { getElement, getInputValue, showError } from '../utils.js';
 import { setUserId, getUserId } from '../state.js';

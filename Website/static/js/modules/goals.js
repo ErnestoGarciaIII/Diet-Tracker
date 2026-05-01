@@ -1,3 +1,5 @@
+// This is all Jayce's code
+
 import { updateGoal, calculateDRI } from '../api.js';
 import { getUserId, showError, showSuccess } from '../utils.js';
 

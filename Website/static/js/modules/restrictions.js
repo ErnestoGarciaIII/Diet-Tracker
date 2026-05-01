@@ -1,3 +1,5 @@
+// This is all Jayce's code
+
 import { setRestrictions } from '../api.js';
 import { getElement, getUserId, showError, showMessage, showSuccess } from '../utils.js';
 

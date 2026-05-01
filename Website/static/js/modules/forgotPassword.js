@@ -1,3 +1,5 @@
+// This is all Jayce's code
+
 import { forgot_password } from '../api.js';
 import { getElement, getInputValue, showError, showMessage } from '../utils.js';
 

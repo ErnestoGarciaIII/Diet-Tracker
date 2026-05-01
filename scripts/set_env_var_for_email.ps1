@@ -1,3 +1,5 @@
+######## THIS IS ALL JAYCES CODE #########
+
 #This script will set the enviroment variables to enable password reset
 #Setting these credentials in a script ONLY for development and debugging use and WILL NOT be included in production code
 #USER_PASS is NOT the real password instead an app password that google has given use

@@ -1,3 +1,5 @@
+// This is all Jayce's code
+
 import { clearUser } from './state.js';
 
 // =================================
