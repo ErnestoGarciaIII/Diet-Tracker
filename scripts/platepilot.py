@@ -1,3 +1,5 @@
+####### DEPRICATED PIECE OF SHART ################
+
 from flask import Flask, request, jsonify, send_from_directory
 import sqlite3
 import sys

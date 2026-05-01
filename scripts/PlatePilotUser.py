@@ -1,7 +1,8 @@
+########## BERKELEY'S CODE. ALL OF IT. ITS ALL MINE ################ :)
+
 import sys
 
 #DRI Calculation per user
-#BMR is calculated using Mifflin-St Jeor Equation, P = (10 x weight in kg) + (6.25 x height in cm) - (5 x age in years) + s [constant s: males +5 females -161
 #Activity factor multiplier: Sedentary - 1.2 | Lightly Active - 1.375 | Moderately Active: 1.55 | Very Active: 1.725 
 
 def README(): 

@@ -1,3 +1,4 @@
+##### BERKELEY'S CODE #############
 import pandas as pd
 import sqlite3
 import sys
@@ -85,7 +86,8 @@ def nuke_food_table(conn):
         print(f"Error: {e}\nExiting...")
         conn.close()
         sys.exit(1)
-
+######### END BERKELEY'S CODE ################
+############ JAYCE'S CODE #######################
 def build_users_table(conn, cursor):
     cursor.execute("DROP TABLE IF EXISTS Users")
     cursor.execute("""
@@ -168,7 +170,8 @@ def build_food_history_table(conn, cursor):
     )
     """)
     print("Finished building FoodHistory table\n")
-
+############ END JAYCE'S CODE ###########################
+############# BERKELEY'S CODE CONT...####################
 def build_top_foods_table(conn, cursor):
     cursor.execute("DROP TABLE IF EXISTS TopFoods")
     print(f"Attempting to build TopFoods table...")
@@ -277,3 +280,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+### END BERKELEY'S CODE ###############
