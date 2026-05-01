@@ -1,3 +1,5 @@
+// ALL BERKELEY'S AND JAYCE'S CODE
+
 import { updateUserInDB, uploadAvatar } from '../api.js';
 import { getUserId, getInputValue, getCheckedValue, showError, showSuccess } from '../utils.js';
 

@@ -1,4 +1,6 @@
-import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getConsumed, getGenericProgress,getNutrientProgress, numberOfDaysFoodLogged } from '../api.js';
+// BERKELEY, EDGAR, AND JAYCE ALL WORKED ON THIS CODE
+
+import { logFood, getUserInfo, apply_Filter, searchFood, getNutrients, getModifiers, get_Filters, getRecommendations, getConsumed, getGenericProgress, getNutrientProgress, numberOfDaysFoodLogged } from '../api.js';
 import { getUserId, getElement, getInputValue, showError, showSuccess, getActiveFilters, addFilterToActiveFilters, removeActiveFilter, clearActiveFilters } from '../utils.js';
 import { getUser, updateProgress, getBadge, setBadge } from '../state.js';
 

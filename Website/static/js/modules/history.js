@@ -1,3 +1,5 @@
+// BERKELEY, JAYCE, AND EDGAR ALL WORKED ON THIS CODE
+
 import { getUserId, getElement } from '../utils.js';
 import { getFoodHistory, updateFoodEntry, deleteFoodEntry, clearFoodHistory, getNutrientProgress } from '../api.js';
 
