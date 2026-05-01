@@ -1,3 +1,7 @@
+# Created by: Ingrid Sanchez
+# Purpose: Search for food items based on user input (Back-end logic). 
+#          Dietary filtering, normalized search results, and nutrient data retrieval 
+
 import sqlite3
 import sys
 import os

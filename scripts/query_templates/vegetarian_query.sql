@@ -1,3 +1,6 @@
+-- Created by: Ernesto Garcia
+-- Purpose: Filter USDA food database to include foods allowed in a vegetarian diet
+
 SELECT
 	f.fdc_id,
         f.description,

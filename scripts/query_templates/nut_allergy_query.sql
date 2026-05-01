@@ -1,3 +1,6 @@
+-- Created by: Ingrid Sanchez
+-- Purpose: Filter USDA food database to exclude nuts
+
 SELECT
 	f.fdc_id,
     	f.description,

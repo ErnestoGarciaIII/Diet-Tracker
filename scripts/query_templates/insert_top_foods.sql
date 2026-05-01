@@ -1,3 +1,6 @@
+-- Created by: Ernesto Garcia and Berkeley Scott
+-- Purpose: Table of top nutritious foods that recommendation algorithm can choose from
+
 INSERT INTO TopFoods (fdc_id, description, nutrient_id, amount_per_gram, food_category_id)
 SELECT
     MIN(f.fdc_id),

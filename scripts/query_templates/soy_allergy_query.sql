@@ -1,3 +1,6 @@
+-- Created by: Ingrid Sanchez
+-- Purpose: Filter USDA database to exclude foods containing soy
+
 SELECT
     f.fdc_id,
     f.description,

@@ -1,3 +1,6 @@
+-- Created by: Ingrid Sanchez
+-- Purpose: Returns all nutrients and quantities for selected food items
+
 -- CTE with selected_nutrients
 WITH selected_nutrients AS (
 	SELECT id, name, unit_name

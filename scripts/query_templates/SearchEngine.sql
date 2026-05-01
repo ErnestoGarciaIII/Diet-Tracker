@@ -1,3 +1,6 @@
+-- Created by: Ernesto Garcia
+-- Purpose: Return food items based on text input provided by the user
+
 WITH SearchEngine AS (
     SELECT
         f.fdc_id,

@@ -1,3 +1,6 @@
+-- Created by: Ernesto Garcia
+-- Purpose: Filter USDA food database to exclude all other sources of meat except seafood
+
 SELECT
 	f.fdc_id,
         f.description,

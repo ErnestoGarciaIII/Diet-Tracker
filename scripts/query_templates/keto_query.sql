@@ -1,3 +1,6 @@
+-- Created by: Ernesto Garcia
+-- Purpose: Filter USDA food database to only include keto-friendly foods
+
 SELECT fdc_id
 FROM food_nutrient
 GROUP BY fdc_id
