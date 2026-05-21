@@ -1,4 +1,4 @@
--- Created by: Ernesto Garcia
+-- Created by: Berkeley Scott
 -- Purpose: Return food items based on text input provided by the user
 
 WITH SearchEngine AS (

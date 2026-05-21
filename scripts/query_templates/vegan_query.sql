@@ -1,4 +1,4 @@
--- Created by: Ernesto Garcia
+-- Created by: Berkeley Scott
 -- Purpose: Filter USDA food database to include foods allowed under a vegan diet
 
 SELECT
