@@ -12,4 +12,4 @@ User food log history is stored locally in the database, and can be accessed for
 
 Members of PlatePilot:
 
-Berkeley Scott - Project Leader and Visionary for PlatePilot. Managed project work flow and task delegation. Built the back-end that processes user data and handles database requests. Single-handedly created and refined the recommendation algorithm, and the framework for connecting the algorithm to the user interface. Built the user class and the search engine. Responsible for design and implementation of the database schema. Created filter queries and built the framework to integrate them into the search engine. 
+Ernesto Garcia - Project Leader and Visionary for PlatePilot. Managed project work flow and task delegation. Built the back-end that processes user data and handles database requests. Single-handedly created and refined the recommendation algorithm, and the framework for connecting the algorithm to the user interface. Built the user class and the search engine. Responsible for design and implementation of the database schema. Created filter queries and built the framework to integrate them into the search engine. 
