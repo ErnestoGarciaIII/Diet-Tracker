@@ -9,7 +9,7 @@ import sys
 import os
 from uuid import uuid4
 
-############ BERKELEY'S CODE ##########################
+############ ERNESTO'S CODE ##########################
 
 # Add the directory containing PlatePilotUser.py to path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -299,7 +299,7 @@ def recommendation_algorithm(user_id):
     finally:
         if conn: conn.close()
 
-############ END OF BERKELEY'S CODE ##########################
+############ END OF ERNESTO'S CODE ##########################
 
 ############ JAYCE'S CODE ##########################
 def generate_reset_token():
