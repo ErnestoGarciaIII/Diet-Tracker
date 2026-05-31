@@ -1,4 +1,4 @@
-########## BERKELEY'S CODE. ALL OF IT. ITS ALL MINE ################ :)
+########## ERNESTO'S CODE################
 
 import sys
 
