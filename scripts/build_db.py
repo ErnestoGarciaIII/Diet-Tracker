@@ -1,4 +1,4 @@
-##### BERKELEY'S CODE #############
+##### Ernesto's CODE #############
 import pandas as pd
 import sqlite3
 import sys
@@ -86,7 +86,7 @@ def nuke_food_table(conn):
         print(f"Error: {e}\nExiting...")
         conn.close()
         sys.exit(1)
-######### END BERKELEY'S CODE ################
+######### END ERNESTO'S CODE ################
 ############ JAYCE'S CODE #######################
 def build_users_table(conn, cursor):
     cursor.execute("DROP TABLE IF EXISTS Users")
